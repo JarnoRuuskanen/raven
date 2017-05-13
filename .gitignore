@@ -1,0 +1,4 @@
+#Only include source and header files
+
+build
+CMakeLists.txt.user
