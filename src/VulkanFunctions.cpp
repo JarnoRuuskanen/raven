@@ -1,5 +1,8 @@
 #include "VulkanFunctions.h"
 
+//List of kind of functions will be loaded.
+//The full list of vulkan functions can be found inside
+//ListOfVulkanFunctions.inl
 namespace Raven
 {
       #define EXPORTED_VULKAN_FUNCTION(name) PFN_##name name;

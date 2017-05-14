@@ -1,5 +1,7 @@
 #include "VulkanInitializer.h"
 #include "VulkanFunctions.h"
+#include "VulkanStructures.h"
+#include <string>
 
 //Vulkan initialization inside the Raven namespace
 namespace Raven
@@ -69,7 +71,7 @@ namespace Raven
         result = vkEnumerateInstanceExtensionProperties(nullptr, &extensions, nullptr);
         if( (result != VK_SUCCESS) || (extensions == 0))
         {
-            std::cout << "Failed to load instance extensions" << std::endl;
+            std::cout << "Failed to load instance extensions!" << std::endl;
             return false;
         }
 
@@ -83,5 +85,67 @@ namespace Raven
         }
 
         return true;
+    }
+
+    //Creates a new vulkan instance
+    bool createVulkanInstance(std::vector<char const*> const& desiredExtensions,
+                              char const* const appName,
+                              VkInstance &instance)
+    {
+        //First check all available extensions
+        std::vector<VkExtensionProperties> availableExtensions;
+        if(!checkAvailableInstanceExtensions(availableExtensions))
+            return false;
+
+        //Next compare if desired extensions are available
+        for(auto& extension : desiredExtensions)
+        {
+            if(!isExtensionSupported(availableExtensions, extension))
+            {
+                std::cout << "Extension: " << extension << " not available!" << std::endl;
+                return false;
+            }
+        }
+
+        //Create application info
+        VkApplicationInfo appInfo = VulkanStructures::applicationInfo();
+        appInfo.pApplicationName = appName;
+        appInfo.applicationVersion = VK_MAKE_VERSION(0,1,0);
+        appInfo.pEngineName = appName;
+        appInfo.engineVersion = VK_MAKE_VERSION(0,1,0);
+        appInfo.apiVersion = VK_MAKE_VERSION(1,0,0);
+
+        //Create instance info
+        VkInstanceCreateInfo instanceInfo = VulkanStructures::instanceCreateInfo();
+        instanceInfo.pApplicationInfo = &appInfo;
+        instanceInfo.enabledLayerCount = 0;
+        instanceInfo.ppEnabledLayerNames = nullptr;
+        instanceInfo.enabledExtensionCount = static_cast<uint32_t>(desiredExtensions.size());
+        instanceInfo.ppEnabledExtensionNames = desiredExtensions.size() > 0 ? &desiredExtensions[0] : 0;
+
+        //Create the vulkan instance
+        VkResult result = vkCreateInstance(&instanceInfo, nullptr, &instance);
+        if(result !=  VK_SUCCESS || instance == VK_NULL_HANDLE)
+        {
+            std::cout  << "Failed to create an instance!" << std::endl;
+            return false;
+        }
+
+        //Return true if the operation was successful.
+        return true;
+    }
+
+    //Checks wether a desired extension is supported or not
+    bool isExtensionSupported(std::vector<VkExtensionProperties> &availableExtensions, const char* desiredExtension)
+    {
+        //Loop through the whole extension vector and check, if the desired extension is supported
+        for(auto& extension : availableExtensions)
+        {
+            //Compare the two extension names
+            if(std::strcmp(extension.extensionName,desiredExtension) == 0)
+                return true;
+        }
+        //Otherwise the extension is not supported
+        return false;
     }
 }

@@ -17,6 +17,10 @@ namespace Raven
     bool loadGlobalLevelFunctions();
     //Checks available instance extensions.
     bool checkAvailableInstanceExtensions(std::vector<VkExtensionProperties> &availableExtensions);
+    //Checks if a given extension is found in a list of extensions
+    bool isExtensionSupported(std::vector<VkExtensionProperties> &availableExtensions, const char* desiredProperty);
+    //Creates a new vulkan instance
+    bool createVulkanInstance(std::vector<char const*> const& desiredExtensions,char const* const appName, VkInstance &instance);
 
 }
 

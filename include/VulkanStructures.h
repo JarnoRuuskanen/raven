@@ -1,8 +1,10 @@
+#pragma once
 //Namespace for all of the vulkan structures used in object creation
 #include "Headers.h"
-namespace VulkanStructure
+
+namespace VulkanStructures
 {
-    VkApplicationInfo applicationInfo()
+    inline VkApplicationInfo applicationInfo()
     {
         VkApplicationInfo appInfo = {};
         appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -10,10 +12,12 @@ namespace VulkanStructure
         return appInfo;
     }
 
-    VkInstanceCreateInfo instanceCreateInfo()
+    inline VkInstanceCreateInfo instanceCreateInfo()
     {
         VkInstanceCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+        createInfo.pNext = nullptr;
+        createInfo.flags = 0;
         return createInfo;
     }
 }
