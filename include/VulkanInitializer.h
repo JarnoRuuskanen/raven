@@ -23,5 +23,11 @@ namespace Raven
     bool createVulkanInstance(std::vector<char const*> const& desiredExtensions,char const* const appName, VkInstance &instance);
     //Loads instance level vulkan functions
     bool loadInstanceLevelVulkanFunctions(VkInstance &instance, std::vector<const char*> const &enabledExtensions);
+    //Enumerates through all physical, vulkan-capable devices and stores them inside a vector
+    bool loadPhysicalDevices(VkInstance &instance, std::vector<VkPhysicalDevice> &physicalDevices);
+    //Checks if a physical device supports a given extension
+    bool arePhysicalDeviceExtensionsSupported(VkPhysicalDevice &physicalDevice, std::vector<char const*> const& desiredExtensions);
+    //Creates a vulkan logical device
+    bool createLogicalDevice(VkInstance &instance, VkDevice &logicalDevice);
 }
 

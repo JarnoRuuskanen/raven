@@ -33,13 +33,13 @@ namespace Raven
             #define LoadFunction dlsym
         #endif
 
-        #define EXPORTED_VULKAN_FUNCTION(name)                              \
-        name = (PFN_##name)LoadFunction(vulkanLibrary, #name);              \
-        if(name==nullptr)                                                   \
-        {                                                                   \
-            std::cout << "Failed to load exported Vulkan function called: " \
-            #name << std::endl;                                             \
-            return false;                                                   \
+        #define EXPORTED_VULKAN_FUNCTION(name)                                                      \
+        name = (PFN_##name)LoadFunction(vulkanLibrary, #name);                                      \
+        if(name==nullptr)                                                                           \
+        {                                                                                           \
+            std::cout << "Failed to load exported Vulkan function called: "                         \
+            #name << std::endl;                                                                     \
+            return false;                                                                           \
         }
         #include "ListOfVulkanFunctions.inl"
         return true;
@@ -48,13 +48,13 @@ namespace Raven
     //Loads global level functions. There are currently three such functions.
     bool loadGlobalLevelFunctions()
     {
-        #define GLOBAL_LEVEL_VULKAN_FUNCTION(name)                              \
-        name = (PFN_##name)vkGetInstanceProcAddr(nullptr, #name);               \
-        if(name == nullptr)                                                     \
-        {                                                                       \
-            std::cout << "Failed to load global level Vulkan function called: " \
-            #name << std::endl;                                                 \
-            return false;                                                       \
+        #define GLOBAL_LEVEL_VULKAN_FUNCTION(name)                                                  \
+        name = (PFN_##name)vkGetInstanceProcAddr(nullptr, #name);                                   \
+        if(name == nullptr)                                                                         \
+        {                                                                                           \
+            std::cout << "Failed to load global level Vulkan function called: "                     \
+            #name << std::endl;                                                                     \
+            return false;                                                                           \
         }
         #include "ListOfVulkanFunctions.inl"
         return true;
@@ -64,6 +64,7 @@ namespace Raven
     bool loadInstanceLevelVulkanFunctions(VkInstance &instance,
                                          std::vector<const char*> const& enabledExtensions)
     {
+        //First load instance level functions
         #define INSTANCE_LEVEL_VULKAN_FUNCTION(name)                                                \
         name = (PFN_##name)vkGetInstanceProcAddr(instance,#name);                                   \
         if(name == nullptr)                                                                         \
@@ -73,6 +74,7 @@ namespace Raven
                 return false;                                                                       \
         }
 
+        //Next load instance level functions from extensions
         #define INSTANCE_LEVEL_VULKAN_FUNCTION_FROM_EXTENSION(name, extension)                      \
         for(auto& enabledExtension : enabledExtensions)                                             \
         {                                                                                           \
@@ -88,7 +90,6 @@ namespace Raven
             }                                                                                       \
         }
         #include "ListOfVulkanFunctions.inl"
-
         return true;
     }
 
@@ -153,7 +154,7 @@ namespace Raven
         instanceInfo.enabledLayerCount = 0;
         instanceInfo.ppEnabledLayerNames = nullptr;
         instanceInfo.enabledExtensionCount = static_cast<uint32_t>(desiredExtensions.size());
-        instanceInfo.ppEnabledExtensionNames = desiredExtensions.size() > 0 ? &desiredExtensions[0] : 0;
+        instanceInfo.ppEnabledExtensionNames = desiredExtensions.size() > 0 ? desiredExtensions.data() : 0;
 
         //Create the vulkan instance
         VkResult result = vkCreateInstance(&instanceInfo, nullptr, &instance);
@@ -179,5 +180,74 @@ namespace Raven
         }
         //Otherwise the extension is not supported
         return false;
+    }
+
+    //Enumerates through all physical, vulkan-capable devices and stores them inside a vector
+    bool loadPhysicalDevices(VkInstance &instance, std::vector<VkPhysicalDevice> &physicalDevices)
+    {
+        uint32_t deviceCount = 0;
+        VkResult result;
+        //First enumerate physical devices to find out how many devices there are
+        result = vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
+
+        //Check that enumeration was successful.
+        if(result != VK_SUCCESS || deviceCount == 0)
+        {
+            std::cout << "Failed to enumerate physical device count!" << std::endl;
+            return false;
+        }
+
+        //deviceCount has now been updated, resize physicalDevies accordingly
+        physicalDevices.resize(deviceCount);
+
+        //Next get the physical devices by calling the same function again
+        result = vkEnumeratePhysicalDevices(instance, &deviceCount, physicalDevices.data());
+
+        //Check that enumeration was successful.
+        if(result != VK_SUCCESS || physicalDevices.empty())
+        {
+            std::cout << "Failed to get physical devices!" << std::endl;
+            return false;
+        }
+
+        return true;
+    }
+
+    //Checks wether a physical device extension is supported or not
+    bool arePhysicalDeviceExtensionsSupported(VkPhysicalDevice &physicalDevice,
+                                              std::vector<char const*> const& desiredExtensions)
+    {
+        uint32_t extensionCount = 0;
+        std::vector<VkExtensionProperties> availableExtensions;
+        VkResult result;
+
+        //First find out how many extensions are supported by the physical device
+        result = vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, nullptr);
+        if(result != VK_SUCCESS || extensionCount == 0)
+            return false;
+
+        //Next resize the container and enumerate again to get the extensions
+        availableExtensions.resize(extensionCount);
+        result = vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, availableExtensions.data());
+
+        if(result != VK_SUCCESS || availableExtensions.empty())
+            return false;
+
+        //Now that we have the array of extensions check if the desiredProperty is supported
+        for(auto& extension : desiredExtensions)
+        {
+            if(!isExtensionSupported(availableExtensions, extension))
+            {
+                std::cout << "Extension: " << extension << " not available!" << std::endl;
+                return false;
+            }
+        }
+        return true;
+    }
+
+    //Creates a logical vulkan device
+    bool createLogicalDevice(VkInstance &instance, VkDevice &logicalDevice)
+    {
+        return true;
     }
 }
