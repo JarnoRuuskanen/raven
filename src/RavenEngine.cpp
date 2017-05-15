@@ -13,20 +13,22 @@ RavenEngine::~RavenEngine()
 }
 
 //Starts the raven engine
-void RavenEngine::start()
+bool RavenEngine::start()
 {
     //First initialize vulkan
-    bool success;
-    success = initializeVulkan();
+    if(!initializeVulkan())
+    {
+        std::cout << "Failed to initialize Vulkan, exiting." << std::endl;
+        return false;
+    }
 
-    std::string result = success ? "Successfully initialized Vulkan!" : "Failed to initialize Vulkan!";
-    std::cout << result << std::endl;
-
-    //Create a new instance
-    //First query all available extensions
+    //Query all available instance extensions
     std::vector<VkExtensionProperties> extensions;
     if(!checkAvailableInstanceExtensions(extensions))
+    {
         std::cout << "Failed to check for available instance extensions!" << std::endl;
+        return false;
+    }
 
     //List desired extensions
     std::vector<const char*> desiredExtensions =
@@ -35,10 +37,21 @@ void RavenEngine::start()
     };
 
     //Create a new vulkan instance
-    VkInstance instance;
-    if(!createVulkanInstance(desiredExtensions, "Raven", instance))
+    if(!createVulkanInstance(desiredExtensions, "Raven", vulkanInstance))
+    {
         std ::cout << "Failed to create a vulkan instance!" << std::endl;
+        return false;
+    }
 
+    //After instance has been created, load instance level funcions
+    if(!loadInstanceLevelVulkanFunctions(vulkanInstance, desiredExtensions))
+    {
+        std::cout << "Failed to load instance level functions!" << std::endl;
+        return false;
+    }
+
+    //Next it is time to choose which Vulkan device (usually a gpu) we are going to use
+    return true;
 }
 
 //Initializes the vulkan library

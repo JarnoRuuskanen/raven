@@ -60,6 +60,38 @@ namespace Raven
         return true;
     }
 
+    //Loads an instance level vulkan functions
+    bool loadInstanceLevelVulkanFunctions(VkInstance &instance,
+                                         std::vector<const char*> const& enabledExtensions)
+    {
+        #define INSTANCE_LEVEL_VULKAN_FUNCTION(name)                                                \
+        name = (PFN_##name)vkGetInstanceProcAddr(instance,#name);                                   \
+        if(name == nullptr)                                                                         \
+        {                                                                                           \
+            std::cout << "Failed to load instance level Vulkan function called: "                   \
+                #name << std::endl;                                                                 \
+                return false;                                                                       \
+        }
+
+        #define INSTANCE_LEVEL_VULKAN_FUNCTION_FROM_EXTENSION(name, extension)                      \
+        for(auto& enabledExtension : enabledExtensions)                                             \
+        {                                                                                           \
+            if(std::string(enabledExtension) == std::string(extension))                             \
+            {                                                                                       \
+                name = (PFN_##name)vkGetInstanceProcAddr(instance, #name);                          \
+                if(name == nullptr)                                                                 \
+                {                                                                                   \
+                    std::cout << "Failed to load instance level function from extension called: "   \
+                    #name << std::endl;                                                             \
+                    return false;                                                                   \
+                }                                                                                   \
+            }                                                                                       \
+        }
+        #include "ListOfVulkanFunctions.inl"
+
+        return true;
+    }
+
     //Checks all available instance extensions and adds them into a vector
     bool checkAvailableInstanceExtensions(std::vector<VkExtensionProperties> &availableExtensions)
     {

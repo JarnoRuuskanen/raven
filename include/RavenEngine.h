@@ -6,7 +6,7 @@ class RavenEngine
     public:
         RavenEngine();
         ~RavenEngine();
-        void start();
+        bool start();
         void stop();
     private:
         bool initializeVulkan();
@@ -16,4 +16,8 @@ class RavenEngine
 
         //The vulkan dynamically loaded library
         LIBRARY_TYPE vulkanLibrary;
+
+        //Vulkan variables
+        VkInstance vulkanInstance;
+        VkDevice logicalDevice;
 };
