@@ -1,4 +1,5 @@
 #include "RavenEngine.h"
+#include "VulkanDevice.h"
 
 using namespace Raven;
 
@@ -46,7 +47,14 @@ bool RavenEngine::start()
     };
 
     //Select the physical device that the program will be using
-    selectPhysicalDevice(physicalDevices, selectedPhysicalDevice, desiredDeviceExtensions);
+    if(!selectPhysicalDevice(physicalDevices, selectedPhysicalDevice, desiredDeviceExtensions))
+        return false;
+
+    //Create a logical device out of the selected physical device.
+    //Raven will be built to support multiple queues, that will all be used simultaneously
+    //with added synchronization. This is to not tax one queue unecessarily
+    if(!createVulkanDevice(selectedPhysicalDevice, selectedLogicalDevice))
+        return false;
 
     return true;
 }
@@ -70,7 +78,6 @@ bool RavenEngine::initializeVulkan()
         std::cout << "Failed to load global level functions!" << std::endl;
         return false;
     }
-
     return true;
 }
 
@@ -111,7 +118,15 @@ bool RavenEngine::selectPhysicalDevice(std::vector<VkPhysicalDevice> &physicalDe
             return true;
         }
     }
-
     std::cout << "Failed to find a physical device that supports all the required device extensions!" << std::endl;
     return false;
+}
+
+//Creates a logical vulkan device from given physical device
+bool RavenEngine::createVulkanDevice(VkPhysicalDevice &physicalDevice, VkDevice &device)
+{
+    VulkanDevice logicalDevice(physicalDevice);
+    if(!logicalDevice.initializeDevice())
+        return false;
+    return true;
 }

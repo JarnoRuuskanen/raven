@@ -20,4 +20,13 @@ namespace VulkanStructures
         createInfo.flags = 0;
         return createInfo;
     }
+
+    inline VkDeviceCreateInfo deviceCreateInfo()
+    {
+        VkDeviceCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+        createInfo.flags = 0;
+        createInfo.pNext = nullptr;
+        return createInfo;
+    }
 }

@@ -245,9 +245,76 @@ namespace Raven
         return true;
     }
 
-    //Creates a logical vulkan device
-    bool createLogicalDevice(VkInstance &instance, VkDevice &logicalDevice)
+    //Checks physical device features.
+    void getPhysicalDeviceFeaturesAndProperties(VkPhysicalDevice &physicalDevice,
+                                                VkPhysicalDeviceFeatures &features,
+                                                VkPhysicalDeviceProperties &properties)
     {
+        //Get the features
+        vkGetPhysicalDeviceFeatures(physicalDevice, &features);
+        //Get the properties
+        vkGetPhysicalDeviceProperties(physicalDevice, &properties);
+    }
+
+    //Gets the index of a desired queue family/families
+    bool getQueueFamilyIndex(std::vector<VkQueueFamilyProperties> &queueFamilies,
+                             VkQueueFlags desiredQueueFamily,
+                             uint32_t &queueFamilyIndex)
+    {
+        //After acquiring all the queue families, find the correct one for our needs
+        for(uint32_t i = 0; i < static_cast<uint32_t>(queueFamilies.size()); i++)
+        {
+            if((queueFamilies[i].queueCount > 0) && (queueFamilies[i].queueFlags & desiredQueueFamily))
+            {
+                queueFamilyIndex = i;
+                return true;
+            }
+        }
+        std::cout << "Failed to find correct queue family/families!" << std::endl;
+        return false;
+    }
+
+    //Gets all physical device queues and their properties
+    bool getPhysicalDeviceQueuesWithProperties(VkPhysicalDevice &physicalDevice,
+                                               std::vector<VkQueueFamilyProperties> &queueFamilies)
+    {
+        uint32_t queueFamilyCount = 0;
+        //First get the count of queue families
+        vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, nullptr);
+
+        //Check wether there are any queue families or not
+        if(queueFamilyCount == 0)
+        {
+            std::cout << "Failed to acquire the number of queue families!" << std::endl;
+            return false;
+        }
+
+        //Get the actual queue families
+        queueFamilies.resize(queueFamilyCount);
+        vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, queueFamilies.data());
+        if(queueFamilies.empty())
+        {
+            std::cout << "Failed to acquire queue family properties!" << std::endl;
+            return false;
+        }
+
+        //There are currently four kinds of graphics families:
+        //graphics, compute, transfer and sprase.
+        return true;
+    }
+
+    //Creates a logical vulkan device
+    bool createLogicalDevice(VkPhysicalDevice &physicalDevice,
+                             VkDeviceCreateInfo createInfo,
+                             VkDevice &logicalDevice)
+    {
+        VkResult result;
+        result = vkCreateDevice(physicalDevice, &createInfo, nullptr, &logicalDevice);
+        if((result != VK_SUCCESS) && (logicalDevice != nullptr))
+        {
+            std::cout << "Failed to create a logical device!" << std::endl;
+            return false;
+        }
         return true;
     }
 }

@@ -1,6 +1,7 @@
 #pragma once
 #include "VulkanInitializer.h"
 //The main class for Raven
+class VulkanDevice;
 class RavenEngine
 {
     public:
@@ -17,15 +18,18 @@ class RavenEngine
         bool selectPhysicalDevice(std::vector<VkPhysicalDevice> &physicalDevices,
                                   VkPhysicalDevice &selectedDevice,
                                   std::vector<const char*> &desiredDeviceExtensions);
+        //Creates a logical device
+        bool createVulkanDevice(VkPhysicalDevice &physicalDevice, VkDevice &device);
 
         //Private objects:
 
         //The vulkan dynamically loaded library
         LIBRARY_TYPE vulkanLibrary;
 
-        //Vulkan variables
+        //Vulkan variables, the ones starting with "selected"
+        //are the ones that the software will be using to complete tasks.
         VkInstance selectedInstance;
         std::vector<VkPhysicalDevice> physicalDevices;
         VkPhysicalDevice selectedPhysicalDevice;
-        VkDevice logicalDevice;
+        VkDevice selectedLogicalDevice;
 };
