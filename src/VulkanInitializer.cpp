@@ -111,7 +111,7 @@ namespace Raven
         #define DEVICE_LEVEL_VULKAN_FUNCTION_FROM_EXTENSION(name, extension)                        \
         for(auto& enabledExtension : enabledExtensions)                                             \
         {                                                                                           \
-            if(std:string(enabledExtension) == std::string(extension))                              \
+            if(std::string(enabledExtension) == std::string(extension))                             \
             {                                                                                       \
                 name = (PFN_##name)vkGetDeviceProcAddr(device, #name);                              \
                 if(name == nullptr)                                                                 \
