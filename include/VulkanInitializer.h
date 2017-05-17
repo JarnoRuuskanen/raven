@@ -11,6 +11,8 @@ namespace Raven
     //as we don't need to load the whole library but only those
     //parts that we need for our application.
     bool loadVulkanLibrary(LIBRARY_TYPE& vulkanLibrary);
+    //Frees the dynamically loaded vulkan library
+    void freeVulkanLibrary(LIBRARY_TYPE& vulkanLibrary);
     //Loads functions exported from vulkan loader library.
     bool loadFunctionExportedFromVulkanLoaderLibrary(LIBRARY_TYPE const &vulkanLibrary);
     //Loads the global level functions described in the list of vulkan functions.

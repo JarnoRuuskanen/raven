@@ -23,6 +23,17 @@ namespace Raven
         return success;
     }
 
+    //Frees the dynamically loaded Vulkan library.
+    void freeVulkanLibrary(void *&vulkanLibrary)
+    {
+        #if defined _WIN32
+            FreeLibrary(vulkanLibrary);
+        #elif defined __linux
+            dlclose(vulkanLibrary);
+        #endif
+        vulkanLibrary = nullptr;
+    }
+
     //Loads a vulkan function
     bool loadFunctionExportedFromVulkanLoaderLibrary(LIBRARY_TYPE const &vulkanLibrary)
     {
@@ -94,7 +105,10 @@ namespace Raven
         return true;
     }
 
-    //Loads logical device level functions
+    //Loads logical device level functions. NOTE: vkGetDeviceProcAddr has some performance
+    //benefits compared to vkGetInstanceAddr BUT this also means that we need to call the
+    //loadDeviceLevelFunctions-function for each logical device in the application.
+    //One device usually cannot use the loaded functions of another device!
     bool loadDeviceLevelFunctions(VkDevice &device, std::vector<const char*>  &enabledExtensions)
     {
         //First define device level functions

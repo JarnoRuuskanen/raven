@@ -11,7 +11,15 @@ RavenEngine::RavenEngine()
 
 RavenEngine::~RavenEngine()
 {
+    //Destroy the vulkan instance
+    if(selectedInstance)
+    {
+        vkDestroyInstance(selectedInstance, nullptr);
+        selectedInstance = VK_NULL_HANDLE;
+    }
 
+    //Lastly free the dynamically loaded vulkan library
+    freeVulkanLibrary(vulkanLibrary);
 }
 
 //Starts the raven engine

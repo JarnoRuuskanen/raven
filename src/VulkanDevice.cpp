@@ -13,7 +13,14 @@ VulkanDevice::VulkanDevice(VkPhysicalDevice &device)
 
 VulkanDevice::~VulkanDevice()
 {
-
+    //Destroy the logical device. After this we can no longer
+    //use the device level functions that were loaded when this
+    //logical device was created.
+    if(logicalDevice)
+    {
+        vkDestroyDevice(logicalDevice, nullptr);
+        logicalDevice = VK_NULL_HANDLE;
+    }
 }
 
 //Initializes the vulkan device.
@@ -23,7 +30,7 @@ bool VulkanDevice::initializeDevice(std::vector<const char*>  &desiredDeviceExte
     if(!initializeQueues(queueFamilyInfo))
         return false;
 
-    //Create a new queue create info -structure for each queue in the chosen family
+    //Create a new queue create info -structure for each queue in the chosen family.
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
     for(VulkanQueueInfo info : queueFamilyInfo)
         queueCreateInfos.push_back(VulkanStructures::deviceQueueCreateInfo(info.queueFamilyIndex,info.priorities));
@@ -42,8 +49,9 @@ bool VulkanDevice::initializeDevice(std::vector<const char*>  &desiredDeviceExte
                                             desiredDeviceExtensions.data() : nullptr;
     createInfo.enabledLayerCount = 0;
     createInfo.ppEnabledLayerNames = nullptr;
-    //Enable all features the graphics card supports
+    //Enable all features the graphics card supports for now.
     createInfo.pEnabledFeatures = &features;
+    //Device queues are created when the logical device is created.
     createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
     createInfo.pQueueCreateInfos = queueCreateInfos.data();
 
