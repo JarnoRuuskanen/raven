@@ -25,8 +25,21 @@ namespace VulkanStructures
     {
         VkDeviceCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-        createInfo.flags = 0;
         createInfo.pNext = nullptr;
+        createInfo.flags = 0;
+        return createInfo;
+    }
+
+    inline VkDeviceQueueCreateInfo deviceQueueCreateInfo(uint32_t familyIndex,
+                                                         std::vector<float> priorities)
+    {
+        VkDeviceQueueCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        createInfo.pNext = nullptr;
+        createInfo.flags = 0;
+        createInfo.queueFamilyIndex = familyIndex;
+        createInfo.queueCount = static_cast<uint32_t>(priorities.size());
+        createInfo.pQueuePriorities = priorities.data();
         return createInfo;
     }
 }

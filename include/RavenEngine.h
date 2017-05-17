@@ -19,7 +19,7 @@ class RavenEngine
                                   VkPhysicalDevice &selectedDevice,
                                   std::vector<const char*> &desiredDeviceExtensions);
         //Creates a logical device
-        bool createVulkanDevice(VkPhysicalDevice &physicalDevice, VkDevice &device);
+        bool createVulkanDevice(VkPhysicalDevice &physicalDevice, std::vector<const char*>  &desiredExtensions);
 
         //Private objects:
 

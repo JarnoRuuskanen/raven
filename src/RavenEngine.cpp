@@ -1,5 +1,6 @@
 #include "RavenEngine.h"
 #include "VulkanDevice.h"
+#include "VulkanUtility.h"
 
 using namespace Raven;
 
@@ -46,14 +47,20 @@ bool RavenEngine::start()
         VK_KHR_SWAPCHAIN_EXTENSION_NAME
     };
 
-    //Select the physical device that the program will be using
+    //Select the physical device that the program will be using. Test that
+    //the physical device supports desired device extensions, which will be used
+    //when creating a logical device.
     if(!selectPhysicalDevice(physicalDevices, selectedPhysicalDevice, desiredDeviceExtensions))
         return false;
+
+    VkPhysicalDeviceFeatures features;
+    VkPhysicalDeviceProperties properties;
+    getPhysicalDeviceFeaturesAndProperties(selectedPhysicalDevice, features, properties);
 
     //Create a logical device out of the selected physical device.
     //Raven will be built to support multiple queues, that will all be used simultaneously
     //with added synchronization. This is to not tax one queue unecessarily
-    if(!createVulkanDevice(selectedPhysicalDevice, selectedLogicalDevice))
+    if(!createVulkanDevice(selectedPhysicalDevice, desiredDeviceExtensions))
         return false;
 
     return true;
@@ -123,10 +130,11 @@ bool RavenEngine::selectPhysicalDevice(std::vector<VkPhysicalDevice> &physicalDe
 }
 
 //Creates a logical vulkan device from given physical device
-bool RavenEngine::createVulkanDevice(VkPhysicalDevice &physicalDevice, VkDevice &device)
+bool RavenEngine::createVulkanDevice(VkPhysicalDevice &physicalDevice,
+                                     std::vector<const char*>  &desiredExtensions)
 {
     VulkanDevice logicalDevice(physicalDevice);
-    if(!logicalDevice.initializeDevice())
+    if(!logicalDevice.initializeDevice(desiredExtensions))
         return false;
     return true;
 }

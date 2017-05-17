@@ -1,6 +1,6 @@
 #include "VulkanFunctions.h"
 
-//List of kind of functions will be loaded.
+//List of what kind of functions will be loaded.
 //The full list of vulkan functions can be found inside
 //ListOfVulkanFunctions.inl
 namespace Raven
