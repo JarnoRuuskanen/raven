@@ -72,7 +72,7 @@ namespace Raven
         return true;
     }
 
-    //Loads an instance level vulkan functions
+    //Loads instance level vulkan functions
     bool loadInstanceLevelVulkanFunctions(VkInstance &instance,
                                          std::vector<const char*> const& enabledExtensions)
     {

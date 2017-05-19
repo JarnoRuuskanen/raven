@@ -42,4 +42,13 @@ namespace VulkanStructures
         createInfo.pQueuePriorities = priorities.data();
         return createInfo;
     }
+
+    inline WINDOW_SURFACE_CREATE_INFO surfaceCreateInfo()
+    {
+        WINDOW_SURFACE_CREATE_INFO createInfo = {};
+        createInfo.sType = WINDOW_SURFACE_CREATE_INFO_STRUCTURE_TYPE;
+        createInfo.flags = 0;
+        createInfo.pNext = nullptr;
+        return createInfo;
+    }
 }

@@ -3,12 +3,11 @@
 #include "VulkanStructures.h"
 #include "VulkanUtility.h"
 
-//Remember to use the Raven namespace
+//Using the Raven namespace.
 using namespace Raven;
 
-VulkanDevice::VulkanDevice(VkPhysicalDevice &device)
+VulkanDevice::VulkanDevice()
 {
-    physicalDevice = device;
 }
 
 VulkanDevice::~VulkanDevice()
@@ -16,7 +15,7 @@ VulkanDevice::~VulkanDevice()
     //Destroy the logical device. After this we can no longer
     //use the device level functions that were loaded when this
     //logical device was created.
-    if(logicalDevice)
+    if(logicalDevice != VK_NULL_HANDLE)
     {
         vkDestroyDevice(logicalDevice, nullptr);
         logicalDevice = VK_NULL_HANDLE;
@@ -24,8 +23,17 @@ VulkanDevice::~VulkanDevice()
 }
 
 //Initializes the vulkan device.
-bool VulkanDevice::initializeDevice(std::vector<const char*>  &desiredDeviceExtensions)
+bool VulkanDevice::initializeDevice(VkPhysicalDevice &device,
+                                    std::vector<const char*>  &desiredDeviceExtensions)
 {
+    if(device == VK_NULL_HANDLE)
+    {
+        std::cout << "Failed to initialize VulkanDevice due to no valid physical device being presented!" << std::endl;
+        return false;
+    }
+
+    physicalDevice = device;
+
     //Initialize all device queues.
     if(!initializeQueues(queueFamilyInfo))
         return false;
@@ -49,7 +57,7 @@ bool VulkanDevice::initializeDevice(std::vector<const char*>  &desiredDeviceExte
                                             desiredDeviceExtensions.data() : nullptr;
     createInfo.enabledLayerCount = 0;
     createInfo.ppEnabledLayerNames = nullptr;
-    //Enable all features the graphics card supports for now.
+    //Enable all features the graphics card supports for now. This is not ideal for optimization.
     createInfo.pEnabledFeatures = &features;
     //Device queues are created when the logical device is created.
     createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
@@ -74,7 +82,7 @@ bool VulkanDevice::initializeQueues(std::vector<VulkanQueueInfo> &familyInfo)
     if(!getPhysicalDeviceQueuesWithProperties(physicalDevice, queueFamilies))
         return false;
 
-    //Find a queue family that suits our needs
+    //Find a queue family that suits our needs.
     if(!getQueueFamilyIndex(queueFamilies,
                             VK_QUEUE_GRAPHICS_BIT |
                             VK_QUEUE_COMPUTE_BIT  |
@@ -83,13 +91,13 @@ bool VulkanDevice::initializeQueues(std::vector<VulkanQueueInfo> &familyInfo)
                             queueFamilyIndex))
         return false;
 
-    //Store the chosen queue family information into a vector
+    //Store the chosen queue family information into a vector.
     VulkanQueueInfo  newFamily;
     newFamily.queueFamilyIndex = queueFamilyIndex;
-    //Track all queues in the family
+    //Track all queues in the family.
     for(int i = 0; i < queueFamilies[queueFamilyIndex].queueCount; i ++)
     {
-        //Every queue is as valuable
+        //Every queue is as valuable.
         newFamily.priorities.push_back(1.0f);
     }
     familyInfo.push_back(newFamily);

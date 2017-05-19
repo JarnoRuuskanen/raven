@@ -14,10 +14,17 @@ struct VulkanQueueInfo
 class VulkanDevice
 {
     public:
-        VulkanDevice(VkPhysicalDevice &physicalDevice);
+        VulkanDevice();
         ~VulkanDevice();
         //Initializes the vulkan device
-        bool initializeDevice(std::vector<const char*>  &desiredExtensions);
+        bool initializeDevice(VkPhysicalDevice &physicalDevice, std::vector<const char*>  &desiredExtensions);
+        //Returns a queue family reference by index
+        inline VkQueueFamilyProperties& getQueueFamily(int index){return queueFamilies[index];}
+        //Returns the queueFamilyIndex for the family that is currently used.
+        //At this point Raven only uses one queue family which supports all the possible
+        //operations. This will most probably change in the future as I experiment with
+        //different graphics cards.
+        inline uint32_t getPrimaryQueueFamilyIndex(){return queueFamilyIndex;}
     private:
         //Creates a logical device for the VulkanDevice
         bool createDevice();

@@ -1,6 +1,9 @@
 project(Raven)
 cmake_minimum_required(VERSION 3.0)
 
+set_property( GLOBAL PROPERTY USE_FOLDERS ON )
+set( CMAKE_SUPPRESS_REGENERATION true )
+
 if( CMAKE_BUILD_TYPE STREQUAL "" )
         set( CMAKE_BUILD_TYPE "debug" )
 endif()
@@ -49,5 +52,5 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
 add_executable(${PROJECT_NAME} ${CPP_FILES} ${HPP_FILES})
 
-target_link_libraries(${PROJECT_NAME} ${CMAKE_DL_LIBS} ${PLATFORM_LIBRARY})
+target_link_libraries(${PROJECT_NAME} ${CMAKE_DL_LIBS} ${PLATFORM_LIBRARY} xcb)
 

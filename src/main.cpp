@@ -6,6 +6,6 @@ int main()
 {
     //Start Raven
     RavenEngine raven;
-    raven.start();
+    raven.start("Raven");
     return 0;
 }

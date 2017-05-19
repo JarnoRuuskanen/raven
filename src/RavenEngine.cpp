@@ -1,8 +1,22 @@
 #include "RavenEngine.h"
-#include "VulkanDevice.h"
 #include "VulkanUtility.h"
 
 using namespace Raven;
+
+//List desired instance extensions. Instance level extensions
+//will be responsible for managing a presentation surface.
+std::vector<const char*> desiredInstanceExtensions =
+{
+    VK_KHR_SURFACE_EXTENSION_NAME,
+    PLATFORM_SURFACE_EXTENSION
+};
+
+//List of desired device extensions
+std::vector<const char*> desiredDeviceExtensions =
+{
+    //Enable swapchains to be able to display images on screen
+    VK_KHR_SWAPCHAIN_EXTENSION_NAME
+};
 
 RavenEngine::RavenEngine()
 {
@@ -23,21 +37,15 @@ RavenEngine::~RavenEngine()
 }
 
 //Starts the raven engine
-bool RavenEngine::start()
+bool RavenEngine::start(const char* appName)
 {
     //First initialize vulkan
     if(!initializeVulkan())
         return false;
 
-    //List desired instance extensions
-    std::vector<const char*> desiredInstanceExtensions =
-    {
-        VK_KHR_SURFACE_EXTENSION_NAME
-    };
-
     //After vulkan dynamic library, exported- and global-level functions have been loaded,
     //create a new vulkan instance.
-    if(!createInstance(selectedInstance, desiredInstanceExtensions))
+    if(!createInstance(selectedInstance, appName, desiredInstanceExtensions))
         return false;
 
     //After instance has been created, load instance level funcions
@@ -48,12 +56,6 @@ bool RavenEngine::start()
     //First check what options we have
     if(!loadPhysicalDevices(selectedInstance, physicalDevices))
         return false;
-
-    //List of desired device extensions
-    std::vector<const char*> desiredDeviceExtensions =
-    {
-        VK_KHR_SWAPCHAIN_EXTENSION_NAME
-    };
 
     //Select the physical device that the program will be using. Test that
     //the physical device supports desired device extensions, which will be used
@@ -70,6 +72,10 @@ bool RavenEngine::start()
     //with added synchronization. This is to not tax one queue unecessarily
     if(!createVulkanDevice(selectedPhysicalDevice, desiredDeviceExtensions))
         return false;
+
+    //After the vulkan device has been created we need to create a window
+    //for the application. This window will display our rendering content.
+    createWindow();
 
     return true;
 }
@@ -97,7 +103,7 @@ bool RavenEngine::initializeVulkan()
 }
 
 //Creates a new vulkan instance with the given desired instance extensions
-bool RavenEngine::createInstance(VkInstance &instance, std::vector<const char*> &desiredInstanceExtensions)
+bool RavenEngine::createInstance(VkInstance &instance, char const* const appName , std::vector<const char*> &desiredInstanceExtensions)
 {
     //Query all available instance extensions
     std::vector<VkExtensionProperties> availableInstanceExtensions;
@@ -108,7 +114,7 @@ bool RavenEngine::createInstance(VkInstance &instance, std::vector<const char*> 
     }
 
     //Create a new vulkan instance
-    if(!createVulkanInstance(desiredInstanceExtensions, "Raven", instance))
+    if(!createVulkanInstance(desiredInstanceExtensions, appName, instance))
     {
         std ::cout << "Failed to create a vulkan instance!" << std::endl;
         return false;
@@ -141,8 +147,42 @@ bool RavenEngine::selectPhysicalDevice(std::vector<VkPhysicalDevice> &physicalDe
 bool RavenEngine::createVulkanDevice(VkPhysicalDevice &physicalDevice,
                                      std::vector<const char*>  &desiredExtensions)
 {
-    VulkanDevice logicalDevice(physicalDevice);
-    if(!logicalDevice.initializeDevice(desiredExtensions))
+    vulkanDevice = new VulkanDevice();
+    if(!vulkanDevice->initializeDevice(physicalDevice, desiredExtensions))
         return false;
     return true;
+}
+
+//Creates a new VulkanWindow
+bool RavenEngine::createWindow()
+{
+       appWindow = new VulkanWindow();
+       //XCB window creation
+       #ifdef VK_USE_PLATFORM_XCB_KHR
+       {
+            int screenp = 1;
+            windowParameters.connection = xcb_connect("Raven", &screenp);
+            windowParameters.window = xcb_generate_id(windowParameters.connection);
+
+            if(!appWindow->createWindowSurface(selectedInstance, windowParameters))
+                return false;
+
+            //Make sure that the VulkanDevice's current queue family supports
+            //image presentation
+            VkBool32 presentationSupported = VK_FALSE;
+            VkResult result = vkGetPhysicalDeviceSurfaceSupportKHR(selectedPhysicalDevice,
+                                                                   vulkanDevice->getPrimaryQueueFamilyIndex(),
+                                                                   appWindow->getPresentationSurface(),
+                                                                   &presentationSupported);
+            if(result == VK_SUCCESS && presentationSupported == VK_TRUE)
+                return true;
+
+            return false;
+       }
+       #elif defined VK_USE_PLATFORM_WIN32_KHR
+       //Win32 implementation
+       #elif defined VK_USE_PLATFORM_XLIB_KHR
+       //Xlib implementation
+       #endif
+       return false;
 }
