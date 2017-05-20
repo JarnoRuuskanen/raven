@@ -17,6 +17,7 @@ bool VulkanWindow::createWindowSurface(VkInstance instance,
 {
     VkResult result;
     WINDOW_SURFACE_CREATE_INFO createInfo = VulkanStructures::surfaceCreateInfo();
+    windowPresentationSurface = VK_NULL_HANDLE;
 
     //Define functionality for each platform.
     #ifdef VK_USE_PLATFORM_WIN32_KHR
@@ -26,7 +27,7 @@ bool VulkanWindow::createWindowSurface(VkInstance instance,
     #elif defined VK_USE_PLATFORM_XCB_KHR
         createInfo.connection = windowParameters.connection;
         createInfo.window = windowParameters.window;
-        result = vkCreateXcbSurfaceKHR(instance, &createInfo, nullptr, &windowSurface);
+        result = vkCreateXcbSurfaceKHR(instance, &createInfo, nullptr, &windowPresentationSurface);
     #elif defined VK_USE_PLATFORM_XLIB_KHR
         createInfo.display = windowParameter.dpy;
         createInfo.window = windowParameters.window;
@@ -34,9 +35,9 @@ bool VulkanWindow::createWindowSurface(VkInstance instance,
     #endif
 
     //Make sure that the presentation surface creation was successful.
-    if((result != VK_SUCCESS)||(windowSurface == VK_NULL_HANDLE))
+    if((result != VK_SUCCESS) || (windowPresentationSurface == VK_NULL_HANDLE))
     {
-        std::cout << "Failed to create a presentation surface!" << std::endl;
+        std::cerr << "Failed to create a presentation surface!" << std::endl;
         return false;
     }
     return true;

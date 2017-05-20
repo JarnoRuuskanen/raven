@@ -28,7 +28,7 @@ bool VulkanDevice::initializeDevice(VkPhysicalDevice &device,
 {
     if(device == VK_NULL_HANDLE)
     {
-        std::cout << "Failed to initialize VulkanDevice due to no valid physical device being presented!" << std::endl;
+        std::cerr << "Failed to initialize VulkanDevice due to no valid physical device being presented!" << std::endl;
         return false;
     }
 

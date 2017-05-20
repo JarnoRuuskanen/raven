@@ -1,7 +1,7 @@
 #pragma once
 #include "Headers.h"
 
-//List of all vulkan utility functions used by the Raven application
+//List of all vulkan utility functions used by the Raven application.
 namespace Raven
 {
     //Checks available instance extensions.
@@ -17,19 +17,29 @@ namespace Raven
     //Checks if a physical device supports a given extension.
     bool arePhysicalDeviceExtensionsSupported(VkPhysicalDevice &physicalDevice,
                                               std::vector<char const*> const& desiredExtensions);
-    //Creates a vulkan logical device.
-    bool createLogicalDevice(VkPhysicalDevice &physicalDevice,
-                             VkDeviceCreateInfo createInfo,
-                             VkDevice &logicalDevice);
     //Checks physical device features.
     void getPhysicalDeviceFeaturesAndProperties(VkPhysicalDevice &physicalDevice,
                                                 VkPhysicalDeviceFeatures& features,
                                                 VkPhysicalDeviceProperties& properties);
-    //Gets the index of a desired queue family/families
+    //Gets the index of a desired queue family/families.
     bool getQueueFamilyIndex(std::vector<VkQueueFamilyProperties> &queueFamilies,
                              VkQueueFlags desiredQueueFamily,
                              uint32_t &queueFamilyIndex);
-    //Gets all physical device queues and their properties
+    //Gets all physical device queues and their properties.
     bool getPhysicalDeviceQueuesWithProperties(VkPhysicalDevice &physicalDevice,
-                                               std::vector<VkQueueFamilyProperties> &queueFamilies);
+                                               std::vector<VkQueueFamilyProperties> &queueFamilies); 
+    //Creates a vulkan logical device.
+    bool createLogicalDevice(VkPhysicalDevice &physicalDevice,
+                             VkDeviceCreateInfo createInfo,
+                             VkDevice &logicalDevice);
+    //Checks if the preferred presentation mode is supported by the physical device.
+    //If not, chooses a default presentation mode.
+    bool isPresentationModeSupported(VkPhysicalDevice &physicalDevice,
+                                     VkSurfaceKHR &presentationSurface,
+                                     VkPresentModeKHR &desiredPresentMode);
+
+    //Gets physical device presentation surface capabilities.
+    bool getSurfaceCapabilities(VkPhysicalDevice &physicalDevice,
+                                VkSurfaceKHR presentationSurface,
+                                VkSurfaceCapabilitiesKHR &surfaceCapabilities);
 }

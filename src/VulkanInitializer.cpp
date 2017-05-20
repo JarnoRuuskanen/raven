@@ -10,7 +10,6 @@ namespace Raven
     //Loads the dynamic vulkan library.
     bool loadVulkanLibrary(LIBRARY_TYPE& vulkanLibrary)
     {
-        bool success = false;
         #if defined _WIN32
             vulkan_library = LoadLibrary("vulkan-1.dll");
         #elif defined __linux
@@ -18,9 +17,15 @@ namespace Raven
         #endif
 
         if(vulkanLibrary != nullptr)
-            success = true;
+        {
+            return true;
+        }
+        else
+        {
+            throw std::runtime_error("Failed to load Vulkan library!");
+        }
 
-        return success;
+
     }
 
     //Frees the dynamically loaded Vulkan library.
@@ -64,7 +69,7 @@ namespace Raven
         name = (PFN_##name)vkGetInstanceProcAddr(nullptr, #name);                                   \
         if(name == nullptr)                                                                         \
         {                                                                                           \
-            std::cout << "Failed to load global level Vulkan function called: "                     \
+            std::cerr << "Failed to load global level Vulkan function called: "                     \
             #name << std::endl;                                                                     \
             return false;                                                                           \
         }
@@ -81,7 +86,7 @@ namespace Raven
         name = (PFN_##name)vkGetInstanceProcAddr(instance,#name);                                   \
         if(name == nullptr)                                                                         \
         {                                                                                           \
-            std::cout << "Failed to load instance level Vulkan function called: "                   \
+            std::cerr << "Failed to load instance level Vulkan function called: "                   \
                 #name << std::endl;                                                                 \
                 return false;                                                                       \
         }
@@ -95,7 +100,7 @@ namespace Raven
                 name = (PFN_##name)vkGetInstanceProcAddr(instance, #name);                          \
                 if(name == nullptr)                                                                 \
                 {                                                                                   \
-                    std::cout << "Failed to load instance level function from extension called: "   \
+                    std::cerr << "Failed to load instance level function from extension called: "   \
                     #name << std::endl;                                                             \
                     return false;                                                                   \
                 }                                                                                   \
@@ -116,7 +121,7 @@ namespace Raven
         name = (PFN_##name)vkGetDeviceProcAddr(device,#name);                                       \
         if(name == nullptr)                                                                         \
         {                                                                                           \
-            std::cout << "Failed to load device level function called: "                            \
+            std::cerr << "Failed to load device level function called: "                            \
             #name << std::endl;                                                                     \
             return false;                                                                           \
         }
@@ -130,7 +135,7 @@ namespace Raven
                 name = (PFN_##name)vkGetDeviceProcAddr(device, #name);                              \
                 if(name == nullptr)                                                                 \
                 {                                                                                   \
-                    std::cout << "Failed to load device level function from extension called: "     \
+                    std::cerr << "Failed to load device level function from extension called: "     \
                     #name << std::endl;                                                             \
                     return false;                                                                   \
                 }                                                                                   \

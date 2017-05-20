@@ -15,7 +15,7 @@ namespace Raven
         result = vkEnumerateInstanceExtensionProperties(nullptr, &extensions, nullptr);
         if( (result != VK_SUCCESS) || (extensions == 0))
         {
-            std::cout << "Failed to load instance extensions!" << std::endl;
+            std::cerr << "Failed to load instance extensions!" << std::endl;
             return false;
         }
 
@@ -24,7 +24,7 @@ namespace Raven
         result = vkEnumerateInstanceExtensionProperties(nullptr, &extensions, &availableExtensions[0]);
         if(result != VK_SUCCESS)
         {
-            std::cout << "Failed to enumerate instance extensions!" << std::endl;
+            std::cerr << "Failed to enumerate instance extensions!" << std::endl;
             return false;
         }
 
@@ -46,7 +46,7 @@ namespace Raven
         {
             if(!isExtensionSupported(availableExtensions, extension))
             {
-                std::cout << "Extension: " << extension << " not available!" << std::endl;
+                std::cerr << "Extension: " << extension << " not available!" << std::endl;
                 return false;
             }
         }
@@ -71,7 +71,7 @@ namespace Raven
         VkResult result = vkCreateInstance(&instanceInfo, nullptr, &instance);
         if(result !=  VK_SUCCESS || instance == VK_NULL_HANDLE)
         {
-            std::cout  << "Failed to create an instance!" << std::endl;
+            std::cerr  << "Failed to create an instance!" << std::endl;
             return false;
         }
 
@@ -104,7 +104,7 @@ namespace Raven
         //Check that enumeration was successful.
         if(result != VK_SUCCESS || deviceCount == 0)
         {
-            std::cout << "Failed to enumerate physical device count!" << std::endl;
+            std::cerr << "Failed to enumerate physical device count!" << std::endl;
             return false;
         }
 
@@ -117,7 +117,7 @@ namespace Raven
         //Check that enumeration was successful.
         if(result != VK_SUCCESS || physicalDevices.empty())
         {
-            std::cout << "Failed to get physical devices!" << std::endl;
+            std::cerr << "Failed to get physical devices!" << std::endl;
             return false;
         }
 
@@ -149,7 +149,7 @@ namespace Raven
         {
             if(!isExtensionSupported(availableExtensions, extension))
             {
-                std::cout << "Extension: " << extension << " not available!" << std::endl;
+                std::cerr << "Extension: " << extension << " not available!" << std::endl;
                 return false;
             }
         }
@@ -181,7 +181,7 @@ namespace Raven
                 return true;
             }
         }
-        std::cout << "Failed to find correct queue family/families!" << std::endl;
+        std::cerr << "Failed to find correct queue family/families!" << std::endl;
         return false;
     }
 
@@ -196,7 +196,7 @@ namespace Raven
         //Check wether there are any queue families or not
         if(queueFamilyCount == 0)
         {
-            std::cout << "Failed to acquire the number of queue families!" << std::endl;
+            std::cerr << "Failed to acquire the number of queue families!" << std::endl;
             return false;
         }
 
@@ -205,7 +205,7 @@ namespace Raven
         vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, queueFamilies.data());
         if(queueFamilies.empty())
         {
-            std::cout << "Failed to acquire queue family properties!" << std::endl;
+            std::cerr << "Failed to acquire queue family properties!" << std::endl;
             return false;
         }
 
@@ -223,7 +223,59 @@ namespace Raven
         result = vkCreateDevice(physicalDevice, &createInfo, nullptr, &logicalDevice);
         if((result != VK_SUCCESS) || (logicalDevice == VK_NULL_HANDLE))
         {
-            std::cout << "Failed to create a logical device!" << std::endl;
+            std::cerr << "Failed to create a logical device!" << std::endl;
+            return false;
+        }
+        return true;
+    }
+
+    //Checks if the preferred presentation mode is supported by the physical device.
+    bool isPresentationModeSupported(VkPhysicalDevice &physicalDevice,
+                                     VkSurfaceKHR &presentationSurface,
+                                     VkPresentModeKHR &desiredPresentMode)
+    {
+        //First find out how many presentation modes are supported by the physical device.
+        uint32_t presentationModesCount;
+
+        VkResult result;
+        result = vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, presentationSurface, &presentationModesCount, nullptr);
+
+        if((result != VK_SUCCESS) || (presentationModesCount == 0))
+        {
+            std::cerr << "Failed to acquire the amount of presentation modes!" << std::endl;
+            return false;
+        }
+
+        //Get all the presentation modes supported by the physical device.
+        std::vector<VkPresentModeKHR> presentationModes(presentationModesCount);
+        result = vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, presentationSurface, &presentationModesCount, presentationModes.data());
+
+        if((result != VK_SUCCESS) || (presentationModes.empty()))
+        {
+            std::cerr << "Failed to acquire the presentation modes!" << std::endl;
+            return false;
+        }
+
+        //Enumerate through all presentation modes and find wether the desired presentation mode is supported or not.
+        for(auto& mode : presentationModes)
+        {
+            if(mode == desiredPresentMode)
+                return true;
+        }
+
+        return false;
+    }
+
+    //Gets physical device presentation surface capabilities.
+    bool getSurfaceCapabilities(VkPhysicalDevice &physicalDevice,
+                                VkSurfaceKHR presentationSurface,
+                                VkSurfaceCapabilitiesKHR &surfaceCapabilities)
+    {
+        VkResult result;
+        result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, presentationSurface, &surfaceCapabilities);
+        if(result != VK_SUCCESS)
+        {
+            std::cerr << "Failed to acquire surface capabilities!" << std::endl;
             return false;
         }
         return true;

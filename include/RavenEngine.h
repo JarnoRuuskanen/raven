@@ -8,7 +8,6 @@ using namespace Raven;
 class RavenEngine
 {
     public:
-        RavenEngine();
         ~RavenEngine();
         bool start(const char* appName);
         void stop();
@@ -25,7 +24,7 @@ class RavenEngine
         bool createVulkanDevice(VkPhysicalDevice &physicalDevice, std::vector<const char*>  &desiredExtensions);
 
         //Creates a new VulkanWindow
-        bool createWindow();
+        bool createWindow(VkPresentModeKHR &presentationMode);
 
         //Private objects:
 

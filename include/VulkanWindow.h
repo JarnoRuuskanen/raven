@@ -14,13 +14,17 @@ namespace Raven
             HINSTANCE hInstance;
             HWND hwnd;
         #elif defined VK_USE_PLATFORM_XCB_KHR
-            xcb_connection_t *connection;
+            xcb_connection_t * connection;
             xcb_window_t      window;
         #elif defined VK_USE_PLATFORM_XLIB_KHR
             Display *display;
             Window   window;
         #endif
     };
+
+    //Define the default window values.
+    #define DEFAULT_PRESENTATION_MODE VK_PRESENT_MODE_FIFO_KHR;
+    #define WINDOW_SWAPHAIN_IMAGE_COUNT 2
 }
 
 //This class is for creating a vulkan window which a renderer
@@ -35,9 +39,16 @@ class VulkanWindow
         //Creates a presentation surface for a VulkanWindow.
         bool createWindowSurface(VkInstance instance,
                                  WindowParameters windowParameters);
+        bool createSwapchain();
         //Returns a reference to the window surface
-        inline VkSurfaceKHR& getPresentationSurface(){return windowSurface;}
+        inline VkSurfaceKHR& getPresentationSurface(){return windowPresentationSurface;}
+        inline VkSwapchainKHR& getSwapchain(){return swapchain;}
     private:
-        VkSurfaceKHR windowSurface;
+        //The window surface
+        VkSurfaceKHR windowPresentationSurface;
+        //The swapchain of this window. Swapchain describes image formats, number
+        //of images used for rendering (image buffering), presentation mode etc.
+        VkSwapchainKHR swapchain;
+
 
 };

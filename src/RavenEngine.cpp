@@ -18,11 +18,6 @@ std::vector<const char*> desiredDeviceExtensions =
     VK_KHR_SWAPCHAIN_EXTENSION_NAME
 };
 
-RavenEngine::RavenEngine()
-{
-
-}
-
 RavenEngine::~RavenEngine()
 {
     //Destroy the vulkan instance
@@ -75,7 +70,8 @@ bool RavenEngine::start(const char* appName)
 
     //After the vulkan device has been created we need to create a window
     //for the application. This window will display our rendering content.
-    createWindow();
+    VkPresentModeKHR presentationMode = VK_PRESENT_MODE_FIFO_KHR;
+    createWindow(presentationMode);
 
     return true;
 }
@@ -85,18 +81,18 @@ bool RavenEngine::initializeVulkan()
 {
     if(!loadVulkanLibrary(vulkanLibrary))
     {
-        std::cout << "Failed to load vulkan dynamic library!" << std::endl;
+        std::cerr << "Failed to load vulkan dynamic library!" << std::endl;
         return false;
     }
     //Load vulkan functions that are defined in ListOfVulkanFunctions.inl
     if(!loadFunctionExportedFromVulkanLoaderLibrary(vulkanLibrary))
     {
-        std::cout << "Failed to load functions exported from vulkan loader library!" << std::endl;
+        std::cerr << "Failed to load functions exported from vulkan loader library!" << std::endl;
         return false;
     }
     if(!loadGlobalLevelFunctions())
     {
-        std::cout << "Failed to load global level functions!" << std::endl;
+        std::cerr << "Failed to load global level functions!" << std::endl;
         return false;
     }
     return true;
@@ -109,14 +105,14 @@ bool RavenEngine::createInstance(VkInstance &instance, char const* const appName
     std::vector<VkExtensionProperties> availableInstanceExtensions;
     if(!checkAvailableInstanceExtensions(availableInstanceExtensions))
     {
-        std::cout << "Failed to check for available instance extensions!" << std::endl;
+        std::cerr << "Failed to check for available instance extensions!" << std::endl;
         return false;
     }
 
     //Create a new vulkan instance
     if(!createVulkanInstance(desiredInstanceExtensions, appName, instance))
     {
-        std ::cout << "Failed to create a vulkan instance!" << std::endl;
+        std ::cerr << "Failed to create a vulkan instance!" << std::endl;
         return false;
     }
 
@@ -139,7 +135,7 @@ bool RavenEngine::selectPhysicalDevice(std::vector<VkPhysicalDevice> &physicalDe
             return true;
         }
     }
-    std::cout << "Failed to find a physical device that supports all the required device extensions!" << std::endl;
+    std::cerr << "Failed to find a physical device that supports all the required device extensions!" << std::endl;
     return false;
 }
 
@@ -154,14 +150,23 @@ bool RavenEngine::createVulkanDevice(VkPhysicalDevice &physicalDevice,
 }
 
 //Creates a new VulkanWindow
-bool RavenEngine::createWindow()
+bool RavenEngine::createWindow(VkPresentModeKHR &presentationMode)
 {
        appWindow = new VulkanWindow();
        //XCB window creation
        #ifdef VK_USE_PLATFORM_XCB_KHR
        {
-            int screenp = 1;
-            windowParameters.connection = xcb_connect("Raven", &screenp);
+            int screenp;
+            //By leaving the first parameter to NULL, connects to the
+            //display described in DISPLAY-enviromental variable.
+            windowParameters.connection = xcb_connect(NULL, &screenp);
+            //Check if an error occured with the connection.
+            int error = xcb_connection_has_error(windowParameters.connection);
+            if(error > 0)
+            {
+                std::cerr << "Error with window connection!" << std::endl;
+                return false;
+            }
             windowParameters.window = xcb_generate_id(windowParameters.connection);
 
             if(!appWindow->createWindowSurface(selectedInstance, windowParameters))
@@ -174,11 +179,27 @@ bool RavenEngine::createWindow()
                                                                    vulkanDevice->getPrimaryQueueFamilyIndex(),
                                                                    appWindow->getPresentationSurface(),
                                                                    &presentationSupported);
-            if(result == VK_SUCCESS && presentationSupported == VK_TRUE)
-                return true;
+            if((result != VK_SUCCESS) || (presentationSupported != VK_TRUE))
+                return false;
 
-            return false;
+            //Check if the desired presentation mode is supported. If not, select a default presentation mode.
+            if(!isPresentationModeSupported(selectedPhysicalDevice, appWindow->getPresentationSurface(), presentationMode))
+            {
+                presentationMode = DEFAULT_PRESENTATION_MODE;
+            }
+
+            //Next create the required information for a swapchain creation.
+            VkSurfaceCapabilitiesKHR surfaceCapabilities;
+            if(!getSurfaceCapabilities(selectedPhysicalDevice,
+                                       appWindow->getPresentationSurface(),
+                                       surfaceCapabilities))
+            {
+                return false;
+            }
+
+            return true;
        }
+
        #elif defined VK_USE_PLATFORM_WIN32_KHR
        //Win32 implementation
        #elif defined VK_USE_PLATFORM_XLIB_KHR
