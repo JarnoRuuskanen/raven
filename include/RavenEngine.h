@@ -23,12 +23,13 @@ class RavenEngine
         //Creates a logical device
         bool createVulkanDevice(VkPhysicalDevice &physicalDevice, std::vector<const char*>  &desiredExtensions);
 
-        //Creates a new VulkanWindow
-        bool createWindow(VkPresentModeKHR &presentationMode);
+        //Creates a new VulkanWindow. VulkanWindow will hold swapchain and all closely
+        //to a presentation window related objects.
+        bool openNewWindow(uint16_t windowWidth, uint16_t windowHeight, VkPresentModeKHR &presentationMode, VulkanWindow *window);
 
         //Private objects:
 
-        //The vulkan dynamically loaded library
+        //The vulkan dynamically loaded library.
         LIBRARY_TYPE vulkanLibrary;
         //Vulkan variables, the ones starting with "selected"
         //are the ones that the software will be using to complete tasks.
@@ -43,7 +44,7 @@ class RavenEngine
         //quarantees correct order of object destruction.
         VulkanDevice* vulkanDevice;
 
-        //Window parameters
+        //Application window/windows.
         VulkanWindow* appWindow;
-        WindowParameters windowParameters;
+        uint16_t windowHeight = 500, windowWidth = 500;
 };

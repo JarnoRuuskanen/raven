@@ -20,6 +20,7 @@ std::vector<const char*> desiredDeviceExtensions =
 
 RavenEngine::~RavenEngine()
 {
+
     //Destroy the vulkan instance
     if(selectedInstance)
     {
@@ -71,7 +72,9 @@ bool RavenEngine::start(const char* appName)
     //After the vulkan device has been created we need to create a window
     //for the application. This window will display our rendering content.
     VkPresentModeKHR presentationMode = VK_PRESENT_MODE_FIFO_KHR;
-    createWindow(presentationMode);
+
+    if(!openNewWindow(windowWidth, windowHeight, presentationMode, appWindow))
+        return false;
 
     return true;
 }
@@ -149,41 +152,36 @@ bool RavenEngine::createVulkanDevice(VkPhysicalDevice &physicalDevice,
     return true;
 }
 
-//Creates a new VulkanWindow
-bool RavenEngine::createWindow(VkPresentModeKHR &presentationMode)
+//Creates a new VulkanWindow. VulkanWindow will hold swapchain and all closely
+//to a presentation window related objects.
+bool RavenEngine::openNewWindow(uint16_t windowWidth,
+                               uint16_t windowHeight,
+                               VkPresentModeKHR &presentationMode,
+                               VulkanWindow *window)
 {
-       appWindow = new VulkanWindow();
+       window = new VulkanWindow();
        //XCB window creation
        #ifdef VK_USE_PLATFORM_XCB_KHR
        {
-            int screenp;
-            //By leaving the first parameter to NULL, connects to the
-            //display described in DISPLAY-enviromental variable.
-            windowParameters.connection = xcb_connect(NULL, &screenp);
-            //Check if an error occured with the connection.
-            int error = xcb_connection_has_error(windowParameters.connection);
-            if(error > 0)
-            {
-                std::cerr << "Error with window connection!" << std::endl;
-                return false;
-            }
-            windowParameters.window = xcb_generate_id(windowParameters.connection);
+            //First create the window frame.
+            window->createWindowFrame(windowWidth, windowHeight);
 
-            if(!appWindow->createWindowSurface(selectedInstance, windowParameters))
+            //Next create the window surface.
+            if(!window->createWindowSurface(selectedInstance))
                 return false;
 
             //Make sure that the VulkanDevice's current queue family supports
-            //image presentation
+            //image presentation.
             VkBool32 presentationSupported = VK_FALSE;
             VkResult result = vkGetPhysicalDeviceSurfaceSupportKHR(selectedPhysicalDevice,
                                                                    vulkanDevice->getPrimaryQueueFamilyIndex(),
-                                                                   appWindow->getPresentationSurface(),
+                                                                   window->getPresentationSurface(),
                                                                    &presentationSupported);
             if((result != VK_SUCCESS) || (presentationSupported != VK_TRUE))
                 return false;
 
             //Check if the desired presentation mode is supported. If not, select a default presentation mode.
-            if(!isPresentationModeSupported(selectedPhysicalDevice, appWindow->getPresentationSurface(), presentationMode))
+            if(!isPresentationModeSupported(selectedPhysicalDevice, window->getPresentationSurface(), presentationMode))
             {
                 presentationMode = DEFAULT_PRESENTATION_MODE;
             }
@@ -191,7 +189,7 @@ bool RavenEngine::createWindow(VkPresentModeKHR &presentationMode)
             //Next create the required information for a swapchain creation.
             VkSurfaceCapabilitiesKHR surfaceCapabilities;
             if(!getSurfaceCapabilities(selectedPhysicalDevice,
-                                       appWindow->getPresentationSurface(),
+                                       window->getPresentationSurface(),
                                        surfaceCapabilities))
             {
                 return false;
