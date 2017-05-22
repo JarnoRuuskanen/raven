@@ -42,4 +42,20 @@ namespace Raven
     bool getSurfaceCapabilities(VkPhysicalDevice &physicalDevice,
                                 VkSurfaceKHR presentationSurface,
                                 VkSurfaceCapabilitiesKHR &surfaceCapabilities);
+    //Selects swapchain image usage flags based on desired and supported usages.
+    bool selectSwapchainImageUsage(VkSurfaceCapabilitiesKHR const &surfaceCapabilities,
+                                   VkImageUsageFlags desiredUsages,
+                                   VkImageUsageFlags &imageUsage);
+
+    //Selects swapchain surface transformation based on desired and supported transforms.
+    void selectSwapchainSurfaceTransform(VkSurfaceCapabilitiesKHR const &surfaceCapabilities,
+                                         VkSurfaceTransformFlagBitsKHR desiredFlags,
+                                         VkSurfaceTransformFlagBitsKHR &surfaceTransforms);
+
+    //Selects the format for swapchain images.
+    bool selectSwapchainImageFormat(VkPhysicalDevice &physicalDevice,
+                                    VkSurfaceKHR &presentationSurface,
+                                    VkSurfaceFormatKHR desiredSurfaceFormat,
+                                    VkFormat &imageFormat,
+                                    VkColorSpaceKHR &imageColorSpace);
 }

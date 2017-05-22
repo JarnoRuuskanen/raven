@@ -1,5 +1,6 @@
 #include "RavenEngine.h"
 #include "VulkanUtility.h"
+#include "VulkanStructures.h"
 
 using namespace Raven;
 
@@ -18,9 +19,15 @@ std::vector<const char*> desiredDeviceExtensions =
     VK_KHR_SWAPCHAIN_EXTENSION_NAME
 };
 
+RavenEngine::RavenEngine()
+{
+    appWindow = new VulkanWindow();
+}
+
 RavenEngine::~RavenEngine()
 {
-
+    //Destroy the application window
+    delete appWindow;
     //Destroy the vulkan instance
     if(selectedInstance)
     {
@@ -71,9 +78,13 @@ bool RavenEngine::start(const char* appName)
 
     //After the vulkan device has been created we need to create a window
     //for the application. This window will display our rendering content.
-    VkPresentModeKHR presentationMode = VK_PRESENT_MODE_FIFO_KHR;
+    if(!openNewWindow(windowWidth, windowHeight, appWindow))
+        return false;
 
-    if(!openNewWindow(windowWidth, windowHeight, presentationMode, appWindow))
+    VkPresentModeKHR presentationMode = VK_PRESENT_MODE_FIFO_KHR;
+    VkImageUsageFlags desiredImageUsages = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    //Create a swapchain for the window to use.
+    if(!createSwapchain(desiredImageUsages,presentationMode, appWindow))
         return false;
 
     return true;
@@ -155,53 +166,93 @@ bool RavenEngine::createVulkanDevice(VkPhysicalDevice &physicalDevice,
 //Creates a new VulkanWindow. VulkanWindow will hold swapchain and all closely
 //to a presentation window related objects.
 bool RavenEngine::openNewWindow(uint16_t windowWidth,
-                               uint16_t windowHeight,
-                               VkPresentModeKHR &presentationMode,
-                               VulkanWindow *window)
+                                uint16_t windowHeight,
+                                VulkanWindow *window)
 {
-       window = new VulkanWindow();
-       //XCB window creation
-       #ifdef VK_USE_PLATFORM_XCB_KHR
-       {
-            //First create the window frame.
-            window->createWindowFrame(windowWidth, windowHeight);
+        //First create the window frame.
+        if(!window->createWindowFrame(windowWidth, windowHeight))
+            return false;
 
-            //Next create the window surface.
-            if(!window->createWindowSurface(selectedInstance))
-                return false;
+        //Next create the window surface.
+        if(!window->createWindowSurface(selectedInstance))
+            return false;
 
-            //Make sure that the VulkanDevice's current queue family supports
-            //image presentation.
-            VkBool32 presentationSupported = VK_FALSE;
-            VkResult result = vkGetPhysicalDeviceSurfaceSupportKHR(selectedPhysicalDevice,
-                                                                   vulkanDevice->getPrimaryQueueFamilyIndex(),
-                                                                   window->getPresentationSurface(),
-                                                                   &presentationSupported);
-            if((result != VK_SUCCESS) || (presentationSupported != VK_TRUE))
-                return false;
+        return true;
+}
 
-            //Check if the desired presentation mode is supported. If not, select a default presentation mode.
-            if(!isPresentationModeSupported(selectedPhysicalDevice, window->getPresentationSurface(), presentationMode))
-            {
-                presentationMode = DEFAULT_PRESENTATION_MODE;
-            }
+//Creates a new swapchain to be used for rendering.
+bool RavenEngine::createSwapchain(VkImageUsageFlags desiredImageUsage,
+                                  VkPresentModeKHR &presentationMode,
+                                  VulkanWindow *window)
+{
+    //Swapchain:
+    //Make sure that the VulkanDevice's current queue family supports
+    //image presentation.
+    VkBool32 presentationSupported = VK_FALSE;
+    VkResult result = vkGetPhysicalDeviceSurfaceSupportKHR(selectedPhysicalDevice,
+                                                           vulkanDevice->getPrimaryQueueFamilyIndex(),
+                                                           window->getPresentationSurface(),
+                                                           &presentationSupported);
+    if((result != VK_SUCCESS) || (presentationSupported != VK_TRUE))
+        return false;
 
-            //Next create the required information for a swapchain creation.
-            VkSurfaceCapabilitiesKHR surfaceCapabilities;
-            if(!getSurfaceCapabilities(selectedPhysicalDevice,
-                                       window->getPresentationSurface(),
-                                       surfaceCapabilities))
-            {
-                return false;
-            }
+    //Check if the desired presentation mode is supported. If not, select a default presentation mode.
+    if(!isPresentationModeSupported(selectedPhysicalDevice, window->getPresentationSurface(), presentationMode))
+    {
+        presentationMode = DEFAULT_PRESENTATION_MODE;
+    }
 
-            return true;
-       }
+    //Next create the required information for a swapchain creation.
+    VkSurfaceCapabilitiesKHR surfaceCapabilities;
+    if(!getSurfaceCapabilities(selectedPhysicalDevice,
+                               window->getPresentationSurface(),
+                               surfaceCapabilities))
+    {
+        return false;
+    }
 
-       #elif defined VK_USE_PLATFORM_WIN32_KHR
-       //Win32 implementation
-       #elif defined VK_USE_PLATFORM_XLIB_KHR
-       //Xlib implementation
-       #endif
-       return false;
+    //Choose the amount of swapchain images.
+    uint32_t imageCount = surfaceCapabilities.minImageCount + 1;
+    if(surfaceCapabilities.maxImageCount > 0 && imageCount > surfaceCapabilities.maxImageCount)
+            imageCount = surfaceCapabilities.maxImageCount;
+
+    //Choose the size of the swapchain images. Remember that some OS determine window size by the size
+    //of the swapchain images, so it requires some extra work to determine the correct size.
+    //Here, however, I use the simplest possible solution.
+    VkExtent2D imageSizes = surfaceCapabilities.currentExtent;
+
+    //Select swapchain image usage. The available usages can be found from
+    //surfaceCapabilities.supportedUsageFlags.
+    VkImageUsageFlags desiredUsages = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    VkImageUsageFlags imageUsage = 0;
+    if(!selectSwapchainImageUsage(surfaceCapabilities, desiredUsages, imageUsage))
+    {
+        std::cerr << "Desired image usage flags were not supported!" << std::endl;
+        return false;
+    }
+
+    //Select swapchain transformation.
+    VkSurfaceTransformFlagBitsKHR desiredTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+    VkSurfaceTransformFlagBitsKHR surfaceTransform;
+    selectSwapchainSurfaceTransform(surfaceCapabilities, desiredTransform, surfaceTransform);
+
+    //Select swapchain image format and colorspace.
+    VkSurfaceFormatKHR desiredSurfaceFormat;
+    desiredSurfaceFormat.format = VK_FORMAT_B8G8R8A8_SRGB;
+    desiredSurfaceFormat.colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+
+    VkFormat imageFormat;
+    VkColorSpaceKHR desiredColorSpace = VK_COLOR_SPACE_DOLBYVISION_EXT;
+
+    if(!selectSwapchainImageFormat(selectedPhysicalDevice,
+                                appWindow->getPresentationSurface(),
+                                desiredSurfaceFormat,
+                                imageFormat, desiredColorSpace))
+    {
+        return false;
+    }
+
+    //Build the swapchain.
+    VkSwapchainCreateInfoKHR swapchainInfo = VulkanStructures::swapchainCreateInfo();
+    swapchainInfo.imageExtent = imageSizes;
 }

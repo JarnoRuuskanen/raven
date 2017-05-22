@@ -262,7 +262,6 @@ namespace Raven
             if(mode == desiredPresentMode)
                 return true;
         }
-
         return false;
     }
 
@@ -279,5 +278,97 @@ namespace Raven
             return false;
         }
         return true;
+    }
+
+    //Selects swapchain image usage flags based on desired and supported usages.
+    bool selectSwapchainImageUsage(VkSurfaceCapabilitiesKHR const &surfaceCapabilities,
+                                   VkImageUsageFlags desiredUsages,
+                                   VkImageUsageFlags &imageUsage)
+    {
+        //Determine image usage. imageUsage gets filled with the data from
+        //supportedUsageFlags that matches desiredUsages-flags.
+        imageUsage = desiredUsages & surfaceCapabilities.supportedUsageFlags;
+        //Check wether desired usage cases were supported or not.
+        return desiredUsages == imageUsage;
+    }
+
+    //Selects swapchain surface transformation based on desired and supported transforms.
+    void selectSwapchainSurfaceTransform(VkSurfaceCapabilitiesKHR const &surfaceCapabilities,
+                                         VkSurfaceTransformFlagBitsKHR desiredTransforms,
+                                         VkSurfaceTransformFlagBitsKHR &surfaceTransforms)
+    {
+        if(surfaceCapabilities.supportedTransforms & desiredTransforms)
+        {
+            surfaceTransforms = desiredTransforms;
+        }
+        else
+        {
+            surfaceTransforms = surfaceCapabilities.currentTransform;
+        }
+    }
+
+    //Selects the format for swapchain images.
+    bool selectSwapchainImageFormat(VkPhysicalDevice &physicalDevice,
+                                    VkSurfaceKHR &presentationSurface,
+                                    VkSurfaceFormatKHR desiredSurfaceFormat,
+                                    VkFormat &imageFormat,
+                                    VkColorSpaceKHR &imageColorSpace)
+    {
+        //First enumerate all supported formats.
+        uint32_t formatCount = 0;
+        VkResult result;
+
+        result = vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, presentationSurface, &formatCount, nullptr);
+        if(result != VK_SUCCESS || formatCount == 0)
+        {
+            std::cerr << "Failed to get the number of supported surface formats!" << std::endl;
+            return false;
+        }
+
+        //Next get the supported surface formats.
+        std::vector<VkSurfaceFormatKHR> surfaceFormats(formatCount);
+        result = vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, presentationSurface, &formatCount, surfaceFormats.data());
+        if(result != VK_SUCCESS || surfaceFormats.empty())
+        {
+            std::cerr << "Failed to get supported surface formats!" << std::endl;
+            return false;
+        }
+
+        //Now that we have all the supported surface formats, select the correct format.
+        for(auto& surfaceFormat : surfaceFormats)
+        {
+            if(desiredSurfaceFormat.format == surfaceFormat.format &&
+                    desiredSurfaceFormat.colorSpace == surfaceFormat.colorSpace)
+            {
+                imageFormat = surfaceFormat.format;
+                imageColorSpace = surfaceFormat.colorSpace;
+                return true;
+            }
+        }
+
+        //If there was no surface format that supports both the image format and
+        //color space that we want, choose the first color space from the supported
+        //surface format.
+        for(auto& surfaceFormat : surfaceFormats)
+        {
+            if(desiredSurfaceFormat.format == surfaceFormat.format)
+            {
+                imageFormat = surfaceFormat.format;
+                imageColorSpace = surfaceFormat.colorSpace;
+                std::cout << "Could not find a supported color space, "
+                             "using first supported one from the desired "
+                             "(and supported) surface format." << std::endl;
+                return true;
+            }
+        }
+
+        //If no surface was found that supports both the desired colorspace and format then
+        //we use the default supported format and colorspace.
+        imageFormat = surfaceFormats[0].format;
+        imageColorSpace = surfaceFormats[0].colorSpace;
+        std::cout << "Failed to find a supported surface "
+                     "format/color space. Using default values." << std::endl;
+        return true;
+
     }
 }

@@ -46,6 +46,7 @@ bool VulkanWindow::createWindowSurface(VkInstance instance)
 //Creates the window frame.
 bool VulkanWindow::createWindowFrame(uint16_t windowWidth, uint16_t windowHeight)
 {
+    //Linux xcb
     #ifdef VK_USE_PLATFORM_XCB_KHR
         // First open connection to the X server.
         windowParameters.connection = xcb_connect(NULL, NULL);

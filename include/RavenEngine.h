@@ -8,6 +8,7 @@ using namespace Raven;
 class RavenEngine
 {
     public:
+        RavenEngine();
         ~RavenEngine();
         bool start(const char* appName);
         void stop();
@@ -25,7 +26,10 @@ class RavenEngine
 
         //Creates a new VulkanWindow. VulkanWindow will hold swapchain and all closely
         //to a presentation window related objects.
-        bool openNewWindow(uint16_t windowWidth, uint16_t windowHeight, VkPresentModeKHR &presentationMode, VulkanWindow *window);
+        bool openNewWindow(uint16_t windowWidth, uint16_t windowHeight, VulkanWindow *window);
+
+        //Creates a new swapchain to be used for rendering.
+        bool createSwapchain(VkImageUsageFlags desiredImageUsage, VkPresentModeKHR &presentationMode, VulkanWindow *window);
 
         //Private objects:
 

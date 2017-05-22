@@ -51,4 +51,13 @@ namespace VulkanStructures
         createInfo.pNext = nullptr;
         return createInfo;
     }
+
+    inline VkSwapchainCreateInfoKHR swapchainCreateInfo()
+    {
+        VkSwapchainCreateInfoKHR createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+        createInfo.pNext = nullptr;
+        createInfo.flags = 0;
+        return createInfo;
+    }
 }
