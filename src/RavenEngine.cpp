@@ -40,7 +40,11 @@ RavenEngine::~RavenEngine()
     freeVulkanLibrary(vulkanLibrary);
 }
 
-//Starts the raven engine
+/**
+ * @brief Starts the raven engine.
+ * @param appName Name of the application.
+ * @return Returns false if something went wrong, true when the app closes.
+ */
 bool RavenEngine::start(const char* appName)
 {
     //First initialize vulkan
@@ -91,7 +95,10 @@ bool RavenEngine::start(const char* appName)
     return true;
 }
 
-//Initializes the vulkan library
+/**
+ * @brief Initializes the vulkan dynamic library.
+ * @return Returns false if something went wrong.
+ */
 bool RavenEngine::initializeVulkan()
 {
     if(!loadVulkanLibrary(vulkanLibrary))
@@ -134,7 +141,13 @@ bool RavenEngine::createInstance(VkInstance &instance, char const* const appName
     return true;
 }
 
-//Selects the first physical device that fills all given requirements
+/**
+ * @brief Selects the first physical device that fills all given requirements.
+ * @param physicalDevices A vector containing all physical devices available.
+ * @param selectedDevice The selected physical device.
+ * @param desiredDeviceExtensions Desired device level extensions.
+ * @return False if something went wrong.
+ */
 bool RavenEngine::selectPhysicalDevice(std::vector<VkPhysicalDevice> &physicalDevices,
                                        VkPhysicalDevice &selectedDevice,
                                        std::vector<const char*> &desiredDeviceExtensions)
@@ -154,7 +167,12 @@ bool RavenEngine::selectPhysicalDevice(std::vector<VkPhysicalDevice> &physicalDe
     return false;
 }
 
-//Creates a logical vulkan device from given physical device
+/**
+ * @brief Creates a VulkanDevice from given physical device.
+ * @param physicalDevice The physical device used to create the logical device.
+ * @param desiredExtensions Desired device extensions for the logical device.
+ * @return Returns false if something went wrong.
+ */
 bool RavenEngine::createVulkanDevice(VkPhysicalDevice &physicalDevice,
                                      std::vector<const char*>  &desiredExtensions)
 {
@@ -164,8 +182,14 @@ bool RavenEngine::createVulkanDevice(VkPhysicalDevice &physicalDevice,
     return true;
 }
 
-//Creates a new VulkanWindow. VulkanWindow will hold swapchain and all closely
-//to a presentation window related objects.
+/**
+ * @brief Creates a new VulkanWindow. VulkanWindow will hold swapchain and all closely
+ *        to a presentation window related objects.
+ * @param windowWidth
+ * @param windowHeight
+ * @param window Handle to the VulkanWindow.
+ * @return Returns false if something went wrong.
+ */
 bool RavenEngine::openNewWindow(uint16_t windowWidth,
                                 uint16_t windowHeight,
                                 VulkanWindow *window)
@@ -181,7 +205,13 @@ bool RavenEngine::openNewWindow(uint16_t windowWidth,
         return true;
 }
 
-//Creates a new swapchain to be used for rendering.
+/**
+ * @brief Builds a new swapchain to be used for rendering.
+ * @param desiredImageUsage Desired image usage flags.
+ * @param presentationMode Presentation mode.
+ * @param window Handle to the VulkanWindow.
+ * @return Returns false if something went wrong.
+ */
 bool RavenEngine::buildSwapchain(VkImageUsageFlags desiredImageUsage,
                                   VkPresentModeKHR &presentationMode,
                                   VulkanWindow *window)

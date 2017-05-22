@@ -1,7 +1,10 @@
 #include <iostream>
 #include "RavenEngine.h"
 
-//Starts the raven.
+/**
+ * @brief Starts the Raven.
+ * @return Returns 0 when application exits.
+ */
 int main()
 {
     //Start Raven
