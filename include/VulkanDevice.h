@@ -25,6 +25,8 @@ class VulkanDevice
         //operations. This will most probably change in the future as I experiment with
         //different graphics cards.
         inline uint32_t getPrimaryQueueFamilyIndex(){return queueFamilyIndex;}
+        //Returns a reference to the logical device.
+        inline VkDevice &getLogicalDevice(){return logicalDevice;}
     private:
         //Creates a logical device for the VulkanDevice
         bool createDevice();

@@ -58,4 +58,7 @@ namespace Raven
                                     VkSurfaceFormatKHR desiredSurfaceFormat,
                                     VkFormat &imageFormat,
                                     VkColorSpaceKHR &imageColorSpace);
+
+    //Creates a swapchain.
+    bool createSwapchain(VkDevice &logicalDevice, VkSwapchainCreateInfoKHR &createInfo, VkSwapchainKHR &swapchain);
 }

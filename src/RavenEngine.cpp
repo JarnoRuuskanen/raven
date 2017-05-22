@@ -1,6 +1,7 @@
 #include "RavenEngine.h"
 #include "VulkanUtility.h"
 #include "VulkanStructures.h"
+#include "Settings.h"
 
 using namespace Raven;
 
@@ -81,10 +82,10 @@ bool RavenEngine::start(const char* appName)
     if(!openNewWindow(windowWidth, windowHeight, appWindow))
         return false;
 
-    VkPresentModeKHR presentationMode = VK_PRESENT_MODE_FIFO_KHR;
-    VkImageUsageFlags desiredImageUsages = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    VkPresentModeKHR presentationMode = SETTINGS_DEFAULT_PRESENTATION_MODE;
+    VkImageUsageFlags desiredImageUsages = SETTINGS_IMAGE_USAGE_FLAGS;
     //Create a swapchain for the window to use.
-    if(!createSwapchain(desiredImageUsages,presentationMode, appWindow))
+    if(!buildSwapchain(desiredImageUsages,presentationMode, appWindow))
         return false;
 
     return true;
@@ -181,7 +182,7 @@ bool RavenEngine::openNewWindow(uint16_t windowWidth,
 }
 
 //Creates a new swapchain to be used for rendering.
-bool RavenEngine::createSwapchain(VkImageUsageFlags desiredImageUsage,
+bool RavenEngine::buildSwapchain(VkImageUsageFlags desiredImageUsage,
                                   VkPresentModeKHR &presentationMode,
                                   VulkanWindow *window)
 {
@@ -199,7 +200,7 @@ bool RavenEngine::createSwapchain(VkImageUsageFlags desiredImageUsage,
     //Check if the desired presentation mode is supported. If not, select a default presentation mode.
     if(!isPresentationModeSupported(selectedPhysicalDevice, window->getPresentationSurface(), presentationMode))
     {
-        presentationMode = DEFAULT_PRESENTATION_MODE;
+        presentationMode = SETTINGS_DEFAULT_PRESENTATION_MODE;
     }
 
     //Next create the required information for a swapchain creation.
@@ -223,36 +224,55 @@ bool RavenEngine::createSwapchain(VkImageUsageFlags desiredImageUsage,
 
     //Select swapchain image usage. The available usages can be found from
     //surfaceCapabilities.supportedUsageFlags.
-    VkImageUsageFlags desiredUsages = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     VkImageUsageFlags imageUsage = 0;
-    if(!selectSwapchainImageUsage(surfaceCapabilities, desiredUsages, imageUsage))
+    if(!selectSwapchainImageUsage(surfaceCapabilities, desiredImageUsage, imageUsage))
     {
         std::cerr << "Desired image usage flags were not supported!" << std::endl;
         return false;
     }
 
     //Select swapchain transformation.
-    VkSurfaceTransformFlagBitsKHR desiredTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+    VkSurfaceTransformFlagBitsKHR desiredTransform = SETTINGS_TRANSFORM_FLAGS;
     VkSurfaceTransformFlagBitsKHR surfaceTransform;
     selectSwapchainSurfaceTransform(surfaceCapabilities, desiredTransform, surfaceTransform);
 
     //Select swapchain image format and colorspace.
     VkSurfaceFormatKHR desiredSurfaceFormat;
-    desiredSurfaceFormat.format = VK_FORMAT_B8G8R8A8_SRGB;
-    desiredSurfaceFormat.colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+    desiredSurfaceFormat.format = SETTINGS_IMAGE_FORMAT;
+    desiredSurfaceFormat.colorSpace = SETTINGS_IMAGE_COLOR_SPACE;
 
+    //Image format and color space values will be saved to these two variables.
     VkFormat imageFormat;
-    VkColorSpaceKHR desiredColorSpace = VK_COLOR_SPACE_DOLBYVISION_EXT;
-
+    VkColorSpaceKHR colorSpace;
     if(!selectSwapchainImageFormat(selectedPhysicalDevice,
-                                appWindow->getPresentationSurface(),
-                                desiredSurfaceFormat,
-                                imageFormat, desiredColorSpace))
+                                   appWindow->getPresentationSurface(),
+                                   desiredSurfaceFormat,
+                                   imageFormat, colorSpace))
     {
         return false;
     }
 
     //Build the swapchain.
     VkSwapchainCreateInfoKHR swapchainInfo = VulkanStructures::swapchainCreateInfo();
+    swapchainInfo.surface = appWindow->getPresentationSurface();
+    swapchainInfo.preTransform = surfaceTransform;
+    swapchainInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+    swapchainInfo.clipped = VK_TRUE;
+    swapchainInfo.minImageCount = imageCount;
+    swapchainInfo.presentMode = presentationMode;
+    swapchainInfo.imageUsage = imageUsage;
     swapchainInfo.imageExtent = imageSizes;
+    swapchainInfo.imageFormat = imageFormat;
+    swapchainInfo.imageColorSpace = colorSpace;
+    swapchainInfo.imageArrayLayers = 1;
+    swapchainInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    swapchainInfo.queueFamilyIndexCount = 0;
+    swapchainInfo.pQueueFamilyIndices = nullptr;
+    swapchainInfo.oldSwapchain = nullptr;
+
+    //Create the actual swapchain for the provided window.
+    if(!createSwapchain(vulkanDevice->getLogicalDevice(), swapchainInfo, window->getSwapchain()))
+    {
+        return false;
+    }
 }

@@ -29,7 +29,7 @@ class RavenEngine
         bool openNewWindow(uint16_t windowWidth, uint16_t windowHeight, VulkanWindow *window);
 
         //Creates a new swapchain to be used for rendering.
-        bool createSwapchain(VkImageUsageFlags desiredImageUsage, VkPresentModeKHR &presentationMode, VulkanWindow *window);
+        bool buildSwapchain(VkImageUsageFlags desiredImageUsage, VkPresentModeKHR &presentationMode, VulkanWindow *window);
 
         //Private objects:
 

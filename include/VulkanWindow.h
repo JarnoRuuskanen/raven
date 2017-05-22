@@ -1,5 +1,6 @@
 #pragma once
 #include "Headers.h"
+#include "Settings.h"
 
 //A struct for holding the window parameters for
 //different platforms.
@@ -21,10 +22,6 @@ namespace Raven
             Window   window;
         #endif
     };
-
-    //Define the default window values.
-    #define DEFAULT_PRESENTATION_MODE VK_PRESENT_MODE_FIFO_KHR;
-    #define WINDOW_SWAPHAIN_IMAGE_COUNT 2
 }
 
 //This class is for creating a vulkan window which a renderer

@@ -371,4 +371,17 @@ namespace Raven
         return true;
 
     }
+
+    //Creates a swapchain.
+    bool createSwapchain(VkDevice &logicalDevice, VkSwapchainCreateInfoKHR &createInfo, VkSwapchainKHR &swapchain)
+    {
+        VkResult result;
+        result = vkCreateSwapchainKHR(logicalDevice, &createInfo, nullptr, &swapchain);
+        if(result != VK_SUCCESS || swapchain == VK_NULL_HANDLE)
+        {
+            std::cerr << "Failed to create a swapchain!" << std::endl;
+            return false;
+        }
+        return true;
+    }
 }
