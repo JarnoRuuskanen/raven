@@ -1,5 +1,5 @@
 project(Raven)
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.1)
 
 set_property( GLOBAL PROPERTY USE_FOLDERS ON )
 set( CMAKE_SUPPRESS_REGENERATION true )
@@ -43,12 +43,17 @@ add_definitions( -DVK_USE_PLATFORM_${VK_USE_PLATFORM}_KHR )
 # Define include path
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-# Gather list of header and source files for compilation. Also add imgui source files.
+# Gather list of header and source files for compilation.
 file(GLOB_RECURSE CPP_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 file(GLOB_RECURSE HPP_FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/*.*)
 
 #This next line is for enabling c++14 because it's not on by default
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+
+#Add the unit tests.
+add_subdirectory(googletest)
+add_subdirectory(UnitTests)
+
 add_executable(${PROJECT_NAME} ${CPP_FILES} ${HPP_FILES})
 
 target_link_libraries(${PROJECT_NAME} ${CMAKE_DL_LIBS} ${PLATFORM_LIBRARY} xcb)
