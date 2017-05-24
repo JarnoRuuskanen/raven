@@ -51,7 +51,7 @@ file(GLOB_RECURSE HPP_FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/*.*)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
 #Add the unit tests.
-add_subdirectory(googletest)
+add_subdirectory(lib/googletest)
 add_subdirectory(UnitTests)
 
 add_executable(${PROJECT_NAME} ${CPP_FILES} ${HPP_FILES})

@@ -1,25 +1,37 @@
-#include <iostream>
-#include <gtest/gtest.h>
-#include <string>
-#include <xcb/xcb.h>
-
-/**RAVEN PROJECT INCLUDES **/
-#include "Settings.h"
-#include "ListOfVulkanFunctions.inl"
-#include "Headers.h"
-#include "VulkanInitializer.h"
-#include "VulkanInitializer.cpp"
-#include "VulkanFunctions.h"
-#include "VulkanFunctions.cpp"
-#include "VulkanStructures.h"
+#include "TestHeaders.h"
 
 using namespace Raven;
-TEST(RavenTest, loadAndReleaseLibraryTest)
+
+struct Library
 {
-    void* library;
-    EXPECT_EQ(true, Raven::loadVulkanLibrary(library));
-    Raven::freeVulkanLibrary(library);
-    EXPECT_EQ(nullptr, library);
+    LIBRARY_TYPE library;
+    Library(){}
+};
+
+struct LibraryTest : testing::Test
+{
+    Library* libraryObject;
+    LibraryTest()
+    {
+        libraryObject = new Library();
+    }
+
+    ~LibraryTest()
+    {
+        delete libraryObject;
+    }
+};
+
+/**Library tests*/
+TEST_F(LibraryTest, loadLibraryTest)
+{
+    EXPECT_EQ(true, Raven::loadVulkanLibrary(libraryObject->library));
+}
+
+TEST_F(LibraryTest, releaseLibraryTest)
+{
+    Raven::freeVulkanLibrary(libraryObject->library);
+    EXPECT_EQ(nullptr, libraryObject->library);
 }
 
 TEST(RavenStructureTest, applicationCreateInfoTest)
@@ -58,6 +70,20 @@ TEST(RavenStructureTest, deviceQueueCreateInfoTest)
     EXPECT_EQ(familyIndex, createInfo.queueFamilyIndex);
     EXPECT_EQ(static_cast<uint32_t>(priorities.size()), createInfo.queueCount);
     EXPECT_EQ(priorities.data(), createInfo.pQueuePriorities);
+}
+
+TEST(RavenStructureTest, surfaceCreateInfoTest)
+{
+    WINDOW_SURFACE_CREATE_INFO createInfo =
+            VulkanStructures::surfaceCreateInfo();
+    EXPECT_EQ(WINDOW_SURFACE_CREATE_INFO_STRUCTURE_TYPE, createInfo.sType);
+    EXPECT_EQ(nullptr, createInfo.pNext);
+    EXPECT_EQ(0, createInfo.flags);
+}
+
+TEST(RavenEngineTest, createNewRavenEngineTest)
+{
+    VkInstance instance;
 }
 
 int main(int argc, char *argv[])
