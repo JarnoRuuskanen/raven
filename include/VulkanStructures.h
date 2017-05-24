@@ -39,7 +39,7 @@ namespace VulkanStructures
         createInfo.flags = 0;
         createInfo.queueFamilyIndex = familyIndex;
         createInfo.queueCount = static_cast<uint32_t>(priorities.size());
-        createInfo.pQueuePriorities = priorities.data();
+        createInfo.pQueuePriorities = createInfo.queueCount > 0 ? priorities.data() : nullptr;
         return createInfo;
     }
 
