@@ -35,6 +35,7 @@ class RavenEngine
 
         //The vulkan dynamically loaded library.
         LIBRARY_TYPE vulkanLibrary;
+        bool libraryInitialized = false;
         //Vulkan variables, the ones starting with "selected"
         //are the ones that the software will be using to complete tasks.
         VkInstance selectedInstance;

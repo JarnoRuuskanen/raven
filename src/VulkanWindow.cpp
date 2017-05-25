@@ -9,7 +9,8 @@ VulkanWindow::VulkanWindow()
 
 VulkanWindow::~VulkanWindow()
 {
-    xcb_disconnect (windowParameters.connection);
+    if(connectionEstablished == true)
+        xcb_disconnect (windowParameters.connection);
 }
 
 //Creates a presentation surface for VulkanWindow.
@@ -79,7 +80,7 @@ bool VulkanWindow::createWindowFrame(uint16_t windowWidth, uint16_t windowHeight
 
         // Make sure that commands are sent.
         xcb_flush(windowParameters.connection);
-
+        connectionEstablished = true;
         return true;
     #endif
 

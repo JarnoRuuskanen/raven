@@ -51,6 +51,7 @@ class VulkanWindow
         //of images used for rendering (image buffering), presentation mode etc.
         VkSwapchainKHR swapchain;
         WindowParameters windowParameters;
+        bool connectionEstablished = false;
 
 
 };

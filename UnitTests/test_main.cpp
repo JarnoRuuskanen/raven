@@ -6,6 +6,7 @@ struct Library
 {
     LIBRARY_TYPE library;
     Library(){}
+    ~Library(){}
 };
 
 struct LibraryTest : testing::Test
@@ -16,13 +17,13 @@ struct LibraryTest : testing::Test
         libraryObject = new Library();
     }
 
-    ~LibraryTest()
+    virtual ~LibraryTest()
     {
         delete libraryObject;
     }
 };
 
-/**Library tests*/
+/**Library tests. The load function must be first to enable vulkan functions.*/
 TEST_F(LibraryTest, loadLibraryTest)
 {
     EXPECT_EQ(true, Raven::loadVulkanLibrary(libraryObject->library));
@@ -81,9 +82,42 @@ TEST(RavenStructureTest, surfaceCreateInfoTest)
     EXPECT_EQ(0, createInfo.flags);
 }
 
-TEST(RavenEngineTest, createNewRavenEngineTest)
+struct VulkanInstance
 {
     VkInstance instance;
+    VulkanInstance(){}
+};
+
+struct InstanceTest
+{
+    VulkanInstance* instanceObject;
+    InstanceTest()
+    {
+        instanceObject = new VulkanInstance;
+    }
+    virtual ~InstanceTest()
+    {
+        delete instanceObject;
+    }
+};
+
+TEST(RavenTest, startRaven)
+{
+    RavenEngine raven;
+    EXPECT_TRUE(raven.start("Test"));
+}
+
+TEST(RavenTest, startWithoutNameTest)
+{
+    RavenEngine raven;
+    EXPECT_FALSE(raven.start(nullptr));
+}
+
+TEST(UtilityFunctionTest, getPhysicalDeviceQueuesWithPropertiesEmptyTest)
+{
+    VkPhysicalDevice gpu;
+    std::vector<VkQueueFamilyProperties> queueFamilies;
+    EXPECT_FALSE(getPhysicalDeviceQueuesWithProperties(gpu, queueFamilies));
 }
 
 int main(int argc, char *argv[])

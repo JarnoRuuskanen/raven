@@ -2,6 +2,7 @@
 #include "VulkanUtility.h"
 #include "VulkanStructures.h"
 #include "Settings.h"
+#include <string.h>
 
 using namespace Raven;
 
@@ -22,22 +23,31 @@ std::vector<const char*> desiredDeviceExtensions =
 
 RavenEngine::RavenEngine()
 {
+    selectedInstance = VK_NULL_HANDLE;
+    selectedLogicalDevice = VK_NULL_HANDLE;
+    selectedPhysicalDevice = VK_NULL_HANDLE;
+    vulkanDevice = new VulkanDevice();
     appWindow = new VulkanWindow();
 }
 
 RavenEngine::~RavenEngine()
 {
     //Destroy the application window
-    delete appWindow;
+    if(appWindow != nullptr)
+        delete appWindow;
+    //Destroy the VulkanDevice
+    if(vulkanDevice != nullptr)
+        delete vulkanDevice;
     //Destroy the vulkan instance
-    if(selectedInstance)
+    if(selectedInstance != VK_NULL_HANDLE)
     {
         vkDestroyInstance(selectedInstance, nullptr);
         selectedInstance = VK_NULL_HANDLE;
     }
 
     //Lastly free the dynamically loaded vulkan library
-    freeVulkanLibrary(vulkanLibrary);
+    if(libraryInitialized)
+        freeVulkanLibrary(vulkanLibrary);
 }
 
 /**
@@ -47,6 +57,12 @@ RavenEngine::~RavenEngine()
  */
 bool RavenEngine::start(const char* appName)
 {
+    if(!appName || strlen(appName) == 0)
+    {
+        std::cerr << "Application requires a name!" << std::endl;
+        return false;
+    }
+
     //First initialize vulkan
     if(!initializeVulkan())
         return false;
@@ -117,6 +133,7 @@ bool RavenEngine::initializeVulkan()
         std::cerr << "Failed to load global level functions!" << std::endl;
         return false;
     }
+    libraryInitialized = true;
     return true;
 }
 
@@ -305,4 +322,6 @@ bool RavenEngine::buildSwapchain(VkImageUsageFlags desiredImageUsage,
     {
         return false;
     }
+
+    return true;
 }

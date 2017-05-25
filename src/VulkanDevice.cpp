@@ -8,6 +8,7 @@ using namespace Raven;
 
 VulkanDevice::VulkanDevice()
 {
+    logicalDevice = VK_NULL_HANDLE;
 }
 
 VulkanDevice::~VulkanDevice()
