@@ -31,6 +31,8 @@ namespace Raven
     //Frees the dynamically loaded Vulkan library.
     void freeVulkanLibrary(void *&vulkanLibrary)
     {
+        if(vulkanLibrary == nullptr)
+            return;
         #if defined _WIN32
             FreeLibrary(vulkanLibrary);
         #elif defined __linux

@@ -63,7 +63,7 @@ bool RavenEngine::start(const char* appName)
         return false;
     }
 
-    //First initialize vulkan
+    //First initialize vulkan if it has not been initialized yet.
     if(!initializeVulkan())
         return false;
 
@@ -104,8 +104,9 @@ bool RavenEngine::start(const char* appName)
 
     VkPresentModeKHR presentationMode = SETTINGS_DEFAULT_PRESENTATION_MODE;
     VkImageUsageFlags desiredImageUsages = SETTINGS_IMAGE_USAGE_FLAGS;
+    VkSwapchainKHR oldSwapchain = VK_NULL_HANDLE;
     //Create a swapchain for the window to use.
-    if(!buildSwapchain(desiredImageUsages,presentationMode, appWindow))
+    if(!buildSwapchain(desiredImageUsages,presentationMode, oldSwapchain, appWindow))
         return false;
 
     return true;
@@ -231,8 +232,17 @@ bool RavenEngine::openNewWindow(uint16_t windowWidth,
  */
 bool RavenEngine::buildSwapchain(VkImageUsageFlags desiredImageUsage,
                                   VkPresentModeKHR &presentationMode,
+                                  VkSwapchainKHR &oldSwapchain,
                                   VulkanWindow *window)
 {
+    //Since each window can only have one swapchain at a time,
+    //we need to destroy the old swapchain if one was present.)
+    if(oldSwapchain != VK_NULL_HANDLE)
+    {
+        vkDestroySwapchainKHR(selectedLogicalDevice, oldSwapchain, nullptr);
+        oldSwapchain = VK_NULL_HANDLE;
+    }
+
     //Swapchain:
     //Make sure that the VulkanDevice's current queue family supports
     //image presentation.
@@ -315,7 +325,7 @@ bool RavenEngine::buildSwapchain(VkImageUsageFlags desiredImageUsage,
     swapchainInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     swapchainInfo.queueFamilyIndexCount = 0;
     swapchainInfo.pQueueFamilyIndices = nullptr;
-    swapchainInfo.oldSwapchain = nullptr;
+    swapchainInfo.oldSwapchain = oldSwapchain;
 
     //Create the actual swapchain for the provided window.
     if(!createSwapchain(vulkanDevice->getLogicalDevice(), swapchainInfo, window->getSwapchain()))

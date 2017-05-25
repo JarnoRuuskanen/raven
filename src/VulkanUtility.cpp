@@ -189,6 +189,12 @@ namespace Raven
     bool getPhysicalDeviceQueuesWithProperties(VkPhysicalDevice &physicalDevice,
                                                std::vector<VkQueueFamilyProperties> &queueFamilies)
     {
+        if(physicalDevice == VK_NULL_HANDLE)
+        {
+            std::cerr << "No valid physical device for queue family information fetching!" << std::endl;
+            return false;
+        }
+
         uint32_t queueFamilyCount = 0;
         //First get the count of queue families
         vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, nullptr);
@@ -375,6 +381,9 @@ namespace Raven
     //Creates a swapchain.
     bool createSwapchain(VkDevice &logicalDevice, VkSwapchainCreateInfoKHR &createInfo, VkSwapchainKHR &swapchain)
     {
+        if(logicalDevice == VK_NULL_HANDLE)
+            return false;
+
         VkResult result;
         result = vkCreateSwapchainKHR(logicalDevice, &createInfo, nullptr, &swapchain);
         if(result != VK_SUCCESS || swapchain == VK_NULL_HANDLE)

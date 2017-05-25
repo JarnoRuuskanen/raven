@@ -115,9 +115,30 @@ TEST(RavenTest, startWithoutNameTest)
 
 TEST(UtilityFunctionTest, getPhysicalDeviceQueuesWithPropertiesEmptyTest)
 {
-    VkPhysicalDevice gpu;
+
+    VkPhysicalDevice gpu = VK_NULL_HANDLE;
     std::vector<VkQueueFamilyProperties> queueFamilies;
     EXPECT_FALSE(getPhysicalDeviceQueuesWithProperties(gpu, queueFamilies));
+}
+
+TEST(UtilityFunctionTest, createInstanceTest)
+{
+    std::vector<const char*> testInstanceExtensions =
+    {
+        VK_KHR_SURFACE_EXTENSION_NAME
+    };
+    VkInstance testInstance;
+    EXPECT_TRUE(createVulkanInstance(testInstanceExtensions, "TestName", testInstance));
+}
+
+/*This test should fail since the logical device or swapchain info
+  hasn't been correctly initialized.*/
+TEST(UtilityFunctionTest, createSwapchainWithEmptyObjectsTest)
+{
+    VkSwapchainCreateInfoKHR testCreateInfo;
+    VkSwapchainKHR testSwapchain;
+    VkDevice testLogicalDevice = VK_NULL_HANDLE;
+    EXPECT_FALSE(createSwapchain(testLogicalDevice, testCreateInfo, testSwapchain));
 }
 
 int main(int argc, char *argv[])
