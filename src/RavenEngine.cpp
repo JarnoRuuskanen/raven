@@ -26,8 +26,6 @@ RavenEngine::RavenEngine()
     selectedInstance = VK_NULL_HANDLE;
     selectedLogicalDevice = VK_NULL_HANDLE;
     selectedPhysicalDevice = VK_NULL_HANDLE;
-    vulkanDevice = new VulkanDevice();
-    appWindow = new VulkanWindow();
 }
 
 RavenEngine::~RavenEngine()
@@ -69,7 +67,7 @@ bool RavenEngine::start(const char* appName)
 
     //After vulkan dynamic library, exported- and global-level functions have been loaded,
     //create a new vulkan instance.
-    if(!createInstance(selectedInstance, appName, desiredInstanceExtensions))
+    if(!createVulkanInstance(desiredInstanceExtensions, appName, selectedInstance))
         return false;
 
     //After instance has been created, load instance level funcions
@@ -94,11 +92,13 @@ bool RavenEngine::start(const char* appName)
     //Create a logical device out of the selected physical device.
     //Raven will be built to support multiple queues, that will all be used simultaneously
     //with added synchronization. This is to not tax one queue unecessarily
+    vulkanDevice = new VulkanDevice();
     if(!createVulkanDevice(selectedPhysicalDevice, desiredDeviceExtensions))
         return false;
 
     //After the vulkan device has been created we need to create a window
     //for the application. This window will display our rendering content.
+    appWindow = new VulkanWindow();
     if(!openNewWindow(windowWidth, windowHeight, appWindow))
         return false;
 
@@ -108,6 +108,13 @@ bool RavenEngine::start(const char* appName)
     //Create a swapchain for the window to use.
     if(!buildSwapchain(desiredImageUsages,presentationMode, oldSwapchain, appWindow))
         return false;
+
+    //Acquire the swapchain images.
+    std::vector<VkImage> swapchainImages;
+    if(!getSwapchainImages(vulkanDevice->getLogicalDevice(), appWindow->getSwapchain(), swapchainImages))
+    {
+        return false;
+    }
 
     return true;
 }
@@ -135,27 +142,6 @@ bool RavenEngine::initializeVulkan()
         return false;
     }
     libraryInitialized = true;
-    return true;
-}
-
-//Creates a new vulkan instance with the given desired instance extensions
-bool RavenEngine::createInstance(VkInstance &instance, char const* const appName , std::vector<const char*> &desiredInstanceExtensions)
-{
-    //Query all available instance extensions
-    std::vector<VkExtensionProperties> availableInstanceExtensions;
-    if(!checkAvailableInstanceExtensions(availableInstanceExtensions))
-    {
-        std::cerr << "Failed to check for available instance extensions!" << std::endl;
-        return false;
-    }
-
-    //Create a new vulkan instance
-    if(!createVulkanInstance(desiredInstanceExtensions, appName, instance))
-    {
-        std ::cerr << "Failed to create a vulkan instance!" << std::endl;
-        return false;
-    }
-
     return true;
 }
 
@@ -194,7 +180,6 @@ bool RavenEngine::selectPhysicalDevice(std::vector<VkPhysicalDevice> &physicalDe
 bool RavenEngine::createVulkanDevice(VkPhysicalDevice &physicalDevice,
                                      std::vector<const char*>  &desiredExtensions)
 {
-    vulkanDevice = new VulkanDevice();
     if(!vulkanDevice->initializeDevice(physicalDevice, desiredExtensions))
         return false;
     return true;

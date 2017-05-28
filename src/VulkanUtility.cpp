@@ -4,7 +4,11 @@
 //All vulkan utility functions will be implemented here.
 namespace Raven
 {
-    //Checks all available instance extensions and adds them into a vector
+    /**
+     * @brief Checks all available instance extensions and adds them into a vector.
+     * @param availableExtensions
+     * @return False if something went wrong.
+     */
     bool checkAvailableInstanceExtensions(std::vector<VkExtensionProperties> &availableExtensions)
     {
         uint32_t extensions = 0;
@@ -31,7 +35,13 @@ namespace Raven
         return true;
     }
 
-    //Creates a new vulkan instance
+    /**
+     * @brief Creates a new vulkan instance.
+     * @param desiredExtensions
+     * @param appName
+     * @param instance
+     * @return False if something went wrong.
+     */
     bool createVulkanInstance(std::vector<char const*> const& desiredExtensions,
                               char const* const appName,
                               VkInstance &instance)
@@ -79,7 +89,12 @@ namespace Raven
         return true;
     }
 
-    //Checks wether a desired extension is supported or not
+    /**
+     * @brief Checks wether a desired extension is supported or not.
+     * @param availableExtensions
+     * @param desiredExtension
+     * @return 
+     */
     bool isExtensionSupported(std::vector<VkExtensionProperties> &availableExtensions, const char* desiredExtension)
     {
         //Loop through the whole extension vector and check, if the desired extension is supported
@@ -120,11 +135,15 @@ namespace Raven
             std::cerr << "Failed to get physical devices!" << std::endl;
             return false;
         }
-
         return true;
     }
 
-    //Checks wether a physical device extension is supported or not
+    /**
+     * @brief Checks wether a physical device extension is supported or not.
+     * @param physicalDevice
+     * @param desiredExtensions
+     * @return False if something went wrong.
+     */
     bool arePhysicalDeviceExtensionsSupported(VkPhysicalDevice &physicalDevice,
                                               std::vector<char const*> const& desiredExtensions)
     {
@@ -156,7 +175,12 @@ namespace Raven
         return true;
     }
 
-    //Checks physical device features.
+    /**
+     * @brief Gets physical device features and properties.
+     * @param physicalDevice
+     * @param features
+     * @param properties
+     */
     void getPhysicalDeviceFeaturesAndProperties(VkPhysicalDevice &physicalDevice,
                                                 VkPhysicalDeviceFeatures &features,
                                                 VkPhysicalDeviceProperties &properties)
@@ -167,7 +191,13 @@ namespace Raven
         vkGetPhysicalDeviceProperties(physicalDevice, &properties);
     }
 
-    //Gets the index of a desired queue family/families
+    /**
+     * @brief Gets the index of a desired queue family/families.
+     * @param queueFamilies
+     * @param desiredQueueFamily
+     * @param queueFamilyIndex
+     * @return False if something went wrong.
+     */
     bool getQueueFamilyIndex(std::vector<VkQueueFamilyProperties> &queueFamilies,
                              VkQueueFlags desiredQueueFamily,
                              uint32_t &queueFamilyIndex)
@@ -185,7 +215,12 @@ namespace Raven
         return false;
     }
 
-    //Gets all physical device queues and their properties
+    /**
+     * @brief Gets all physical device queues and their properties
+     * @param physicalDevice
+     * @param queueFamilies
+     * @return False if something went wrong.
+     */
     bool getPhysicalDeviceQueuesWithProperties(VkPhysicalDevice &physicalDevice,
                                                std::vector<VkQueueFamilyProperties> &queueFamilies)
     {
@@ -220,7 +255,13 @@ namespace Raven
         return true;
     }
 
-    //Creates a logical vulkan device
+    /**
+     * @brief Creates a logical vulkan device
+     * @param physicalDevice
+     * @param createInfo
+     * @param logicalDevice
+     * @return False if something went wrong.
+     */
     bool createLogicalDevice(VkPhysicalDevice &physicalDevice,
                              VkDeviceCreateInfo createInfo,
                              VkDevice &logicalDevice)
@@ -235,7 +276,13 @@ namespace Raven
         return true;
     }
 
-    //Checks if the preferred presentation mode is supported by the physical device.
+    /**
+     * @brief Checks if the preferred presentation mode is supported by the physical device.
+     * @param physicalDevice
+     * @param presentationSurface
+     * @param desiredPresentMode
+     * @return False if something went wrong.
+     */
     bool isPresentationModeSupported(VkPhysicalDevice &physicalDevice,
                                      VkSurfaceKHR &presentationSurface,
                                      VkPresentModeKHR &desiredPresentMode)
@@ -271,7 +318,13 @@ namespace Raven
         return false;
     }
 
-    //Gets physical device presentation surface capabilities.
+    /**
+     * @brief Gets physical device presentation surface capabilities.
+     * @param physicalDevice
+     * @param presentationSurface
+     * @param surfaceCapabilities
+     * @return False if something went wrong.
+     */
     bool getSurfaceCapabilities(VkPhysicalDevice &physicalDevice,
                                 VkSurfaceKHR presentationSurface,
                                 VkSurfaceCapabilitiesKHR &surfaceCapabilities)
@@ -286,7 +339,13 @@ namespace Raven
         return true;
     }
 
-    //Selects swapchain image usage flags based on desired and supported usages.
+    /**
+     * @brief Selects swapchain image usage flags based on desired and supported usages.
+     * @param surfaceCapabilities
+     * @param desiredUsages
+     * @param imageUsage
+     * @return False if something went wrong.
+     */
     bool selectSwapchainImageUsage(VkSurfaceCapabilitiesKHR const &surfaceCapabilities,
                                    VkImageUsageFlags desiredUsages,
                                    VkImageUsageFlags &imageUsage)
@@ -298,7 +357,12 @@ namespace Raven
         return desiredUsages == imageUsage;
     }
 
-    //Selects swapchain surface transformation based on desired and supported transforms.
+    /**
+     * @brief Selects swapchain surface transformation based on desired and supported transforms.
+     * @param surfaceCapabilities
+     * @param desiredTransforms
+     * @param surfaceTransforms
+     */
     void selectSwapchainSurfaceTransform(VkSurfaceCapabilitiesKHR const &surfaceCapabilities,
                                          VkSurfaceTransformFlagBitsKHR desiredTransforms,
                                          VkSurfaceTransformFlagBitsKHR &surfaceTransforms)
@@ -313,7 +377,15 @@ namespace Raven
         }
     }
 
-    //Selects the format for swapchain images.
+    /**
+     * @brief Selects the format for swapchain images based on desired and supported formats.
+     * @param physicalDevice
+     * @param presentationSurface
+     * @param desiredSurfaceFormat
+     * @param imageFormat
+     * @param imageColorSpace
+     * @return False if something went wrong.
+     */
     bool selectSwapchainImageFormat(VkPhysicalDevice &physicalDevice,
                                     VkSurfaceKHR &presentationSurface,
                                     VkSurfaceFormatKHR desiredSurfaceFormat,
@@ -378,7 +450,13 @@ namespace Raven
 
     }
 
-    //Creates a swapchain.
+    /**
+     * @brief Creates a vulkan swapchain.
+     * @param logicalDevice
+     * @param createInfo
+     * @param swapchain
+     * @return False if something went wrong.
+     */
     bool createSwapchain(VkDevice &logicalDevice, VkSwapchainCreateInfoKHR &createInfo, VkSwapchainKHR &swapchain)
     {
         if(logicalDevice == VK_NULL_HANDLE)
@@ -389,6 +467,35 @@ namespace Raven
         if(result != VK_SUCCESS || swapchain == VK_NULL_HANDLE)
         {
             std::cerr << "Failed to create a swapchain!" << std::endl;
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * @brief Gathers the swapchain images from a given swapchain to a vector.
+     * @param logicalDevice
+     * @param swapchain
+     * @param swapchainImages
+     * @return False if something went wrong.
+     */
+    bool getSwapchainImages(VkDevice &logicalDevice, VkSwapchainKHR swapchain, std::vector<VkImage> &swapchainImages)
+    {
+        uint32_t imageCount = 0;
+        VkResult result = VK_SUCCESS;
+
+        result = vkGetSwapchainImagesKHR(logicalDevice, swapchain, &imageCount, nullptr);
+        if(result != VK_SUCCESS || imageCount == 0)
+        {
+            std::cerr << "Failed to get the number of swapchain images!" << std::endl;
+            return false;
+        }
+
+        swapchainImages.resize(imageCount);
+        result = vkGetSwapchainImagesKHR(logicalDevice, swapchain, &imageCount, swapchainImages.data());
+        if(result != VK_SUCCESS || swapchainImages.empty())
+        {
+            std::cerr << "Failed to get swapchain images!" << std::endl;
             return false;
         }
         return true;

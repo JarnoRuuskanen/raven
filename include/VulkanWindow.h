@@ -35,7 +35,6 @@ class VulkanWindow
         ~VulkanWindow();
         //Creates a presentation surface for a VulkanWindow.
         bool createWindowSurface(VkInstance instance);
-        bool createSwapchain();
         //Creates the window frame
         bool createWindowFrame(uint16_t width, uint16_t height);
         //Returns a reference to the window surface.
@@ -49,6 +48,7 @@ class VulkanWindow
         VkSurfaceKHR windowPresentationSurface;
         //The swapchain of this window. Swapchain describes image formats, number
         //of images used for rendering (image buffering), presentation mode etc.
+        //Each window can only have one swapchain at a time.
         VkSwapchainKHR swapchain;
         WindowParameters windowParameters;
         bool connectionEstablished = false;

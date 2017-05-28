@@ -3,17 +3,27 @@
 
 using namespace Raven;
 
+/**
+ * @brief VulkanWindow::VulkanWindow
+ */
 VulkanWindow::VulkanWindow()
 {
 }
 
+/**
+ * @brief VulkanWindow::~VulkanWindow
+ */
 VulkanWindow::~VulkanWindow()
 {
     if(connectionEstablished == true)
         xcb_disconnect (windowParameters.connection);
 }
 
-//Creates a presentation surface for VulkanWindow.
+/**
+ * @brief Creates a presentation surface for VulkanWindow.
+ * @param instance
+ * @return
+ */
 bool VulkanWindow::createWindowSurface(VkInstance instance)
 {   
     VkResult result;
@@ -44,7 +54,12 @@ bool VulkanWindow::createWindowSurface(VkInstance instance)
     return true;
 }
 
-//Creates the window frame.
+/**
+ * @brief Creates the window frame.
+ * @param windowWidth
+ * @param windowHeight
+ * @return
+ */
 bool VulkanWindow::createWindowFrame(uint16_t windowWidth, uint16_t windowHeight)
 {
     //Linux xcb

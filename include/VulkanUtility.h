@@ -17,7 +17,7 @@ namespace Raven
     //Checks if a physical device supports a given extension.
     bool arePhysicalDeviceExtensionsSupported(VkPhysicalDevice &physicalDevice,
                                               std::vector<char const*> const& desiredExtensions);
-    //Checks physical device features.
+    //Gets physical device features and properties.
     void getPhysicalDeviceFeaturesAndProperties(VkPhysicalDevice &physicalDevice,
                                                 VkPhysicalDeviceFeatures& features,
                                                 VkPhysicalDeviceProperties& properties);
@@ -52,13 +52,16 @@ namespace Raven
                                          VkSurfaceTransformFlagBitsKHR desiredFlags,
                                          VkSurfaceTransformFlagBitsKHR &surfaceTransforms);
 
-    //Selects the format for swapchain images.
+    //Selects the format for swapchain images based on desired and supported formats.
     bool selectSwapchainImageFormat(VkPhysicalDevice &physicalDevice,
                                     VkSurfaceKHR &presentationSurface,
                                     VkSurfaceFormatKHR desiredSurfaceFormat,
                                     VkFormat &imageFormat,
                                     VkColorSpaceKHR &imageColorSpace);
 
-    //Creates a swapchain.
+    //Creates a vulkan swapchain.
     bool createSwapchain(VkDevice &logicalDevice, VkSwapchainCreateInfoKHR &createInfo, VkSwapchainKHR &swapchain);
+
+    //Gathers the swapchain images from a given swapchain to a vector.
+    bool getSwapchainImages(VkDevice &logicalDevice, VkSwapchainKHR swapchain, std::vector<VkImage> &swapchainImages);
 }

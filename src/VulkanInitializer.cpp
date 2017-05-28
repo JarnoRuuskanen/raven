@@ -7,7 +7,11 @@
 //is heavily based on VulkanCookbook examples.
 namespace Raven
 {
-    //Loads the dynamic vulkan library.
+    /**
+     * @brief Loads the dynamic vulkan library.
+     * @param vulkanLibrary
+     * @return
+     */
     bool loadVulkanLibrary(LIBRARY_TYPE& vulkanLibrary)
     {
         #if defined _WIN32
@@ -28,7 +32,10 @@ namespace Raven
 
     }
 
-    //Frees the dynamically loaded Vulkan library.
+    /**
+     * @brief Frees the dynamically loaded Vulkan library.
+     * @param vulkanLibrary
+     */
     void freeVulkanLibrary(void *&vulkanLibrary)
     {
         if(vulkanLibrary == nullptr)
@@ -41,7 +48,11 @@ namespace Raven
         vulkanLibrary = nullptr;
     }
 
-    //Loads a vulkan function
+    /**
+     * @brief Loads a vulkan function
+     * @param vulkanLibrary
+     * @return
+     */
     bool loadFunctionExportedFromVulkanLoaderLibrary(LIBRARY_TYPE const &vulkanLibrary)
     {
         //First define OS specific load function, which
@@ -64,7 +75,10 @@ namespace Raven
         return true;
     }
 
-    //Loads global level functions. There are currently three such functions.
+    /**
+     * @brief Loads global level functions. There are currently three such functions.
+     * @return
+     */
     bool loadGlobalLevelFunctions()
     {
         #define GLOBAL_LEVEL_VULKAN_FUNCTION(name)                                                  \
@@ -79,7 +93,12 @@ namespace Raven
         return true;
     }
 
-    //Loads instance level vulkan functions
+    /**
+     * @brief Loads instance level vulkan functions
+     * @param instance
+     * @param enabledExtensions
+     * @return
+     */
     bool loadInstanceLevelVulkanFunctions(VkInstance &instance,
                                          std::vector<const char*> const& enabledExtensions)
     {
@@ -112,10 +131,15 @@ namespace Raven
         return true;
     }
 
-    //Loads logical device level functions. NOTE: vkGetDeviceProcAddr has some performance
-    //benefits compared to vkGetInstanceAddr BUT this also means that we need to call the
-    //loadDeviceLevelFunctions-function for each logical device in the application.
-    //One device usually cannot use the loaded functions of another device!
+    /**
+     * @brief Loads logical device level functions. NOTE: vkGetDeviceProcAddr has some performance
+              benefits compared to vkGetInstanceAddr BUT this also means that we need to call the
+              loadDeviceLevelFunctions-function for each logical device in the application.
+              One device usually cannot use the loaded functions of another device!
+     * @param device
+     * @param enabledExtensions
+     * @return
+     */
     bool loadDeviceLevelFunctions(VkDevice &device, std::vector<const char*>  &enabledExtensions)
     {
         //First define device level functions

@@ -6,11 +6,17 @@
 //Using the Raven namespace.
 using namespace Raven;
 
+/**
+ * @brief VulkanDevice::VulkanDevice
+ */
 VulkanDevice::VulkanDevice()
 {
     logicalDevice = VK_NULL_HANDLE;
 }
 
+/**
+ * @brief VulkanDevice::~VulkanDevice
+ */
 VulkanDevice::~VulkanDevice()
 {
     //Destroy the logical device. After this we can no longer
@@ -23,7 +29,12 @@ VulkanDevice::~VulkanDevice()
     }
 }
 
-//Initializes the vulkan device.
+/**
+ * @brief Initializes the vulkan device.
+ * @param device
+ * @param desiredDeviceExtensions
+ * @return
+ */
 bool VulkanDevice::initializeDevice(VkPhysicalDevice &device,
                                     std::vector<const char*>  &desiredDeviceExtensions)
 {
@@ -76,7 +87,11 @@ bool VulkanDevice::initializeDevice(VkPhysicalDevice &device,
     return true;
 }
 
-//Initializes the queues this logical vulkan device will be using.
+/**
+ * @brief Initializes the queues this logical vulkan device will be using.
+ * @param familyInfo
+ * @return
+ */
 bool VulkanDevice::initializeQueues(std::vector<VulkanQueueInfo> &familyInfo)
 {
     //Get all queue families of the physical device.

@@ -15,8 +15,6 @@ class RavenEngine
     private:
         //Initializes vulkan dynamic library and loads global-level functions
         bool initializeVulkan();
-        //Creates a new vulkan instance
-        bool createInstance(VkInstance &instance, char const* const appName, std::vector<const char*> &desiredInstanceExtensions);
         //Selects the physical device that the program is going to use
         bool selectPhysicalDevice(std::vector<VkPhysicalDevice> &physicalDevices,
                                   VkPhysicalDevice &selectedDevice,
@@ -50,9 +48,9 @@ class RavenEngine
 
         //A pointer to a VulkanDevice class object. Naming this a pointer
         //quarantees correct order of object destruction.
-        VulkanDevice* vulkanDevice;
+        VulkanDevice* vulkanDevice = nullptr;
 
         //Application window/windows.
-        VulkanWindow* appWindow;
+        VulkanWindow* appWindow = nullptr;
         uint16_t windowHeight = 500, windowWidth = 500;
 };

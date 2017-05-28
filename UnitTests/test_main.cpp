@@ -35,6 +35,30 @@ TEST_F(LibraryTest, releaseLibraryTest)
     EXPECT_EQ(nullptr, libraryObject->library);
 }
 
+/**INSTANCE TESTING**/
+struct TestInstance : testing::Test
+{
+    std::vector<const char*> testInstanceExtensions =
+    {
+        VK_KHR_SURFACE_EXTENSION_NAME,
+        PLATFORM_SURFACE_EXTENSION
+    };
+
+    VkInstance testInstance;
+    TestInstance()
+    {
+        if(createVulkanInstance(testInstanceExtensions, "TestName", testInstance) != VK_SUCCESS)
+        {
+            std::cerr << "Failed to create a test instance!" << std::endl;
+        }
+    }
+    virtual ~TestInstance()
+    {
+
+    }
+};
+
+/**STRUCTURE TESTS START**/
 TEST(RavenStructureTest, applicationCreateInfoTest)
 {
     VkApplicationInfo appInfo = VulkanStructures::applicationInfo();
@@ -82,25 +106,9 @@ TEST(RavenStructureTest, surfaceCreateInfoTest)
     EXPECT_EQ(0, createInfo.flags);
 }
 
-struct VulkanInstance
-{
-    VkInstance instance;
-    VulkanInstance(){}
-};
+/**STRUCTURE TESTS END**/
 
-struct InstanceTest
-{
-    VulkanInstance* instanceObject;
-    InstanceTest()
-    {
-        instanceObject = new VulkanInstance;
-    }
-    virtual ~InstanceTest()
-    {
-        delete instanceObject;
-    }
-};
-
+/**RAVEN MAIN CLASS TESTS START**/
 TEST(RavenTest, startRaven)
 {
     RavenEngine raven;
@@ -112,7 +120,9 @@ TEST(RavenTest, startWithoutNameTest)
     RavenEngine raven;
     EXPECT_FALSE(raven.start(nullptr));
 }
+/**RAVEN MAIN CLASS TESTS END**/
 
+/**UTILITY FUNCTIONS TESTS START**/
 TEST(UtilityFunctionTest, getPhysicalDeviceQueuesWithPropertiesEmptyTest)
 {
 
@@ -140,6 +150,78 @@ TEST(UtilityFunctionTest, createSwapchainWithEmptyObjectsTest)
     VkDevice testLogicalDevice = VK_NULL_HANDLE;
     EXPECT_FALSE(createSwapchain(testLogicalDevice, testCreateInfo, testSwapchain));
 }
+/**UTILITY FUNCTIONS TESTS START**/
+
+/**PHYSICAL DEVICE TESTS START**/
+struct PhysicalDevice
+{
+    std::vector<VkPhysicalDevice> gpus;
+    VkPhysicalDevice gpu;
+    PhysicalDevice(){}
+    virtual ~PhysicalDevice(){}
+};
+
+struct PhysicalDeviceTest : testing::Test
+{
+    PhysicalDevice* testPhysicalDevice;
+    PhysicalDeviceTest()
+    {
+        testPhysicalDevice = new PhysicalDevice();
+    }
+    virtual ~PhysicalDeviceTest()
+    {
+        delete testPhysicalDevice;
+    }
+};
+
+TEST_F(PhysicalDeviceTest, failDeviceExtensionCheck)
+{
+    /**Create an instance**/
+    std::vector<const char*> testInstanceExtensions =
+    {
+        VK_KHR_SURFACE_EXTENSION_NAME
+    };
+    VkInstance testInstance;
+    EXPECT_TRUE(createVulkanInstance(testInstanceExtensions, "TestName", testInstance));
+
+    /**Values that should fail the test since they are
+     * instance level values and not device level values.*/
+    std::vector<const char*> testFailValues =
+    {
+        VK_KHR_SURFACE_EXTENSION_NAME
+    };
+
+    loadPhysicalDevices(testInstance, testPhysicalDevice->gpus);
+
+    for(int i = 0; i < testPhysicalDevice->gpus.size(); i++)
+    {
+        EXPECT_FALSE(arePhysicalDeviceExtensionsSupported(testPhysicalDevice->gpus.at(i), testFailValues));
+    }
+}
+
+TEST_F(PhysicalDeviceTest, passDeviceExtensionCheck)
+{
+    /**Create an instance**/
+    std::vector<const char*> testInstanceExtensions =
+    {
+        VK_KHR_SURFACE_EXTENSION_NAME
+    };
+    VkInstance testInstance;
+    EXPECT_TRUE(createVulkanInstance(testInstanceExtensions, "TestName", testInstance));
+
+    EXPECT_TRUE(loadPhysicalDevices(testInstance, testPhysicalDevice->gpus));
+
+    std::vector<const char*> testGoodValues =
+    {
+         VK_KHR_SWAPCHAIN_EXTENSION_NAME
+    };
+    for(int i = 0; i < testPhysicalDevice->gpus.size(); i++)
+    {
+        EXPECT_TRUE(arePhysicalDeviceExtensionsSupported(testPhysicalDevice->gpus.at(i), testGoodValues));
+    }
+}
+
+/**PHYSICAL DEVICE TESTS END**/
 
 int main(int argc, char *argv[])
 {
