@@ -77,4 +77,27 @@ namespace VulkanStructures
         presentInfo.pNext = nullptr;
         return presentInfo;
     }
+
+    inline VkCommandPoolCreateInfo commandPoolCreateInfo(uint32_t familyIndex)
+    {
+        VkCommandPoolCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+        createInfo.pNext = nullptr;
+        createInfo.flags = 0;
+        createInfo.queueFamilyIndex = familyIndex;
+        return createInfo;
+    }
+
+    inline VkCommandBufferAllocateInfo commandBufferAllocateInfo(VkCommandBufferLevel level,
+                                                                 VkCommandPool cmdPool,
+                                                                 uint32_t bufferCount)
+    {
+        VkCommandBufferAllocateInfo allocInfo = {};
+        allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        allocInfo.pNext = nullptr;
+        allocInfo.level = level;
+        allocInfo.commandPool = cmdPool;
+        allocInfo.commandBufferCount = bufferCount;
+        return allocInfo;
+    }
 }

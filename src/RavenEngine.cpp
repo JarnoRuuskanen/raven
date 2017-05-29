@@ -2,6 +2,7 @@
 #include "VulkanUtility.h"
 #include "VulkanStructures.h"
 #include "Settings.h"
+#include "CommandBufferManager.h"
 #include <string.h>
 
 using namespace Raven;

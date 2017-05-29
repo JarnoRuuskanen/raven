@@ -259,6 +259,43 @@ TEST_F(PhysicalDeviceTest, createLogicalDeviceTest)
     EXPECT_TRUE(createLogicalDevice(testPhysicalDevice->gpus[0], createInfo, testDevice));
 }
 
+TEST_F(PhysicalDeviceTest, createCommandPoolTest)
+{
+    /**Create an instance**/
+    std::vector<const char*> testInstanceExtensions =
+    {
+        VK_KHR_SURFACE_EXTENSION_NAME,
+        PLATFORM_SURFACE_EXTENSION
+    };
+
+    VkInstance testInstance;
+    EXPECT_TRUE(createVulkanInstance(testInstanceExtensions, "TestName", testInstance));
+
+    EXPECT_TRUE(loadPhysicalDevices(testInstance, testPhysicalDevice->gpus));
+
+    std::vector<const char*> testGoodValues =
+    {
+         VK_KHR_SWAPCHAIN_EXTENSION_NAME
+    };
+    for(int i = 0; i < testPhysicalDevice->gpus.size(); i++)
+    {
+        EXPECT_TRUE(arePhysicalDeviceExtensionsSupported(testPhysicalDevice->gpus.at(i), testGoodValues));
+    }
+
+    VkDevice testDevice;
+    VkDeviceCreateInfo createInfo = VulkanStructures::deviceCreateInfo();
+    createInfo.enabledExtensionCount = 0;
+    createInfo.enabledLayerCount = 0;
+    createInfo.pEnabledFeatures = nullptr;
+    createInfo.ppEnabledExtensionNames = nullptr;
+    createInfo.ppEnabledLayerNames = nullptr;
+    createInfo.pQueueCreateInfos = nullptr;
+    createInfo.queueCreateInfoCount = 0;
+
+    EXPECT_TRUE(createLogicalDevice(testPhysicalDevice->gpus[0], createInfo, testDevice));
+
+}
+
 /**PHYSICAL DEVICE TESTS END**/
 
 int main(int argc, char *argv[])
