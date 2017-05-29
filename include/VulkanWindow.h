@@ -38,14 +38,14 @@ class VulkanWindow
         //Creates the window frame
         bool createWindowFrame(uint16_t width, uint16_t height);
         //Returns a reference to the window surface.
-        inline VkSurfaceKHR& getPresentationSurface(){return windowPresentationSurface;}
+        inline VkSurfaceKHR& getPresentationSurface(){return presentationSurface;}
         //Returns a reference to the window swapchain object.
         inline VkSwapchainKHR& getSwapchain(){return swapchain;}
         //Returns a reference to the window parameters.
         inline WindowParameters& getWindowParameters(){return windowParameters;}
     private:
         //The window surface
-        VkSurfaceKHR windowPresentationSurface;
+        VkSurfaceKHR presentationSurface;
         //The swapchain of this window. Swapchain describes image formats, number
         //of images used for rendering (image buffering), presentation mode etc.
         //Each window can only have one swapchain at a time.

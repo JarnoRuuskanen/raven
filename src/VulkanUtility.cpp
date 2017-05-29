@@ -325,8 +325,8 @@ namespace Raven
      * @param surfaceCapabilities
      * @return False if something went wrong.
      */
-    bool getSurfaceCapabilities(VkPhysicalDevice &physicalDevice,
-                                VkSurfaceKHR presentationSurface,
+    bool getSurfaceCapabilities(const VkPhysicalDevice &physicalDevice,
+                                const VkSurfaceKHR presentationSurface,
                                 VkSurfaceCapabilitiesKHR &surfaceCapabilities)
     {
         VkResult result;
@@ -346,8 +346,8 @@ namespace Raven
      * @param imageUsage
      * @return False if something went wrong.
      */
-    bool selectSwapchainImageUsage(VkSurfaceCapabilitiesKHR const &surfaceCapabilities,
-                                   VkImageUsageFlags desiredUsages,
+    bool selectSwapchainImageUsage(const VkSurfaceCapabilitiesKHR &surfaceCapabilities,
+                                   const VkImageUsageFlags desiredUsages,
                                    VkImageUsageFlags &imageUsage)
     {
         //Determine image usage. imageUsage gets filled with the data from
@@ -363,8 +363,8 @@ namespace Raven
      * @param desiredTransforms
      * @param surfaceTransforms
      */
-    void selectSwapchainSurfaceTransform(VkSurfaceCapabilitiesKHR const &surfaceCapabilities,
-                                         VkSurfaceTransformFlagBitsKHR desiredTransforms,
+    void selectSwapchainSurfaceTransform(const VkSurfaceCapabilitiesKHR &surfaceCapabilities,
+                                         const VkSurfaceTransformFlagBitsKHR desiredTransforms,
                                          VkSurfaceTransformFlagBitsKHR &surfaceTransforms)
     {
         if(surfaceCapabilities.supportedTransforms & desiredTransforms)
@@ -386,9 +386,9 @@ namespace Raven
      * @param imageColorSpace
      * @return False if something went wrong.
      */
-    bool selectSwapchainImageFormat(VkPhysicalDevice &physicalDevice,
-                                    VkSurfaceKHR &presentationSurface,
-                                    VkSurfaceFormatKHR desiredSurfaceFormat,
+    bool selectSwapchainImageFormat(const VkPhysicalDevice &physicalDevice,
+                                    const VkSurfaceKHR &presentationSurface,
+                                    const VkSurfaceFormatKHR desiredSurfaceFormat,
                                     VkFormat &imageFormat,
                                     VkColorSpaceKHR &imageColorSpace)
     {
@@ -457,7 +457,7 @@ namespace Raven
      * @param swapchain
      * @return False if something went wrong.
      */
-    bool createSwapchain(VkDevice &logicalDevice, VkSwapchainCreateInfoKHR &createInfo, VkSwapchainKHR &swapchain)
+    bool createSwapchain(const VkDevice logicalDevice, const VkSwapchainCreateInfoKHR createInfo, VkSwapchainKHR &swapchain)
     {
         if(logicalDevice == VK_NULL_HANDLE)
             return false;
@@ -479,7 +479,7 @@ namespace Raven
      * @param swapchainImages
      * @return False if something went wrong.
      */
-    bool getSwapchainImages(VkDevice &logicalDevice, VkSwapchainKHR swapchain, std::vector<VkImage> &swapchainImages)
+    bool getSwapchainImages(const VkDevice logicalDevice, const VkSwapchainKHR swapchain, std::vector<VkImage> &swapchainImages)
     {
         uint32_t imageCount = 0;
         VkResult result = VK_SUCCESS;
@@ -499,5 +499,79 @@ namespace Raven
             return false;
         }
         return true;
+    }
+
+    /**
+     * @brief Gets a swapchain image for drawing from a given swapchain.
+     * @param logicalDevice
+     * @param swapchain The swapchain where images are being queried from.
+     * @param semaphore A synchronization object.
+     * @param imageIndex The index of the image in the swapchain that was returned.
+     * @return False if something went wrong.
+     */
+    bool getSwapchainImageForDrawing(const VkDevice logicalDevice, const VkSwapchainKHR swapchain, VkSemaphore semaphore, uint32_t &imageIndex)
+    {
+        VkResult result = vkAcquireNextImageKHR(logicalDevice, swapchain, 3000000000, semaphore, nullptr, &imageIndex);
+        if(result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR)
+            return true;
+        else
+            return false;
+    }
+
+    /**
+     * @brief Presents an image to the screen.
+     * @param queue
+     * @param swapchain
+     * @param presentationSemaphore
+     * @return False if something went wrong.
+     */
+    bool presentImage(const VkQueue queue, const VkSwapchainKHR swapchain, const VkPresentInfoKHR presentInfo, VkSemaphore &presentationSemaphore)
+    {
+
+    }
+
+    /**
+     * @brief Creates a new swapchain synchronization object.
+     * @param logicalDevice
+     * @param semaphore
+     * @return False if someething went wrong.
+     */
+    bool createSemaphore(const VkDevice logicalDevice, VkSemaphore &semaphore)
+    {
+        VkSemaphoreCreateInfo createInfo = VulkanStructures::semaphoreCreateInfo();
+        if(vkCreateSemaphore(logicalDevice, &createInfo, nullptr, &semaphore) != VK_SUCCESS)
+        {
+            std::cerr << "Failed to create a semaphore!" << std::endl;
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * @brief Destroys a presentation surface.
+     * @param instance
+     * @param surface
+     */
+    void destroyPresentationSurface(const VkInstance instance, VkSurfaceKHR &surface)
+    {
+        if(surface)
+        {
+            vkDestroySurfaceKHR(instance, surface, nullptr);
+        }
+        surface = VK_NULL_HANDLE;
+    }
+
+    /**
+     * @brief Destroys a swapchain.
+     * @param logicalDevice
+     * @param swapchain
+     */
+    void destroySwapchain(const VkDevice logicalDevice, VkSwapchainKHR &swapchain)
+    {
+        if(swapchain)
+        {
+            vkDestroySwapchainKHR(logicalDevice, swapchain, nullptr);
+            swapchain = VK_NULL_HANDLE;
+        }
     }
 }

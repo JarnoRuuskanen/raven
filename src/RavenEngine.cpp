@@ -32,7 +32,15 @@ RavenEngine::~RavenEngine()
 {
     //Destroy the application window
     if(appWindow != nullptr)
+    {
+        //Destroy window swapchain.
+        destroySwapchain(vulkanDevice->getLogicalDevice(), appWindow->getSwapchain());
+
+        //Destroy the presentation surface.
+        destroyPresentationSurface(selectedInstance, appWindow->getPresentationSurface());
+
         delete appWindow;
+    }
     //Destroy the VulkanDevice
     if(vulkanDevice != nullptr)
         delete vulkanDevice;
@@ -115,6 +123,9 @@ bool RavenEngine::start(const char* appName)
     {
         return false;
     }
+
+    //Start rendering.
+    render();
 
     return true;
 }
@@ -316,6 +327,25 @@ bool RavenEngine::buildSwapchain(VkImageUsageFlags desiredImageUsage,
     if(!createSwapchain(vulkanDevice->getLogicalDevice(), swapchainInfo, window->getSwapchain()))
     {
         return false;
+    }
+
+    return true;
+}
+
+/**
+ * @brief Renders to the application window.
+ * @return False if something went wrong, true when the rendering has finished.
+ */
+bool RavenEngine::render()
+{
+    //While the window is open:
+    {
+        //Acquire the image to draw onto.
+
+        //Do operations to the data(submit to command buffer) and present.
+        //Update the parts of present info that change from frame to frame:
+
+        //Repeat.
     }
 
     return true;

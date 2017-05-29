@@ -12,6 +12,7 @@ class RavenEngine
         ~RavenEngine();
         bool start(const char* appName);
         void stop();
+        bool render();
     private:
         //Initializes vulkan dynamic library and loads global-level functions
         bool initializeVulkan();

@@ -60,4 +60,21 @@ namespace VulkanStructures
         createInfo.flags = 0;
         return createInfo;
     }
+
+    inline VkSemaphoreCreateInfo semaphoreCreateInfo()
+    {
+        VkSemaphoreCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+        createInfo.flags = 0;
+        createInfo.pNext = nullptr;
+        return createInfo;
+    }
+
+    inline VkPresentInfoKHR presentInfoKHR()
+    {
+        VkPresentInfoKHR presentInfo = {};
+        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+        presentInfo.pNext = nullptr;
+        return presentInfo;
+    }
 }

@@ -39,12 +39,12 @@ namespace Raven
                                      VkPresentModeKHR &desiredPresentMode);
 
     //Gets physical device presentation surface capabilities.
-    bool getSurfaceCapabilities(VkPhysicalDevice &physicalDevice,
-                                VkSurfaceKHR presentationSurface,
+    bool getSurfaceCapabilities(const VkPhysicalDevice &physicalDevice,
+                                const VkSurfaceKHR presentationSurface,
                                 VkSurfaceCapabilitiesKHR &surfaceCapabilities);
     //Selects swapchain image usage flags based on desired and supported usages.
-    bool selectSwapchainImageUsage(VkSurfaceCapabilitiesKHR const &surfaceCapabilities,
-                                   VkImageUsageFlags desiredUsages,
+    bool selectSwapchainImageUsage(const VkSurfaceCapabilitiesKHR &surfaceCapabilities,
+                                   const VkImageUsageFlags desiredUsages,
                                    VkImageUsageFlags &imageUsage);
 
     //Selects swapchain surface transformation based on desired and supported transforms.
@@ -53,15 +53,30 @@ namespace Raven
                                          VkSurfaceTransformFlagBitsKHR &surfaceTransforms);
 
     //Selects the format for swapchain images based on desired and supported formats.
-    bool selectSwapchainImageFormat(VkPhysicalDevice &physicalDevice,
-                                    VkSurfaceKHR &presentationSurface,
-                                    VkSurfaceFormatKHR desiredSurfaceFormat,
+    bool selectSwapchainImageFormat(const VkPhysicalDevice &physicalDevice,
+                                    const VkSurfaceKHR &presentationSurface,
+                                    const VkSurfaceFormatKHR desiredSurfaceFormat,
                                     VkFormat &imageFormat,
                                     VkColorSpaceKHR &imageColorSpace);
 
     //Creates a vulkan swapchain.
-    bool createSwapchain(VkDevice &logicalDevice, VkSwapchainCreateInfoKHR &createInfo, VkSwapchainKHR &swapchain);
+    bool createSwapchain(const VkDevice logicalDevice, const  VkSwapchainCreateInfoKHR createInfo, VkSwapchainKHR &swapchain);
 
     //Gathers the swapchain images from a given swapchain to a vector.
-    bool getSwapchainImages(VkDevice &logicalDevice, VkSwapchainKHR swapchain, std::vector<VkImage> &swapchainImages);
+    bool getSwapchainImages(const VkDevice logicalDevice, const VkSwapchainKHR swapchain, std::vector<VkImage> &swapchainImages);
+
+    //Gets a swapchain image for drawing from a given swapchain.
+    bool getSwapchainImageForDrawing(const VkDevice logicalDevice, const VkSwapchainKHR swapchain, VkSemaphore semaphore, uint32_t &imageIndex);
+
+    //Presents an image to the screen.
+    bool presentImage(const VkQueue queue, const VkSwapchainKHR swapchain, const VkPresentInfoKHR presentInfo, VkSemaphore &presentationSemaphores);
+
+    //Creates a new synchronization object.
+    bool createSemaphore(const VkDevice logicalDevice, VkSemaphore &semaphore);
+
+    //Destroys a presentation surface.
+    void destroyPresentationSurface(const VkInstance instance, VkSurfaceKHR &surface);
+
+    //Destroys a swapchain.
+    void destroySwapchain(const VkDevice logicalDevice, VkSwapchainKHR &swapchain);
 }
