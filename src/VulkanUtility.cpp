@@ -527,7 +527,16 @@ namespace Raven
      */
     bool presentImage(const VkQueue queue, const VkSwapchainKHR swapchain, const VkPresentInfoKHR presentInfo, VkSemaphore &presentationSemaphore)
     {
-
+        VkResult result;
+        result = vkQueuePresentKHR(queue, &presentInfo);
+        //Switch case is faster than if else so:
+        switch(result)
+        {
+            case VK_SUCCESS:
+                return true;
+            default:
+                return false;
+        }
     }
 
     /**
@@ -557,8 +566,8 @@ namespace Raven
         if(surface)
         {
             vkDestroySurfaceKHR(instance, surface, nullptr);
+            surface = VK_NULL_HANDLE;
         }
-        surface = VK_NULL_HANDLE;
     }
 
     /**
