@@ -31,16 +31,15 @@ namespace VulkanStructures
     }
 
     inline VkDeviceQueueCreateInfo deviceQueueCreateInfo(uint32_t familyIndex,
-                                                         uint32_t queueCount,
-                                                         const float priority)
+                                                         std::vector<float> priorities)
     {
         VkDeviceQueueCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
         createInfo.pNext = nullptr;
         createInfo.flags = 0;
         createInfo.queueFamilyIndex = familyIndex;
-        createInfo.queueCount = queueCount;
-        createInfo.pQueuePriorities = &priority;
+        createInfo.queueCount = static_cast<uint32_t>(priorities.size());
+        createInfo.pQueuePriorities = priorities.data();
         return createInfo;
     }
 
@@ -119,5 +118,14 @@ namespace VulkanStructures
         info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
         info.pNext = nullptr;
         return info;
+    }
+
+    inline VkFenceCreateInfo fenceCreateInfo(VkBool32 initializeSignaled)
+    {
+        VkFenceCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        createInfo.pNext = nullptr;
+        createInfo.flags = initializeSignaled ? VK_FENCE_CREATE_SIGNALED_BIT : 0;
+        return createInfo;
     }
 }

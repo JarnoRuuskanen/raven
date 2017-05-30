@@ -571,6 +571,39 @@ namespace Raven
     }
 
     /**
+     * @brief Creates a fence. Note that a fence can be created
+     *        already in signaled state so this needs to be specified.
+     * @param logicalDevice
+     * @param fence
+     * @return False if something went wrong.
+     */
+    bool createFence(const VkDevice logicalDevice, VkBool32 initializeSignaled, VkFence &fence)
+    {
+        VkFenceCreateInfo createInfo = VulkanStructures::fenceCreateInfo(initializeSignaled);
+        VkResult result = vkCreateFence(logicalDevice, &createInfo, nullptr, &fence);
+        if(result != VK_SUCCESS)
+        {
+            std::cerr << "Failed to create a fence!" << std::endl;
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * @brief Destroys a fence.
+     * @param logicalDevice
+     * @param fence
+     */
+    void destroyFence(const VkDevice logicalDevice, VkFence &fence)
+    {
+        if(fence != VK_NULL_HANDLE)
+        {
+            vkDestroyFence(logicalDevice, fence, nullptr);
+            fence = VK_NULL_HANDLE;
+        }
+    }
+
+    /**
      * @brief Destroys a presentation surface.
      * @param instance
      * @param surface

@@ -367,6 +367,7 @@ bool RavenEngine::buildCommandBuffers()
      * and three buffers for now to document how it is done. I will get back
      * to this function once I have implemented the framebuffers.
     */
+
     VkCommandPool cmdPool;
     //Create the command pool info.
     VkCommandPoolCreateInfo poolInfo = VulkanStructures::commandPoolCreateInfo(vulkanDevice->getPrimaryQueueFamilyIndex());

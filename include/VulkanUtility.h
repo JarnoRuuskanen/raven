@@ -71,11 +71,17 @@ namespace Raven
     //Presents an image to the screen.
     bool presentImage(const VkQueue queue, const VkSwapchainKHR swapchain, const VkPresentInfoKHR presentInfo, VkSemaphore &presentationSemaphores);
 
-    //Creates a new synchronization object.
+    //Creates a semaphore.
     bool createSemaphore(const VkDevice logicalDevice, VkSemaphore &semaphore);
 
     //Destroys a semaphore.
     void destroySemaphore(const VkDevice logicalDevice, VkSemaphore &semaphore);
+
+    //Creates a fence.
+    bool createFence(const VkDevice logicalDevice, VkBool32 initializeSignaled, VkFence &fence);
+
+    //Destroys a semaphore.
+    void destroyFence(const VkDevice logicalDevice, VkFence &fence);
 
     //Destroys a presentation surface.
     void destroyPresentationSurface(const VkInstance instance, VkSurfaceKHR &surface);
