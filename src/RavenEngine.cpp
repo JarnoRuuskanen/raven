@@ -125,6 +125,8 @@ bool RavenEngine::start(const char* appName)
         return false;
     }
 
+    //Build the command buffers.
+    buildCommandBuffers();
     //Start rendering.
     render();
 
@@ -379,7 +381,7 @@ bool RavenEngine::buildCommandBuffers()
     uint32_t bufferCount = 3;
     VkCommandBufferAllocateInfo allocInfo = VulkanStructures::commandBufferAllocateInfo(level, cmdPool, bufferCount);
     //Allocate command buffers from the pool into a vector.
-    std::vector<VkCommandBuffer> commandBuffers;
+    std::vector<VkCommandBuffer> commandBuffers(bufferCount);
     if(!CommandBufferManager::allocateCommandBuffer(vulkanDevice->getLogicalDevice(), allocInfo, commandBuffers))
     {
         std::cerr << "Failed to allocate command buffers!" << std::endl;
