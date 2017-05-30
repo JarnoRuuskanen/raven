@@ -74,6 +74,9 @@ namespace Raven
     //Creates a new synchronization object.
     bool createSemaphore(const VkDevice logicalDevice, VkSemaphore &semaphore);
 
+    //Destroys a semaphore.
+    void destroySemaphore(const VkDevice logicalDevice, VkSemaphore &semaphore);
+
     //Destroys a presentation surface.
     void destroyPresentationSurface(const VkInstance instance, VkSurfaceKHR &surface);
 

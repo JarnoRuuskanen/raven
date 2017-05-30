@@ -77,5 +77,45 @@ namespace Raven
             }
             return true;
         }
+
+        /**
+         * @brief Resets a command buffer. This is far less expensive than creating a new cmd buffer.
+         *        Note that a command buffer can only be reset explicitly with this function if the
+         *        command pool was created with VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT flag.
+         * @param cmdBuffer
+         * @param releaseResources
+         * @return False if something went wrong.
+         */
+        bool resetCommandBuffer(VkCommandBuffer &cmdBuffer, VkBool32 releaseResources)
+        {
+            VkResult result = vkResetCommandBuffer(cmdBuffer,
+                                                   releaseResources ? VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT : 0);
+            if(result != VK_SUCCESS)
+            {
+                std::cerr << "Failed to reset a command buffer!" << std::endl;
+                return false;
+            }
+            return true;
+        }
+
+        /**
+         * @brief Resets a command pool and all the buffers in it.
+         * @param logicalDevice
+         * @param cmdPool
+         * @param releaseResources
+         * @return False if something went wrong.
+         */
+        bool resetCommandPool(VkDevice logicalDevice, VkCommandPool &cmdPool, VkBool32 releaseResources)
+        {
+            VkResult result = vkResetCommandPool(logicalDevice,
+                                                 cmdPool,
+                                                 releaseResources ? VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT : 0);
+            if(result != VK_SUCCESS)
+            {
+                std::cerr << "Failed to reset a command pool!" << std::endl;
+                return false;
+            }
+            return true;
+        }
     }
 }

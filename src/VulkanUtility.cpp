@@ -557,6 +557,20 @@ namespace Raven
     }
 
     /**
+     * @brief Destroys a semaphore. The semaphore must not be referenced anymore by any queues.
+     * @param logicalDevice
+     * @param semaphore
+     */
+    void destroySemaphore(const VkDevice logicalDevice, VkSemaphore &semaphore)
+    {
+        if(semaphore != VK_NULL_HANDLE)
+        {
+            vkDestroySemaphore(logicalDevice, semaphore, nullptr);
+            semaphore = VK_NULL_HANDLE;
+        }
+    }
+
+    /**
      * @brief Destroys a presentation surface.
      * @param instance
      * @param surface

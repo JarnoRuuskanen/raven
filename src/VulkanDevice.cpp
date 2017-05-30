@@ -51,9 +51,14 @@ bool VulkanDevice::initializeDevice(VkPhysicalDevice &device,
         return false;
 
     //Create a new queue create info -structure for each queue in the chosen family.
-    std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-    for(VulkanQueueInfo info : queueFamilyInfo)
-        queueCreateInfos.push_back(VulkanStructures::deviceQueueCreateInfo(info.queueFamilyIndex,info.priorities));
+    VulkanQueueInfo chosenQueueFamily = queueFamilyInfo[primaryQueueFamilyIndex];
+    VkDeviceQueueCreateInfo queueInfo = {};
+    queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+    queueInfo.flags = 0;
+    queueInfo.pNext = nullptr;
+    queueInfo.pQueuePriorities = chosenQueueFamily.priorities.data();
+    queueInfo.queueFamilyIndex = chosenQueueFamily.queueFamilyIndex;
+    queueInfo.queueCount = static_cast<uint32_t>(chosenQueueFamily.priorities.size());
 
     //Get the device features and properties. Note that features must be implicitly enabled,
     //while creating the logical device, they are not enabled by default.
@@ -72,8 +77,8 @@ bool VulkanDevice::initializeDevice(VkPhysicalDevice &device,
     //Enable all features the graphics card supports for now. This is not ideal for optimization.
     createInfo.pEnabledFeatures = &features;
     //Device queues are created when the logical device is created.
-    createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
-    createInfo.pQueueCreateInfos = queueCreateInfos.data();
+    createInfo.queueCreateInfoCount = 1;
+    createInfo.pQueueCreateInfos = &queueInfo;
 
     if(!createLogicalDevice(physicalDevice, createInfo, logicalDevice))
         return false;
@@ -94,6 +99,7 @@ bool VulkanDevice::initializeDevice(VkPhysicalDevice &device,
  */
 bool VulkanDevice::initializeQueues(std::vector<VulkanQueueInfo> &familyInfo)
 {
+    familyInfo.clear();
     //Get all queue families of the physical device.
     if(!getPhysicalDeviceQueuesWithProperties(physicalDevice, queueFamilies))
         return false;
@@ -111,7 +117,7 @@ bool VulkanDevice::initializeQueues(std::vector<VulkanQueueInfo> &familyInfo)
     VulkanQueueInfo  newFamily;
     newFamily.queueFamilyIndex = primaryQueueFamilyIndex;
     //Track all queues in the family.
-    for(int i = 0; i < queueFamilies[primaryQueueFamilyIndex].queueCount; i ++)
+    for(int i = 0; i < queueFamilies[primaryQueueFamilyIndex].queueCount; i++)
     {
         //Every queue is as valuable.
         newFamily.priorities.push_back(1.0f);

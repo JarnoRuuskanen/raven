@@ -31,15 +31,16 @@ namespace VulkanStructures
     }
 
     inline VkDeviceQueueCreateInfo deviceQueueCreateInfo(uint32_t familyIndex,
-                                                         std::vector<float> priorities)
+                                                         uint32_t queueCount,
+                                                         const float priority)
     {
         VkDeviceQueueCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
         createInfo.pNext = nullptr;
         createInfo.flags = 0;
         createInfo.queueFamilyIndex = familyIndex;
-        createInfo.queueCount = static_cast<uint32_t>(priorities.size());
-        createInfo.pQueuePriorities = createInfo.queueCount > 0 ? priorities.data() : nullptr;
+        createInfo.queueCount = queueCount;
+        createInfo.pQueuePriorities = &priority;
         return createInfo;
     }
 

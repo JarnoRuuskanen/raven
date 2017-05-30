@@ -88,16 +88,17 @@ TEST(RavenStructureTest, deviceCreateInfoTest)
 TEST(RavenStructureTest, deviceQueueCreateInfoTest)
 {
     uint32_t familyIndex = 0;
-    std::vector<float> priorities;
+    uint32_t queueCount = 1;
+    const float priority = 1.0f;
     VkDeviceQueueCreateInfo createInfo =
-            VulkanStructures::deviceQueueCreateInfo(familyIndex, priorities);
+            VulkanStructures::deviceQueueCreateInfo(familyIndex, queueCount, priority);
 
     EXPECT_EQ(VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO, createInfo.sType);
     EXPECT_EQ(nullptr, createInfo.pNext);
     EXPECT_EQ(0, createInfo.flags);
     EXPECT_EQ(familyIndex, createInfo.queueFamilyIndex);
-    EXPECT_EQ(static_cast<uint32_t>(priorities.size()), createInfo.queueCount);
-    EXPECT_EQ(priorities.data(), createInfo.pQueuePriorities);
+    EXPECT_EQ(queueCount, createInfo.queueCount);
+    EXPECT_EQ(&priority, createInfo.pQueuePriorities);
 }
 
 TEST(RavenStructureTest, surfaceCreateInfoTest)
