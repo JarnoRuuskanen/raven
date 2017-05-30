@@ -24,7 +24,7 @@ class VulkanDevice
         //At this point Raven only uses one queue family which supports all the possible
         //operations. This will most probably change in the future as I experiment with
         //different graphics cards.
-        inline uint32_t getPrimaryQueueFamilyIndex(){return queueFamilyIndex;}
+        inline uint32_t getPrimaryQueueFamilyIndex(){return primaryQueueFamilyIndex;}
         //Returns a reference to the logical device.
         inline VkDevice &getLogicalDevice(){return logicalDevice;}
     private:
@@ -40,7 +40,7 @@ class VulkanDevice
         //Every queue family the physical device supports
         std::vector<VkQueueFamilyProperties> queueFamilies;
         //Device queue family indices
-        uint32_t queueFamilyIndex;
+        uint32_t primaryQueueFamilyIndex;
         //A vector containing all queue family informations.
         std::vector<VulkanQueueInfo> queueFamilyInfo;
 };

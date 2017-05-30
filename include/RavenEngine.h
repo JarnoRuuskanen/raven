@@ -2,6 +2,7 @@
 #include "VulkanInitializer.h"
 #include "VulkanWindow.h"
 #include "VulkanDevice.h"
+#include "CommandBufferManager.h"
 
 //The main class for Raven
 using namespace Raven;
@@ -32,6 +33,9 @@ class RavenEngine
                             VkPresentModeKHR &presentationMode,
                             VkSwapchainKHR &oldSwapchain,
                             VulkanWindow *window);
+
+        //Allocates the application command pools, buffers and records the actions.
+        bool buildCommandBuffers();
 
         //Private objects:
 

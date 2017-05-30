@@ -132,6 +132,25 @@ bool RavenEngine::start(const char* appName)
 }
 
 /**
+ * @brief Renders to the application window.
+ * @return False if something went wrong, true when the rendering has finished.
+ */
+bool RavenEngine::render()
+{
+    //While the window is open:
+    {
+        //Acquire the image to draw onto.
+
+        //Do operations to the data(submit to command buffer) and present.
+        //Update the parts of present info that change from frame to frame:
+
+        //Repeat.
+    }
+
+    return true;
+}
+
+/**
  * @brief Initializes the vulkan dynamic library.
  * @return Returns false if something went wrong.
  */
@@ -334,20 +353,61 @@ bool RavenEngine::buildSwapchain(VkImageUsageFlags desiredImageUsage,
 }
 
 /**
- * @brief Renders to the application window.
- * @return False if something went wrong, true when the rendering has finished.
+ * @brief Allocates the application command pools, buffers and records the actions.
+ * @return False if something went wrong.
  */
-bool RavenEngine::render()
+bool RavenEngine::buildCommandBuffers()
 {
-    //While the window is open:
+    /**
+     * Create a new command buffer for each framebuffer object. This could
+     * possibly be optimized by creating multiple threads and command pools.
+     * For future examples I am going to implement just one command pool
+     * and three buffers for now to document how it is done. I will get back
+     * to this function once I have implemented the framebuffers.
+    */
+    VkCommandPool cmdPool;
+    //Create the command pool info.
+    VkCommandPoolCreateInfo poolInfo = VulkanStructures::commandPoolCreateInfo(vulkanDevice->getPrimaryQueueFamilyIndex());
+    //Create a command pool.
+    if(!CommandBufferManager::createCommandPool(vulkanDevice->getLogicalDevice(), poolInfo, cmdPool))
     {
-        //Acquire the image to draw onto.
-
-        //Do operations to the data(submit to command buffer) and present.
-        //Update the parts of present info that change from frame to frame:
-
-        //Repeat.
+        std::cerr << "Failed to create a command pool!" << std::endl;
+        return false;
     }
+
+    VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    uint32_t bufferCount = 3;
+    VkCommandBufferAllocateInfo allocInfo = VulkanStructures::commandBufferAllocateInfo(level, cmdPool, bufferCount);
+    //Allocate command buffers from the pool into a vector.
+    std::vector<VkCommandBuffer> commandBuffers;
+    if(!CommandBufferManager::allocateCommandBuffer(vulkanDevice->getLogicalDevice(), allocInfo, commandBuffers))
+    {
+        std::cerr << "Failed to allocate command buffers!" << std::endl;
+        return false;
+    }
+
+    VkCommandBufferUsageFlags flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+    VkCommandBufferBeginInfo beginInfo = VulkanStructures::commandBufferBeginInfo(flags);
+    //Record actions to each individual buffer:
+    for(int i = 0; i < commandBuffers.size(); i++)
+    {
+        if(!CommandBufferManager::beginCommandBuffer(commandBuffers[i], beginInfo))
+        {
+            std::cerr << "Failed to start command buffer recording for buffer number: " <<i <<std::endl;
+            return false;
+        }
+
+        //Commands that you want to record should be placed here.
+
+        if(!CommandBufferManager::endCommandBuffer(commandBuffers[i]))
+        {
+            std::cerr << "Failed to end command buffer number: " << i << std::endl;
+            return false;
+        }
+    }
+
+    //Destroying the command pool will destroy all the command buffers allocated from it.
+    vkDestroyCommandPool(vulkanDevice->getLogicalDevice(), cmdPool, nullptr);
 
     return true;
 }

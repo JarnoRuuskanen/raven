@@ -3,10 +3,14 @@
 #include <gtest/gtest.h>
 #include <string>
 #include <xcb/xcb.h>
-/**RAVEN PROJECT INCLUDES IN CORRECT ORDER**/
+/**RAVEN PROJECT INCLUDES IN CORRECT ORDER.
+   REMEMBER TO ALSO INCLUDE THE CPP-FILES
+   OR THE PROJECT WON'T COMPILE!*/
 #include "Settings.h"
 #include "ListOfVulkanFunctions.inl"
 #include "Headers.h"
+#include "CommandBufferManager.h"
+#include "CommandBufferManager.cpp"
 #include "VulkanInitializer.h"
 #include "VulkanInitializer.cpp"
 #include "VulkanFunctions.h"

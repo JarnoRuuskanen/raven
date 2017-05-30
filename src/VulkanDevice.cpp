@@ -104,14 +104,14 @@ bool VulkanDevice::initializeQueues(std::vector<VulkanQueueInfo> &familyInfo)
                             VK_QUEUE_COMPUTE_BIT  |
                             VK_QUEUE_TRANSFER_BIT |
                             VK_QUEUE_SPARSE_BINDING_BIT,
-                            queueFamilyIndex))
+                            primaryQueueFamilyIndex))
         return false;
 
     //Store the chosen queue family information into a vector.
     VulkanQueueInfo  newFamily;
-    newFamily.queueFamilyIndex = queueFamilyIndex;
+    newFamily.queueFamilyIndex = primaryQueueFamilyIndex;
     //Track all queues in the family.
-    for(int i = 0; i < queueFamilies[queueFamilyIndex].queueCount; i ++)
+    for(int i = 0; i < queueFamilies[primaryQueueFamilyIndex].queueCount; i ++)
     {
         //Every queue is as valuable.
         newFamily.priorities.push_back(1.0f);

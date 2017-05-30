@@ -50,7 +50,7 @@ file(GLOB_RECURSE HPP_FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/*.*)
 #This next line is for enabling c++14 because it's not on by default
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
-#Add the unit tests.
+#When you want to add the unit tests + compile them, add these two lines.
 add_subdirectory(lib/googletest)
 add_subdirectory(UnitTests)
 

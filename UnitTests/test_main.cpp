@@ -1,6 +1,7 @@
 #include "TestHeaders.h"
 
 using namespace Raven;
+using namespace CommandBufferManager;
 
 struct Library
 {
@@ -294,6 +295,9 @@ TEST_F(PhysicalDeviceTest, createCommandPoolTest)
 
     EXPECT_TRUE(createLogicalDevice(testPhysicalDevice->gpus[0], createInfo, testDevice));
 
+    VkCommandPool cmdPool;
+    VkCommandPoolCreateInfo poolInfo = VulkanStructures::commandPoolCreateInfo(0);
+    EXPECT_TRUE(createCommandPool(testDevice, poolInfo, cmdPool));
 }
 
 /**PHYSICAL DEVICE TESTS END**/

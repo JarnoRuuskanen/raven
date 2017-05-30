@@ -100,4 +100,23 @@ namespace VulkanStructures
         allocInfo.commandBufferCount = bufferCount;
         return allocInfo;
     }
+
+    inline VkCommandBufferBeginInfo commandBufferBeginInfo(VkCommandBufferUsageFlags usageFlags)
+    {
+        VkCommandBufferBeginInfo beginInfo = {};
+        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        beginInfo.pNext = nullptr;
+        beginInfo.flags = usageFlags;
+        //For primary command buffers this value should be nullptr.
+        beginInfo.pInheritanceInfo = nullptr;
+        return beginInfo;
+    }
+
+    inline VkCommandBufferInheritanceInfo commandBufferInheritanceInfo()
+    {
+        VkCommandBufferInheritanceInfo info = {};
+        info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+        info.pNext = nullptr;
+        return info;
+    }
 }
