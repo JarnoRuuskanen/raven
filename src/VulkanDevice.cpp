@@ -89,6 +89,17 @@ bool VulkanDevice::initializeDevice(VkPhysicalDevice &device,
     if(!loadDeviceLevelFunctions(logicalDevice, desiredDeviceExtensions))
         return false;
 
+    //After device level functions have been loaded, save the logical device queue handles so
+    //that the vulkan device can actually be used to submit commands into the graphics card.
+    getQueueFamilyQueues(logicalDevice, chosenQueueFamily.queueFamilyIndex,
+                         static_cast<uint32_t>(chosenQueueFamily.priorities.size()),
+                         deviceQueueHandles);
+    if(deviceQueueHandles.size() < chosenQueueFamily.priorities.size())
+    {
+        std::cerr << "Failed to store logical device queue handles!" << std::endl;
+        return false;
+    }
+
     return true;
 }
 

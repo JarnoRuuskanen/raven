@@ -117,5 +117,26 @@ namespace Raven
             }
             return true;
         }
+
+        /**
+         * @brief Submits command buffers to a queue and signals the fence when done submitting.
+         *        Note that submitting command buffers is fairly expensive
+         *        operation so always try to batch as many command buffers together for submit as possible.
+         * @param queue
+         * @param submitInfoCount
+         * @param submitInfo
+         * @param fence
+         * @return
+         */
+        bool submitCommandBuffers(const VkQueue queue, const uint32_t submitInfoCount, VkSubmitInfo submitInfo, VkFence &fence)
+        {
+            VkResult result = vkQueueSubmit(queue, submitInfoCount, &submitInfo, fence);
+            if(result != VK_SUCCESS)
+            {
+                std::cerr << "Failed to submit command buffers to a queue" << std::endl;
+                return false;
+            }
+            return true;
+        }
     }
 }

@@ -3,6 +3,16 @@
 
 namespace Raven
 {
+    /**A struct to help synchronize command submits.
+    *  The idea for this struct comes from VulkanCookbook.
+    **/
+    struct WaitSemaphoreInfo
+    {
+        VkSemaphore semaphore;
+        //At which stage should the hardware wait?
+        VkPipelineStageFlags waitingStage;
+    };
+
     namespace CommandBufferManager
     {
         //Creates a new command pool.
@@ -21,5 +31,7 @@ namespace Raven
         bool resetCommandBuffer(VkCommandBuffer &cmdBuffer, VkBool32 releaseResources);
         //Resets a command pool and all the buffers in it.
         bool resetCommandPool(VkDevice logicalDevice, VkCommandPool &cmdPool, VkBool32 releaseResources);
+        //Submits command buffers to a queue.
+        bool submitCommandBuffers(const VkQueue queue, const uint32_t submitInfoCount, VkSubmitInfo submitInfo, VkFence &fence);
     }
 }

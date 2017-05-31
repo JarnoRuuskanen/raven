@@ -128,4 +128,12 @@ namespace VulkanStructures
         createInfo.flags = initializeSignaled ? VK_FENCE_CREATE_SIGNALED_BIT : 0;
         return createInfo;
     }
+
+    inline VkSubmitInfo submitInfo()
+    {
+        VkSubmitInfo info = {};
+        info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        info.pNext = nullptr;
+        return info;
+    }
 }

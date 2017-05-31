@@ -27,6 +27,8 @@ class VulkanDevice
         inline uint32_t getPrimaryQueueFamilyIndex(){return primaryQueueFamilyIndex;}
         //Returns a reference to the logical device.
         inline VkDevice &getLogicalDevice(){return logicalDevice;}
+        //Returns a reference to the vector holding device queues.
+        inline std::vector<VkQueue> &getVulkanDeviceQueueHandles() {return deviceQueueHandles;}
     private:
         //Creates a logical device for the VulkanDevice
         bool createDevice();
@@ -43,4 +45,6 @@ class VulkanDevice
         uint32_t primaryQueueFamilyIndex;
         //A vector containing all queue family informations.
         std::vector<VulkanQueueInfo> queueFamilyInfo;
+        //Holds all of the device queue handles.
+        std::vector<VkQueue> deviceQueueHandles;
 };

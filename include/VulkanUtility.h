@@ -32,6 +32,13 @@ namespace Raven
     bool createLogicalDevice(VkPhysicalDevice &physicalDevice,
                              VkDeviceCreateInfo createInfo,
                              VkDevice &logicalDevice);
+
+    //Gets queues of a logical device's queue family.
+    void getQueueFamilyQueues(const VkDevice logicalDevice,
+                              const uint32_t queueFamilyIndex,
+                              const uint32_t queueCount,
+                              std::vector<VkQueue> &queues);
+
     //Checks if the preferred presentation mode is supported by the physical device.
     //If not, chooses a default presentation mode.
     bool isPresentationModeSupported(VkPhysicalDevice &physicalDevice,
@@ -82,6 +89,12 @@ namespace Raven
 
     //Destroys a semaphore.
     void destroyFence(const VkDevice logicalDevice, VkFence &fence);
+
+    //Resets fences.
+    bool resetFences(const VkDevice logicalDevice, std::vector<VkFence> &fences);
+
+    //Makes the application wait until the fences are signaled or until timeout has been reached.
+    bool waitForFences(const VkDevice logicalDevice, const uint32_t timeout, const VkBool32 waitForAll, std::vector<VkFence>const &fences);
 
     //Destroys a presentation surface.
     void destroyPresentationSurface(const VkInstance instance, VkSurfaceKHR &surface);

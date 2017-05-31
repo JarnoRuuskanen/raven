@@ -277,6 +277,27 @@ namespace Raven
     }
 
     /**
+     * @brief Gets queues of a logical device's queue family.
+     * @param logicalDevice
+     * @param queueFamilyIndex
+     * @param queueCount
+     * @param queues
+     * @return
+     */
+    void getQueueFamilyQueues(const VkDevice logicalDevice,
+                              const uint32_t queueFamilyIndex,
+                              const uint32_t queueCount,
+                              std::vector<VkQueue> &queues)
+    {
+        for(uint32_t i = 0; i < queueCount; ++i)
+        {
+            VkQueue newQueue;
+            vkGetDeviceQueue(logicalDevice, queueFamilyIndex, i, &newQueue);
+            queues.push_back(newQueue);
+        }
+    }
+
+    /**
      * @brief Checks if the preferred presentation mode is supported by the physical device.
      * @param physicalDevice
      * @param presentationSurface
@@ -601,6 +622,51 @@ namespace Raven
             vkDestroyFence(logicalDevice, fence, nullptr);
             fence = VK_NULL_HANDLE;
         }
+    }
+
+    /**
+     * @brief Resets fences.
+     * @param logicalDevice
+     * @param fences
+     * @return False if there were no fences in the vector or if something went
+     *         wrong with the resetting.
+     */
+    bool resetFences(const VkDevice logicalDevice, std::vector<VkFence> &fences)
+    {
+        if(fences.size() > 0)
+        {
+            VkResult result = vkResetFences(logicalDevice, static_cast<uint32_t>(fences.size()), fences.data());
+            if(result != VK_SUCCESS)
+            {
+                std::cerr << "Failed to reset fences!" << std::endl;
+                return false;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @brief Makes the application wait until all the fences are signaled or until timeout has been reached.
+     * @param logicalDevice
+     * @param timeout
+     * @param waitForAll
+     * @param fences
+     * @return False if something went wrong.
+     */
+    bool waitForFences(const VkDevice logicalDevice, const uint32_t timeout, const VkBool32 waitForAll, std::vector<VkFence>const &fences)
+    {
+        if(fences.size() > 0)
+        {
+            VkResult result = vkWaitForFences(logicalDevice, static_cast<uint32_t>(fences.size()), fences.data(), waitForAll, timeout);
+            if(result != VK_SUCCESS)
+            {
+                std::cerr << "Failed to wait for fences!" << std::endl;
+                return false;
+            }
+            return true;
+        }
+        return false;
     }
 
     /**
