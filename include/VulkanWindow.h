@@ -43,6 +43,8 @@ class VulkanWindow
         inline VkSwapchainKHR& getSwapchain(){return swapchain;}
         //Returns a reference to the window parameters.
         inline WindowParameters& getWindowParameters(){return windowParameters;}
+        //Returns the swapchain image vector.
+        inline std::vector<VkImage>& getImages(){return swapchainImages;}
     private:
         //The window surface
         VkSurfaceKHR presentationSurface;
@@ -51,6 +53,7 @@ class VulkanWindow
         //Each window can only have one swapchain at a time.
         VkSwapchainKHR swapchain;
         WindowParameters windowParameters;
+        std::vector<VkImage> swapchainImages;
         bool connectionEstablished = false;
 
 

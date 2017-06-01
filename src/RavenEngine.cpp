@@ -25,7 +25,6 @@ std::vector<const char*> desiredDeviceExtensions =
 RavenEngine::RavenEngine()
 {
     selectedInstance = VK_NULL_HANDLE;
-    selectedLogicalDevice = VK_NULL_HANDLE;
     selectedPhysicalDevice = VK_NULL_HANDLE;
 }
 
@@ -119,11 +118,8 @@ bool RavenEngine::start(const char* appName)
         return false;
 
     //Acquire the swapchain images.
-    std::vector<VkImage> swapchainImages;
-    if(!getSwapchainImages(vulkanDevice->getLogicalDevice(), appWindow->getSwapchain(), swapchainImages))
-    {
+    if(!getSwapchainImages(vulkanDevice->getLogicalDevice(), appWindow->getSwapchain(), appWindow->getImages()))
         return false;
-    }
 
     //Build the command buffers.
     buildCommandBuffers();
@@ -139,15 +135,40 @@ bool RavenEngine::start(const char* appName)
  */
 bool RavenEngine::render()
 {
-    //While the window is open:
-    {
-        //Acquire the image to draw onto.
 
-        //Do operations to the data(submit to command buffer) and present.
-        //Update the parts of present info that change from frame to frame:
+    //This is just a test case for submitting commands to device queues.
+    //This function does nothing of value other than works as an example for now.
+    VkFence submitFence;
+    createFence(vulkanDevice->getLogicalDevice(), VK_FALSE, submitFence);
+    VkSemaphore signaledSemaphore;
+    createSemaphore(vulkanDevice->getLogicalDevice(), signaledSemaphore);
 
-        //Repeat.
-    }
+    VkSubmitInfo submitInfo = VulkanStructures::submitInfo();
+    submitInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
+    submitInfo.pCommandBuffers = commandBuffers.data();
+    submitInfo.pSignalSemaphores = &signaledSemaphore;
+    submitInfo.signalSemaphoreCount = 1;
+    submitInfo.pWaitDstStageMask = nullptr;
+    submitInfo.waitSemaphoreCount = 0;
+    submitInfo.pWaitSemaphores = nullptr;
+
+    //Submit commands to the vulkan device for execution:
+    if(!vulkanDevice->executeCommands(submitInfo, submitFence))
+        return false;
+
+    //Wait for the fence to be signaled and delete the synchronization objects.
+    if(!waitForFences(vulkanDevice->getLogicalDevice(), 100000000, VK_TRUE, {submitFence}))
+        return false;
+
+    //Check the fence status:
+    if(!isFenceSignaled(vulkanDevice->getLogicalDevice(), submitFence))
+        return false;
+
+    destroyFence(vulkanDevice->getLogicalDevice(), submitFence);
+    destroySemaphore(vulkanDevice->getLogicalDevice(), signaledSemaphore);
+
+    //Destroying the command pool will destroy all the command buffers allocated from it.
+    CommandBufferManager::destroyCommandPool(vulkanDevice->getLogicalDevice(), cmdPool);
 
     return true;
 }
@@ -257,7 +278,7 @@ bool RavenEngine::buildSwapchain(VkImageUsageFlags desiredImageUsage,
     //we need to destroy the old swapchain if one was present.)
     if(oldSwapchain != VK_NULL_HANDLE)
     {
-        vkDestroySwapchainKHR(selectedLogicalDevice, oldSwapchain, nullptr);
+        vkDestroySwapchainKHR(vulkanDevice->getLogicalDevice(), oldSwapchain, nullptr);
         oldSwapchain = VK_NULL_HANDLE;
     }
 
@@ -368,7 +389,6 @@ bool RavenEngine::buildCommandBuffers()
      * to this function once I have implemented the framebuffers.
     */
 
-    VkCommandPool cmdPool;
     //Create the command pool info.
     VkCommandPoolCreateInfo poolInfo = VulkanStructures::commandPoolCreateInfo(vulkanDevice->getPrimaryQueueFamilyIndex());
     //Create a command pool.
@@ -382,7 +402,8 @@ bool RavenEngine::buildCommandBuffers()
     uint32_t bufferCount = 3;
     VkCommandBufferAllocateInfo allocInfo = VulkanStructures::commandBufferAllocateInfo(level, cmdPool, bufferCount);
     //Allocate command buffers from the pool into a vector.
-    std::vector<VkCommandBuffer> commandBuffers(bufferCount);
+    commandBuffers.clear();
+    commandBuffers.resize(bufferCount);
     if(!CommandBufferManager::allocateCommandBuffer(vulkanDevice->getLogicalDevice(), allocInfo, commandBuffers))
     {
         std::cerr << "Failed to allocate command buffers!" << std::endl;
@@ -408,40 +429,6 @@ bool RavenEngine::buildCommandBuffers()
             return false;
         }
     }
-
-    //Test command buffer execution.
-    VkFence submitFence;
-    createFence(vulkanDevice->getLogicalDevice(), VK_FALSE, submitFence);
-    VkSemaphore signaledSemaphore;
-    createSemaphore(vulkanDevice->getLogicalDevice(), signaledSemaphore);
-
-    VkSubmitInfo submitInfo = VulkanStructures::submitInfo();
-    submitInfo.commandBufferCount = bufferCount;
-    submitInfo.pCommandBuffers = commandBuffers.data();
-    submitInfo.pSignalSemaphores = &signaledSemaphore;
-    submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pWaitDstStageMask = nullptr;
-    submitInfo.waitSemaphoreCount = 0;
-    submitInfo.pWaitSemaphores = nullptr;
-
-    //Submit commands to the vulkan device for execution:
-    if(!vulkanDevice->executeCommands(submitInfo, submitFence))
-        return false;
-
-    //Wait for the fence to be signaled and delete the synchronization objects.
-    std::vector<VkFence> fences;
-    fences.push_back(submitFence);
-
-    waitForFences(vulkanDevice->getLogicalDevice(), 100000000, VK_TRUE, fences);
-
-    //Check the fence status:
-    isFenceSignaled(vulkanDevice->getLogicalDevice(), submitFence);
-
-    destroyFence(vulkanDevice->getLogicalDevice(), submitFence);
-    destroySemaphore(vulkanDevice->getLogicalDevice(), signaledSemaphore);
-
-    //Destroying the command pool will destroy all the command buffers allocated from it.
-    vkDestroyCommandPool(vulkanDevice->getLogicalDevice(), cmdPool, nullptr);
 
     return true;
 }

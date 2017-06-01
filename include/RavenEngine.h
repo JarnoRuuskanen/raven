@@ -47,7 +47,11 @@ class RavenEngine
         VkInstance selectedInstance;
         std::vector<VkPhysicalDevice> physicalDevices;
         VkPhysicalDevice selectedPhysicalDevice;
-        VkDevice selectedLogicalDevice;
+
+        //A command pool and command buffers for testing. These
+        //will most probably move to some place else.
+        VkCommandPool cmdPool;
+        std::vector<VkCommandBuffer> commandBuffers;
 
         //Custom objects
 

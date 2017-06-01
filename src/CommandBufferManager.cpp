@@ -126,7 +126,7 @@ namespace Raven
          * @param submitInfoCount
          * @param submitInfo
          * @param fence
-         * @return
+         * @return False if the submit fails.
          */
         bool submitCommandBuffers(const VkQueue queue, const uint32_t submitInfoCount, VkSubmitInfo submitInfo, VkFence &fence)
         {
@@ -137,6 +137,36 @@ namespace Raven
                 return false;
             }
             return true;
+        }
+
+        /**
+         * @brief Frees the memory of given command buffers and clears the vector. Make sure, that the
+         *        command buffers are not used or referenced to anywhere at this point.
+         * @param device
+         * @param cmdPool
+         * @param cmdBuffers
+         */
+        void freeCommandBuffers(const VkDevice logicalDevice, VkCommandPool &cmdPool, std::vector<VkCommandBuffer> &cmdBuffers)
+        {
+            if(cmdBuffers.size() > 0)
+            {
+                vkFreeCommandBuffers(logicalDevice, cmdPool, static_cast<uint32_t>(cmdBuffers.size()), cmdBuffers.data());
+                cmdBuffers.clear();
+            }
+        }
+
+        /**
+         * @brief Destroys a command pool and all the command buffers allocated from it.
+         * @param logicalDevice
+         * @param cmdPool
+         */
+        void destroyCommandPool(const VkDevice logicalDevice, VkCommandPool &cmdPool)
+        {
+            if(cmdPool != VK_NULL_HANDLE)
+            {
+                vkDestroyCommandPool(logicalDevice,cmdPool, nullptr);
+                cmdPool = VK_NULL_HANDLE;
+            }
         }
     }
 }
