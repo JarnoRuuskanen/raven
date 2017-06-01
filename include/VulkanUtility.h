@@ -96,6 +96,9 @@ namespace Raven
     //Makes the application wait until the fences are signaled or until timeout has been reached.
     bool waitForFences(const VkDevice logicalDevice, const uint32_t timeout, const VkBool32 waitForAll, std::vector<VkFence>const &fences);
 
+    //Checks if a fence has been signaled or not.
+    bool isFenceSignaled(const VkDevice logicalDevice, VkFence &fence);
+
     //Destroys a presentation surface.
     void destroyPresentationSurface(const VkInstance instance, VkSurfaceKHR &surface);
 

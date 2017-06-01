@@ -409,7 +409,7 @@ bool RavenEngine::buildCommandBuffers()
         }
     }
 
-    //Test command buffer submitting.
+    //Test command buffer execution.
     VkFence submitFence;
     createFence(vulkanDevice->getLogicalDevice(), VK_FALSE, submitFence);
     VkSemaphore signaledSemaphore;
@@ -424,8 +424,9 @@ bool RavenEngine::buildCommandBuffers()
     submitInfo.waitSemaphoreCount = 0;
     submitInfo.pWaitSemaphores = nullptr;
 
-    //Submit:
-    CommandBufferManager::submitCommandBuffers(vulkanDevice->getVulkanDeviceQueueHandles()[0], 1, submitInfo, submitFence);
+    //Submit commands to the vulkan device for execution:
+    if(!vulkanDevice->executeCommands(submitInfo, submitFence))
+        return false;
 
     //Wait for the fence to be signaled and delete the synchronization objects.
     std::vector<VkFence> fences;
@@ -434,11 +435,7 @@ bool RavenEngine::buildCommandBuffers()
     waitForFences(vulkanDevice->getLogicalDevice(), 100000000, VK_TRUE, fences);
 
     //Check the fence status:
-    if(vkGetFenceStatus(vulkanDevice->getLogicalDevice(), submitFence) != VK_SUCCESS)
-    {
-        std::cerr << "Fence is not signaled!" << std::endl;
-        return false;
-    }
+    isFenceSignaled(vulkanDevice->getLogicalDevice(), submitFence);
 
     destroyFence(vulkanDevice->getLogicalDevice(), submitFence);
     destroySemaphore(vulkanDevice->getLogicalDevice(), signaledSemaphore);

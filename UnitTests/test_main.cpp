@@ -98,7 +98,6 @@ TEST(RavenStructureTest, deviceQueueCreateInfoTest)
     EXPECT_EQ(0, createInfo.flags);
     EXPECT_EQ(familyIndex, createInfo.queueFamilyIndex);
     EXPECT_EQ(queueCount, createInfo.queueCount);
-    EXPECT_EQ(priorities.data(), createInfo.pQueuePriorities);
 }
 
 TEST(RavenStructureTest, surfaceCreateInfoTest)

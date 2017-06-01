@@ -2,6 +2,7 @@
 #include "VulkanInitializer.h"
 #include "VulkanStructures.h"
 #include "VulkanUtility.h"
+#include "CommandBufferManager.h"
 
 //Using the Raven namespace.
 using namespace Raven;
@@ -100,6 +101,19 @@ bool VulkanDevice::initializeDevice(VkPhysicalDevice &device,
         return false;
     }
 
+    return true;
+}
+
+//Sends commands to the gpu for computing. This function also chooses the
+//queue which the commands will be submitted to.
+bool VulkanDevice::executeCommands(VkSubmitInfo &submitInfo, VkFence &submitFence)
+{
+    //Submit:
+    VkQueue selectedQueue = deviceQueueHandles[0];
+    if(!CommandBufferManager::submitCommandBuffers(selectedQueue, 1, submitInfo, submitFence))
+    {
+        return false;
+    }
     return true;
 }
 

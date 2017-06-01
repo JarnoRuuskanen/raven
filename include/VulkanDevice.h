@@ -18,6 +18,9 @@ class VulkanDevice
         ~VulkanDevice();
         //Initializes the vulkan device
         bool initializeDevice(VkPhysicalDevice &physicalDevice, std::vector<const char*>  &desiredExtensions);
+        //Sends commands to the gpu for computing. This function also chooses the
+        //queue which the commands will be submitted to.
+        bool executeCommands(VkSubmitInfo &submitInfo, VkFence &submitFence);
         //Returns a queue family reference by index
         inline VkQueueFamilyProperties& getQueueFamily(int index){return queueFamilies[index];}
         //Returns the queueFamilyIndex for the family that is currently used.
@@ -27,8 +30,6 @@ class VulkanDevice
         inline uint32_t getPrimaryQueueFamilyIndex(){return primaryQueueFamilyIndex;}
         //Returns a reference to the logical device.
         inline VkDevice &getLogicalDevice(){return logicalDevice;}
-        //Returns a reference to the vector holding device queues.
-        inline std::vector<VkQueue> &getVulkanDeviceQueueHandles() {return deviceQueueHandles;}
     private:
         //Creates a logical device for the VulkanDevice
         bool createDevice();

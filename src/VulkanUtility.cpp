@@ -670,6 +670,22 @@ namespace Raven
     }
 
     /**
+     * @brief Checks if a fence has been signaled or not.
+     * @param logicalDevice
+     * @param fence
+     * @return
+     */
+    bool isFenceSignaled(const VkDevice logicalDevice, VkFence &fence)
+    {
+        if(vkGetFenceStatus(logicalDevice, fence) != VK_SUCCESS)
+        {
+            std::cerr << "Fence is not signaled!" << std::endl;
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * @brief Destroys a presentation surface.
      * @param instance
      * @param surface
