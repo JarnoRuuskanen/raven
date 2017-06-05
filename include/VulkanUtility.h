@@ -104,4 +104,7 @@ namespace Raven
 
     //Destroys a swapchain.
     void destroySwapchain(const VkDevice logicalDevice, VkSwapchainKHR &swapchain);
+
+    //Makes the application to wait until the selected device is idle.
+    bool waitUntilDeviceIdle(VkDevice &logicalDevice);
 }

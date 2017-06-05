@@ -712,4 +712,20 @@ namespace Raven
             swapchain = VK_NULL_HANDLE;
         }
     }
+
+    /**
+     * @brief Makes the application to wait until the selected device is idle.
+     * @param logicalDevice
+     * @return Returns false if the waiting fails for some reason.
+     */
+    bool waitUntilDeviceIdle(VkDevice &logicalDevice)
+    {
+        VkResult result = vkDeviceWaitIdle(logicalDevice);
+        if(result != VK_SUCCESS)
+        {
+            std::cerr << "Failed to wait on logical device!" << std::endl;
+            return false;
+        }
+        return true;
+    }
 }

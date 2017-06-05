@@ -157,6 +157,9 @@ bool RavenEngine::render()
         return false;
 
     //Wait for the fence to be signaled and delete the synchronization objects.
+    //Note that in a normal case the application shouldn't stop to wait for the fence
+    //to be signaled but should instead do other tasks and check the fence status
+    //every now and then and when the fence is signaled, then continue with the task.
     if(!waitForFences(vulkanDevice->getLogicalDevice(), 100000000, VK_TRUE, {submitFence}))
         return false;
 
