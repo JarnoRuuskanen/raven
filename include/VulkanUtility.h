@@ -105,6 +105,12 @@ namespace Raven
     //Destroys a swapchain.
     void destroySwapchain(const VkDevice logicalDevice, VkSwapchainKHR &swapchain);
 
-    //Makes the application to wait until the selected device is idle.
+    //Makes the application wait until the selected device is idle.
     bool waitUntilDeviceIdle(VkDevice &logicalDevice);
+
+    //Makes the application wait until the selected queue has completed all tasks given to it.
+    bool waitUntilQueueIdle(VkQueue &queue);
+
+    //A function for creating a buffer.
+    bool createBuffer(const VkDevice logicalDevice, const VkBufferCreateInfo createInfo, VkBuffer &buffer);
 }

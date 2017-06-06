@@ -3,7 +3,6 @@
 #include "VulkanStructures.h"
 #include "Settings.h"
 #include "CommandBufferManager.h"
-#include <string.h>
 
 using namespace Raven;
 
@@ -30,6 +29,7 @@ RavenEngine::RavenEngine()
 
 RavenEngine::~RavenEngine()
 {
+
     //Destroy the application window
     if(appWindow != nullptr)
     {
@@ -41,9 +41,15 @@ RavenEngine::~RavenEngine()
 
         delete appWindow;
     }
+
     //Destroy the VulkanDevice
     if(vulkanDevice != nullptr)
+    {
+        //Wait until the device/devices are idle before proceeding to deletion.
+        waitUntilDeviceIdle(vulkanDevice->getLogicalDevice());
         delete vulkanDevice;
+    }
+
     //Destroy the vulkan instance
     if(selectedInstance != VK_NULL_HANDLE)
     {

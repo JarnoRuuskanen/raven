@@ -136,4 +136,18 @@ namespace VulkanStructures
         info.pNext = nullptr;
         return info;
     }
+
+    inline VkBufferCreateInfo bufferCreateInfo(VkDeviceSize size,
+                                               VkBufferUsageFlags usage,
+                                               VkSharingMode sharingMode)
+    {
+        VkBufferCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        createInfo.flags = 0;
+        createInfo.pNext = nullptr;
+        createInfo.size = size;
+        createInfo.usage = usage;
+        createInfo.sharingMode = sharingMode;
+        return createInfo;
+    }
 }

@@ -728,4 +728,38 @@ namespace Raven
         }
         return true;
     }
+
+    /**
+     * @brief Makes the application wait until the selected queue has completed all tasks given to it.
+     * @param queue
+     * @return Returns false if waiting on the queue fails.
+     */
+    bool waitUntilQueueIdle(VkQueue &queue)
+    {
+        VkResult result = vkQueueWaitIdle(queue);
+        if(result != VK_SUCCESS)
+        {
+            std::cerr << "Failed to wait until queue was idle!" << std::endl;
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * @brief A function for creating a buffer.
+     * @param logicalDevice
+     * @param createInfo
+     * @param buffer
+     * @return False if the buffer creation fails.
+     */
+    bool createBuffer(const VkDevice logicalDevice, const VkBufferCreateInfo createInfo, VkBuffer &buffer)
+    {
+        VkResult result = vkCreateBuffer(logicalDevice, &createInfo, nullptr, &buffer);
+        if(result != VK_SUCCESS)
+        {
+            std::cerr << "Failed to create a buffer!" << std::endl;
+            return false;
+        }
+        return true;
+    }
 }
