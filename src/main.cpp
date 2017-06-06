@@ -9,6 +9,8 @@ int main(int argc, char* argv[])
 {
     //Start Raven
     RavenEngine raven;
-    raven.start("Raven");
+    if(!raven.start("Raven"))
+        std::cerr << "Failed to start the engine!" << std::endl;
+
     return 0;
 }

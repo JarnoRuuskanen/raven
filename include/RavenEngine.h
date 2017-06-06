@@ -34,6 +34,9 @@ class RavenEngine
                             VkSwapchainKHR &oldSwapchain,
                             VulkanWindow *window);
 
+        //Creates the vertex buffers.
+        bool createVertexBuffers();
+
         //Allocates the application command pools, buffers and records the actions.
         bool buildCommandBuffers();
 

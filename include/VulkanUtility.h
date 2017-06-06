@@ -111,6 +111,18 @@ namespace Raven
     //Makes the application wait until the selected queue has completed all tasks given to it.
     bool waitUntilQueueIdle(VkQueue &queue);
 
-    //A function for creating a buffer.
+    //Creates a buffer.
     bool createBuffer(const VkDevice logicalDevice, const VkBufferCreateInfo createInfo, VkBuffer &buffer);
+
+    //Creates an image.
+    bool createImage(const VkDevice logicalDevice, const VkImageCreateInfo createInfo, VkImage &image);
+
+    //Gets the correct memory type for image/buffer.
+    bool getMemoryType(VkPhysicalDeviceMemoryProperties memoryProperties,
+                       VkMemoryRequirements memReq,
+                       VkFlags requiredProperties,
+                       uint32_t &memoryTypeIndex);
+
+    //Allocates memory for buffers and images.
+    bool allocateMemory(const VkDevice logicalDevice, VkMemoryAllocateInfo allocInfo, VkDeviceMemory &memory);
 }

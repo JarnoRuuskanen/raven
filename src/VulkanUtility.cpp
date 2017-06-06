@@ -746,7 +746,7 @@ namespace Raven
     }
 
     /**
-     * @brief A function for creating a buffer.
+     * @brief Creates a buffer.
      * @param logicalDevice
      * @param createInfo
      * @param buffer
@@ -758,6 +758,69 @@ namespace Raven
         if(result != VK_SUCCESS)
         {
             std::cerr << "Failed to create a buffer!" << std::endl;
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * @brief Creates an image.
+     * @param logicalDevice
+     * @param createInfo
+     * @param image
+     * @return False if the image creation fails.
+     */
+    bool createImage(const VkDevice logicalDevice, const VkImageCreateInfo createInfo, VkImage &image)
+    {
+        VkResult result = vkCreateImage(logicalDevice, &createInfo, nullptr, &image);
+        if(result != VK_SUCCESS)
+        {
+            std::cerr << "Failed to create an image!" << std::endl;
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * @brief Gets the correct memory type for image/buffer.
+     * @param physicalDeviceMemoryProperties
+     * @param memReq Such memory requirements as size and alignment.
+     * @param memoryProperties The sort of properties the memory should have.
+     * @param memoryTypeIndex The index of the correct memory, if any was found.
+     * @return False if correct memory type index could not be found.
+     */
+    bool getMemoryType(VkPhysicalDeviceMemoryProperties memoryProperties,
+                       VkMemoryRequirements memReq,
+                       VkFlags requiredProperties,
+                       uint32_t &memoryTypeIndex)
+    {
+        //Iterate through the memory properties and if the correct one is found, exit the function.
+        for(uint32_t type = 0; type < memoryProperties.memoryTypeCount; ++type)
+        {
+            if((memReq.memoryTypeBits & (1 << type)) &&
+                    ((memoryProperties.memoryTypes[type].propertyFlags & requiredProperties) == requiredProperties))
+            {
+                memoryTypeIndex = type;
+                return true;
+            }
+        }
+        std::cerr << "Failed to find correct memory type!" << std::endl;
+        return false;
+    }
+
+    /**
+     * @brief Allocates memory for buffers and images.
+     * @param logicalDevice
+     * @param allocInfo
+     * @param memory
+     * @return Returns false if the memory could not be allocated.
+     */
+    bool allocateMemory(const VkDevice logicalDevice, VkMemoryAllocateInfo allocInfo, VkDeviceMemory &memory)
+    {
+        VkResult result = vkAllocateMemory(logicalDevice, &allocInfo, nullptr, &memory);
+        if(result != VK_SUCCESS)
+        {
+            std::cerr << "Failed to allocate memory!" << std::endl;
             return false;
         }
         return true;

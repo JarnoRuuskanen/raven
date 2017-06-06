@@ -150,4 +150,14 @@ namespace VulkanStructures
         createInfo.sharingMode = sharingMode;
         return createInfo;
     }
+
+    inline VkMemoryAllocateInfo memoryAllocateInfo(VkDeviceSize size, uint32_t typeIndex)
+    {
+        VkMemoryAllocateInfo allocInfo = {};
+        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        allocInfo.pNext = nullptr;
+        allocInfo.allocationSize = size;
+        allocInfo.memoryTypeIndex = typeIndex;
+        return allocInfo;
+    }
 }
