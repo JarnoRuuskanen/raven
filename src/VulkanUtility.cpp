@@ -825,4 +825,38 @@ namespace Raven
         }
         return true;
     }
+
+    /**
+     * @brief Sets buffer memory barriers.
+     * @param commandBuffer
+     * @param generatingStages What stages of the pipeline have been using the buffers so far.
+     * @param consumingStages What stages the buffers will be used afterwards.
+     * @param bufferTransitions
+     */
+    void setBufferMemoryBarriers(VkCommandBuffer commandBuffer,
+                                 const VkPipelineStageFlags generatingStages,
+                                 const VkPipelineStageFlags consumingStages,
+                                 std::vector<BufferTransition> bufferTransitions)
+    {
+        //Create a vector for the buffer memory barriers.
+        std::vector<VkBufferMemoryBarrier> barriers;
+        for(BufferTransition bufferTransition : bufferTransitions)
+        {
+            //Create a new barrier for each buffer.
+            barriers.push_back(VulkanStructures::bufferMemoryBarrier(bufferTransition.currentAccess,
+                                                                     bufferTransition.newAccess,
+                                                                     bufferTransition.currentQueueFamily,
+                                                                     bufferTransition.newQueueFamily,
+                                                                     bufferTransition.buffer,
+                                                                     0,
+                                                                     VK_WHOLE_SIZE));
+        }
+
+        //Set the barriers.
+        if(barriers.size() > 0)
+        {
+            vkCmdPipelineBarrier(commandBuffer, generatingStages, consumingStages, 0, 0,
+                                 nullptr, static_cast<uint32_t>(barriers.size()), barriers.data(),0, nullptr);
+        }
+    }
 }

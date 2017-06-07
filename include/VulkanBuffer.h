@@ -1,12 +1,26 @@
 #pragma once
 #include "Headers.h"
 
-//A struct for holding all the buffer information.
-//This is different from a command buffer and they
-//should not be mixed.
-
+//Structs regarding buffers and buffer memory barriers
 namespace Raven
 {
+    //I copied this buffer memory barrier idea from VulkanCookbook,
+    //4 Resources and Memory - Setting a buffer memory barrier.
+    struct BufferTransition
+    {
+        //The buffer that will use the barrier.
+        VkBuffer buffer;
+        //How the buffer has been used so far.
+        VkAccessFlags currentAccess;
+        //How the buffer will be used from now on.
+        VkAccessFlags newAccess;
+        uint32_t currentQueueFamily;
+        uint32_t newQueueFamily;
+    };
+
+    //A struct for holding all the buffer information.
+    //This is different from a command buffer and they
+    //should not be mixed.
     struct VulkanBuffer
     {
         //For holding the data.

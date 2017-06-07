@@ -160,4 +160,25 @@ namespace VulkanStructures
         allocInfo.memoryTypeIndex = typeIndex;
         return allocInfo;
     }
+
+    inline VkBufferMemoryBarrier bufferMemoryBarrier(VkAccessFlags currentAccess,
+                                                     VkAccessFlags newAccess,
+                                                     uint32_t currentQueueFamily,
+                                                     uint32_t newQueueFamily,
+                                                     VkBuffer buffer,
+                                                     VkDeviceSize offset,
+                                                     VkDeviceSize size)
+    {
+        VkBufferMemoryBarrier memoryBarrier = {};
+        memoryBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+        memoryBarrier.pNext = nullptr;
+        memoryBarrier.srcAccessMask = currentAccess;
+        memoryBarrier.dstAccessMask = newAccess;
+        memoryBarrier.srcQueueFamilyIndex = currentQueueFamily;
+        memoryBarrier.dstQueueFamilyIndex = newQueueFamily;
+        memoryBarrier.buffer = buffer;
+        memoryBarrier.offset = offset;
+        memoryBarrier.size = size;
+        return memoryBarrier;
+    }
 }

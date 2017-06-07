@@ -1,5 +1,6 @@
 #pragma once
 #include "Headers.h"
+#include "VulkanBuffer.h"
 
 //List of all vulkan utility functions used by the Raven application.
 namespace Raven
@@ -125,4 +126,10 @@ namespace Raven
 
     //Allocates memory for buffers and images.
     bool allocateMemory(const VkDevice logicalDevice, VkMemoryAllocateInfo allocInfo, VkDeviceMemory &memory);
+
+    //Sets buffer memory barriers.
+    void setBufferMemoryBarriers(VkCommandBuffer commandBuffer,
+                                 const VkPipelineStageFlags generatingStages,
+                                 const VkPipelineStageFlags consumingStages,
+                                 std::vector<BufferTransition> bufferTransitions);
 }
