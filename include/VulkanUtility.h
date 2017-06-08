@@ -115,6 +115,9 @@ namespace Raven
     //Creates a buffer.
     bool createBuffer(const VkDevice logicalDevice, const VkBufferCreateInfo createInfo, VkBuffer &buffer);
 
+    //Creates a buffer view.
+    bool createBufferView(const VkDevice logicalDevice, const VkBufferViewCreateInfo createInfo, VkBufferView &bufferView);
+
     //Creates an image.
     bool createImage(const VkDevice logicalDevice, const VkImageCreateInfo createInfo, VkImage &image);
 

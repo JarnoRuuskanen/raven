@@ -181,4 +181,20 @@ namespace VulkanStructures
         memoryBarrier.size = size;
         return memoryBarrier;
     }
+
+    inline VkBufferViewCreateInfo bufferViewCreateInfo(VkBuffer buffer,
+                                                       VkFormat format,
+                                                       VkDeviceSize offset,
+                                                       VkDeviceSize range)
+    {
+        VkBufferViewCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_BUFFER_VIEW_CREATE_INFO;
+        createInfo.pNext = nullptr;
+        createInfo.flags = 0;
+        createInfo.buffer = buffer;
+        createInfo.format = format;
+        createInfo.offset = offset;
+        createInfo.range = range;
+        return createInfo;
+    }
 }

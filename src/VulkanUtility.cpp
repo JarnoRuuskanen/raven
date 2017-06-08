@@ -764,6 +764,24 @@ namespace Raven
     }
 
     /**
+     * @brief Creates a buffer view.
+     * @param logicalDevice
+     * @param createInfo
+     * @param bufferView
+     * @return False if the buffer cretion fails.
+     */
+    bool createBufferView(const VkDevice logicalDevice, const VkBufferViewCreateInfo createInfo, VkBufferView &bufferView)
+    {
+        VkResult result = vkCreateBufferView(logicalDevice, &createInfo, nullptr, &bufferView);
+        if(result != VK_SUCCESS)
+        {
+            std::cerr << "Failed to create a buffer view!" << std::endl;
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * @brief Creates an image.
      * @param logicalDevice
      * @param createInfo
