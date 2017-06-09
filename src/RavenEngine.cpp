@@ -397,42 +397,44 @@ bool RavenEngine::createVertexBuffers()
     /** This function describes parts of the process of creating a vertex buffer.
         However, it is not yet fully implemented due to the lack of data. */
 
+    /*
     //Creating a buffer:
     //After that create the buffer info. Buffer size should be the size of the data that it will hold.
-    //VulkanBuffer vertexBuffer;
+    VulkanBuffer vertexBuffer;
 
     //Load the data from a file etc. and add it into vertexBuffer.data.
 
     //vertexBuffer.size should be the size of the data.
-
-    //VkBufferCreateInfo bufferInfo = VulkanStructures::bufferCreateInfo(vertexBuffer.size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,VK_SHARING_MODE_EXCLUSIVE);
+    vertexBuffer.size = 8;
+    VkBufferCreateInfo bufferInfo = VulkanStructures::bufferCreateInfo(vertexBuffer.size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,VK_SHARING_MODE_EXCLUSIVE);
 
     //Create the actual buffer.
-    //createBuffer(vulkanDevice->getLogicalDevice(), bufferInfo, vertexBuffer.buffer);
+    createBuffer(vulkanDevice->getLogicalDevice(), bufferInfo, vertexBuffer.buffer);
 
     //Buffers and images don't have a memory backing so we need to allocate the memory for them.
     //Get buffer memory requirements and allocate the memory.
-    //VkMemoryRequirements memReq;
-    //vkGetBufferMemoryRequirements(vulkanDevice->getLogicalDevice(), vertexBuffer.buffer, &memReq);
+    VkMemoryRequirements memReq;
+    vkGetBufferMemoryRequirements(vulkanDevice->getLogicalDevice(), vertexBuffer.buffer, &memReq);
 
     //Get the correct physical device memory type index for the buffer:
-    //VkPhysicalDeviceMemoryProperties memoryProperties;
-    //vkGetPhysicalDeviceMemoryProperties(selectedPhysicalDevice, &memoryProperties);
+    VkPhysicalDeviceMemoryProperties memoryProperties;
+    vkGetPhysicalDeviceMemoryProperties(selectedPhysicalDevice, &memoryProperties);
 
-    //uint32_t memoryTypeIndex;
-    //if(!getMemoryType(memoryProperties, memReq, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-    //              VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, memoryTypeIndex))
-    //    return false;
+    uint32_t memoryTypeIndex;
+    if(!getMemoryType(memoryProperties, memReq, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                  VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, memoryTypeIndex))
+        return false;
 
     //Create the allocation info:
-    //VkMemoryAllocateInfo allocationInfo = VulkanStructures::memoryAllocateInfo(memReq.size, memoryTypeIndex);
+    VkMemoryAllocateInfo allocationInfo = VulkanStructures::memoryAllocateInfo(memReq.size, memoryTypeIndex);
     //Allocate the memory:
-    //if(!allocateMemory(vulkanDevice->getLogicalDevice(), allocationInfo, vertexBuffer.memory))
-    //    return false;
+    VkDeviceMemory vertexMemory = VK_NULL_HANDLE;
+    if(!allocateMemory(vulkanDevice->getLogicalDevice(), allocationInfo, vertexMemory))
+        return false;
 
-    //if(!vertexBuffer.bindBuffer(vulkanDevice->getLogicalDevice()))
-    //    return false;
-
+    if(!vertexBuffer.bindBufferMemory(vulkanDevice->getLogicalDevice(), vertexMemory))
+        return false;
+    */
     return true;
 }
 

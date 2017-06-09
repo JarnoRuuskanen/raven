@@ -135,4 +135,5 @@ namespace Raven
                                  const VkPipelineStageFlags generatingStages,
                                  const VkPipelineStageFlags consumingStages,
                                  std::vector<BufferTransition> bufferTransitions);
+
 }

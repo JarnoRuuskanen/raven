@@ -27,8 +27,6 @@ namespace Raven
         VkBuffer buffer = VK_NULL_HANDLE;
         //Buffer size.
         VkDeviceSize size = 0;
-        //Buffer memory.
-        VkDeviceMemory memory = VK_NULL_HANDLE;
         //Buffer usage flags.
         VkBufferUsageFlags usageFlags;
         //View to the buffer's data.
@@ -37,12 +35,16 @@ namespace Raven
         void* data = nullptr;
 
         /**
-         * @brief Binds the allocated memory into the buffer.
+         * @brief Binds the allocated memory into the buffer. It is better to have
+         *        multiple buffers bound to a single, bigger memory object than to have
+         *        a dedicated memory object for each buffer. This is because certain
+         *        graphics devices can only do so many memory allocations no matter the memory size.
+         *        Smaller memory objects can also end up using more memory due to rounding up etc.
          * @param logicalDevice
          * @param offset
          * @return False if the memory could not be bound to the buffer.
          */
-        bool bindBuffer(const VkDevice logicalDevice, VkDeviceSize offset = 0)
+        bool bindBufferMemory(const VkDevice logicalDevice, VkDeviceMemory &memory, VkDeviceSize offset = 0)
         {
             VkResult result = vkBindBufferMemory(logicalDevice, buffer, memory, offset);
             if(result != VK_SUCCESS)

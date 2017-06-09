@@ -197,4 +197,34 @@ namespace VulkanStructures
         createInfo.range = range;
         return createInfo;
     }
+
+    inline VkImageCreateInfo imageCreateInfo(VkImageUsageFlags usage,
+                                             VkImageType imageType,
+                                             VkFormat format,
+                                             VkExtent3D extent,
+                                             uint32_t layerCount,
+                                             VkSampleCountFlagBits samples,
+                                             VkImageLayout initialLayout,
+                                             VkSharingMode sharingMode,
+                                             uint32_t mipLevels,
+                                             bool cubemap)
+    {
+        VkImageCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        createInfo.pNext = nullptr;
+        createInfo.flags = cubemap ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT : 0u;
+        createInfo.usage = usage;
+        createInfo.imageType = imageType;
+        createInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+        createInfo.format = format;
+        createInfo.extent = extent;
+        createInfo.queueFamilyIndexCount = 0;
+        createInfo.pQueueFamilyIndices = nullptr;
+        createInfo.arrayLayers = cubemap ? 6 * layerCount : layerCount;
+        createInfo.samples = samples;
+        createInfo.initialLayout = initialLayout;
+        createInfo.sharingMode = sharingMode;
+        createInfo.mipLevels = mipLevels;
+        return createInfo;
+    }
 }
