@@ -3,6 +3,25 @@
 
 namespace Raven
 {
+    struct ImageTransition
+    {
+        VkImage image;
+        //What type of memory operations are being used before the barrier.
+        VkAccessFlags currentAccess;
+        //What type of memory operations will be used after the barrier.
+        VkAccessFlags newAccess;
+        //Current image's internal memory layout.
+        VkImageLayout currentLayout;
+        //Layout image's memory should change into.
+        VkImageLayout newLayout;
+        //Queues that have been using the image so far.
+        uint32_t currentQueueFamily;
+        //The queues which will be using the image from now on.
+        uint32_t newQueueFamily;
+        //Defines the image's usage context (color,depth or stencil aspect).
+        VkImageAspectFlags aspect;
+    };
+
     //A structure for
     struct VulkanImage
     {

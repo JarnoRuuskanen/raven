@@ -227,4 +227,27 @@ namespace VulkanStructures
         createInfo.mipLevels = mipLevels;
         return createInfo;
     }
+
+    inline VkImageMemoryBarrier imageMemoryBarrier(VkImage image,
+                                                   VkAccessFlags currentAccess,
+                                                   VkAccessFlags newAccess,
+                                                   uint32_t oldQueueFamily,
+                                                   uint32_t newQueueFamily,
+                                                   VkImageLayout oldLayout,
+                                                   VkImageLayout newLayout,
+                                                   VkImageSubresourceRange subresourceRange)
+    {
+        VkImageMemoryBarrier memoryBarrier = {};
+        memoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        memoryBarrier.pNext = nullptr;
+        memoryBarrier.image = image;
+        memoryBarrier.srcAccessMask = currentAccess;
+        memoryBarrier.dstAccessMask = newAccess;
+        memoryBarrier.srcQueueFamilyIndex = oldQueueFamily;
+        memoryBarrier.dstQueueFamilyIndex = newQueueFamily;
+        memoryBarrier.oldLayout = oldLayout;
+        memoryBarrier.newLayout = newLayout;
+        memoryBarrier.subresourceRange = subresourceRange;
+        return memoryBarrier;
+    }
 }

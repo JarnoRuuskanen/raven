@@ -1,6 +1,7 @@
 #pragma once
 #include "Headers.h"
 #include "VulkanBuffer.h"
+#include "VulkanImage.h"
 
 //List of all vulkan utility functions used by the Raven application.
 namespace Raven
@@ -136,4 +137,9 @@ namespace Raven
                                  const VkPipelineStageFlags consumingStages,
                                  std::vector<BufferTransition> bufferTransitions);
 
+    //Sets image memory barriers.
+    void setImageMemoryBarriers(VkCommandBuffer commandBuffer,
+                                const VkPipelineStageFlags generatingStages,
+                                const VkPipelineStageFlags consumingStages,
+                                std::vector<ImageTransition> imageTransitions);
 }

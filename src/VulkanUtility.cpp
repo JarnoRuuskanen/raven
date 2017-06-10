@@ -858,9 +858,9 @@ namespace Raven
     {
         //Create a vector for the buffer memory barriers.
         std::vector<VkBufferMemoryBarrier> barriers;
-        for(BufferTransition bufferTransition : bufferTransitions)
+        for(auto& bufferTransition : bufferTransitions)
         {
-            //Create a new barrier for each buffer.
+            //Set a barrier for each buffer.
             barriers.push_back(VulkanStructures::bufferMemoryBarrier(bufferTransition.currentAccess,
                                                                      bufferTransition.newAccess,
                                                                      bufferTransition.currentQueueFamily,
@@ -875,6 +875,47 @@ namespace Raven
         {
             vkCmdPipelineBarrier(commandBuffer, generatingStages, consumingStages, 0, 0,
                                  nullptr, static_cast<uint32_t>(barriers.size()), barriers.data(),0, nullptr);
+        }
+    }
+
+    /**
+     * @brief Sets image memory barriers. It is always better to define as many images in
+     *        as few barriers as possible to achieve better performance.
+     * @param commandBuffer
+     * @param generatingStages
+     * @param consumingStages
+     * @param imageTransitions
+     */
+    void setImageMemoryBarriers(VkCommandBuffer commandBuffer,
+                                const VkPipelineStageFlags generatingStages,
+                                const VkPipelineStageFlags consumingStages,
+                                std::vector<ImageTransition> imageTransitions)
+    {
+        //Create a vector for the image memory barriers.
+        std::vector<VkImageMemoryBarrier> barriers;
+        for(auto& imageTransition : imageTransitions)
+        {
+            barriers.push_back(VulkanStructures::imageMemoryBarrier(imageTransition.image,
+                                                                    imageTransition.currentAccess,
+                                                                    imageTransition.newAccess,
+                                                                    imageTransition.currentQueueFamily,
+                                                                    imageTransition.newQueueFamily,
+                                                                    imageTransition.currentLayout,
+                                                                    imageTransition.newLayout,
+                                                                    {
+                                                                        imageTransition.aspect,
+                                                                        0,
+                                                                        VK_REMAINING_MIP_LEVELS,
+                                                                        0,
+                                                                        VK_REMAINING_ARRAY_LAYERS
+                                                                    }));
+        }
+
+        //Set the barriers.
+        if(barriers.size() > 0)
+        {
+            vkCmdPipelineBarrier(commandBuffer, generatingStages, consumingStages, 0, 0,
+                                 nullptr, 0, nullptr, static_cast<uint32_t>(barriers.size()), barriers.data());
         }
     }
 }
