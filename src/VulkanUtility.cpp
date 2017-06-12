@@ -800,6 +800,24 @@ namespace Raven
     }
 
     /**
+     * @brief Creates an image view.
+     * @param logicalDevice
+     * @param createInfo
+     * @param imageView
+     * @return
+     */
+    bool createImageView(const VkDevice logicalDevice, const VkImageViewCreateInfo createInfo, VkImageView &imageView)
+    {
+      VkResult result = vkCreateImageView(logicalDevice, &createInfo, nullptr, &imageView);
+      if(result != VK_SUCCESS)
+      {
+          std::cerr << "Failed to create an image view!" << std::endl;
+          return false;
+      }
+      return true;
+    }
+
+    /**
      * @brief Gets the correct memory type for image/buffer.
      * @param physicalDeviceMemoryProperties
      * @param memReq Such memory requirements as size and alignment.
@@ -879,7 +897,10 @@ namespace Raven
     }
 
     /**
-     * @brief Sets image memory barriers. It is always better to define as many images in
+     * @brief Sets image memory barriers. Memory barriers are used to change the
+     *        use case of images/buffers/memory and to make command buffers wait
+     *        for each other to finish working.
+     *        It is always better to define as many images in
      *        as few barriers as possible to achieve better performance.
      * @param commandBuffer
      * @param generatingStages

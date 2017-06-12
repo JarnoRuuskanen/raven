@@ -122,6 +122,9 @@ namespace Raven
     //Creates an image.
     bool createImage(const VkDevice logicalDevice, const VkImageCreateInfo createInfo, VkImage &image);
 
+    //Creates an image view.
+    bool createImageView(const VkDevice logicalDevice, const VkImageViewCreateInfo createInfo, VkImageView &imageView);
+
     //Gets the correct memory type for image/buffer.
     bool getMemoryType(VkPhysicalDeviceMemoryProperties memoryProperties,
                        VkMemoryRequirements memReq,
