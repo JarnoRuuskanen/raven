@@ -250,4 +250,21 @@ namespace VulkanStructures
         memoryBarrier.subresourceRange = subresourceRange;
         return memoryBarrier;
     }
+
+    inline std::vector<VkMappedMemoryRange> mappedMemoryRanges(VkDeviceMemory memoryObject,
+                                                               VkDeviceSize offset,
+                                                               VkDeviceSize size)
+    {
+        std::vector<VkMappedMemoryRange> ranges =
+        {
+            {
+                VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE,
+                nullptr,
+                memoryObject,
+                offset,
+                size
+            }
+        };
+        return ranges;
+    }
 }

@@ -17,6 +17,7 @@ class GraphicsObject
         bool loadFrame(const VkDevice logicalDevice, const std::string filename);
         //Adds a texture to the object.
         bool addTexture(const VkDevice logicalDevice,
+                        VkPhysicalDeviceMemoryProperties memoryProperties,
                         const std::string filename,
                         VkImageUsageFlags usage,
                         VkFormat format,

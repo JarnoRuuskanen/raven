@@ -892,7 +892,8 @@ namespace Raven
         if(barriers.size() > 0)
         {
             vkCmdPipelineBarrier(commandBuffer, generatingStages, consumingStages, 0, 0,
-                                 nullptr, static_cast<uint32_t>(barriers.size()), barriers.data(),0, nullptr);
+                                 nullptr, static_cast<uint32_t>(barriers.size()),
+                                 barriers.data(),0, nullptr);
         }
     }
 
@@ -936,7 +937,67 @@ namespace Raven
         if(barriers.size() > 0)
         {
             vkCmdPipelineBarrier(commandBuffer, generatingStages, consumingStages, 0, 0,
-                                 nullptr, 0, nullptr, static_cast<uint32_t>(barriers.size()), barriers.data());
+                                 nullptr, 0, nullptr, static_cast<uint32_t>(barriers.size()),
+                                 barriers.data());
         }
+    }
+
+    /**
+     * @brief This function takes data and pushes it into graphics device memory.
+     *        This function is mostly a copy from
+     *        "VulkanCookbook - Mapping, updating and unmapping host-visible memory".
+     * @param logicalDevice
+     * @param deviceMemory
+     * @param offset
+     * @param dataSize
+     * @param data
+     * @param pointer
+     * @param unmap
+     * @return
+     */
+    bool flushDataToMemory(const VkDevice logicalDevice, VkDeviceMemory deviceMemory,
+                           VkDeviceSize offset, VkDeviceSize dataSize, void *data,
+                           void **pointer, bool unmap)
+    {
+        //Map the memory.
+        void* localPointer;
+        VkResult result =
+            vkMapMemory(logicalDevice, deviceMemory, offset, dataSize, 0,  &localPointer);
+        if(result != VK_SUCCESS)
+        {
+            std::cerr << "Failed to map memory object!" << std::endl;
+            return false;
+        }
+
+        //Copy the raw data from "pixels" to the memory object "stagingMemory"
+        //pointed to by dataPointer.
+        memcpy(localPointer, data, dataSize);
+
+        //We need to inform the driver that memory contents have been modified.
+        //This operation, when done by the CPU(host), is called flushing.
+        //This is done with mapped memory ranges.
+        std::vector<VkMappedMemoryRange> memoryRanges =
+            VulkanStructures::mappedMemoryRanges(deviceMemory, 0, VK_WHOLE_SIZE);
+
+        //Flush the memory ranges.
+        result = vkFlushMappedMemoryRanges(logicalDevice, static_cast<uint32_t>(memoryRanges.size()),
+                                           memoryRanges.data());
+
+        if(result != VK_SUCCESS)
+        {
+            std::cerr << "Failed to flush memory ranges!" << std::endl;
+            return false;
+        }
+
+        //The data has now been uploaded. The memory can be unmapped if wanted.
+        if(unmap)
+        {
+            vkUnmapMemory(logicalDevice, deviceMemory);
+        }
+        else if(pointer != nullptr)
+        {
+            *pointer = localPointer;
+        }
+        return true;
     }
 }

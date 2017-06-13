@@ -154,4 +154,9 @@ namespace Raven
                                 const VkPipelineStageFlags generatingStages,
                                 const VkPipelineStageFlags consumingStages,
                                 std::vector<ImageTransition> imageTransitions);
+
+    //This function takes data and pushes it into graphics device memory.
+    bool flushDataToMemory(const VkDevice logicalDevice, VkDeviceMemory deviceMemory,
+                           VkDeviceSize offset, VkDeviceSize dataSize, void* data,
+                           void **pointer, bool unmap);
 }
