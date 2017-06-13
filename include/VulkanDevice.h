@@ -17,7 +17,8 @@ class VulkanDevice
         VulkanDevice();
         ~VulkanDevice();
         //Initializes the vulkan device
-        bool initializeDevice(VkPhysicalDevice &physicalDevice, std::vector<const char*>  &desiredExtensions);
+        bool initializeDevice(VkPhysicalDevice &physicalDevice,
+                              std::vector<const char*>  &desiredExtensions);
         //Sends commands to the gpu for computing. This function also chooses the
         //queue which the commands will be submitted to.
         bool executeCommands(VkSubmitInfo &submitInfo, VkFence &submitFence);

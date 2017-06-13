@@ -22,14 +22,15 @@ namespace Raven
         VkImageAspectFlags aspect;
     };
 
-    //A structure for
+    //A structure for vulkan image management.
     struct VulkanImage
     {
         VkImage image;
-
+        VkImageView imageView;
         /**
-         * @brief Binds memory object to an image. It is better to bind multiple images to a bigger memory object
-         *        than to have a unique memory object for each image.
+         * @brief Binds memory object to an image. It is better to bind multiple
+         *        images to a bigger memory object than to have a unique memory
+         *        object for each image.
          * @param logicalDevice
          * @param image
          * @param memory
@@ -39,7 +40,8 @@ namespace Raven
         {
             if(memory == VK_NULL_HANDLE)
             {
-                std::cerr << "Failed to bind memory object to an image since memory object was VK_NULL_HANDLE!" << std::endl;
+                std::cerr << "Failed to bind memory object to an image since memory "
+                             "object was VK_NULL_HANDLE!" << std::endl;
                 return false;
             }
 

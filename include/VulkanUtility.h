@@ -69,16 +69,20 @@ namespace Raven
                                     VkColorSpaceKHR &imageColorSpace);
 
     //Creates a vulkan swapchain.
-    bool createSwapchain(const VkDevice logicalDevice, const  VkSwapchainCreateInfoKHR createInfo, VkSwapchainKHR &swapchain);
+    bool createSwapchain(const VkDevice logicalDevice, const  VkSwapchainCreateInfoKHR createInfo,
+                         VkSwapchainKHR &swapchain);
 
     //Gathers the swapchain images from a given swapchain to a vector.
-    bool getSwapchainImages(const VkDevice logicalDevice, const VkSwapchainKHR swapchain, std::vector<VkImage> &swapchainImages);
+    bool getSwapchainImages(const VkDevice logicalDevice, const VkSwapchainKHR swapchain,
+                            std::vector<VkImage> &swapchainImages);
 
     //Gets a swapchain image for drawing from a given swapchain.
-    bool getSwapchainImageForDrawing(const VkDevice logicalDevice, const VkSwapchainKHR swapchain, VkSemaphore semaphore, uint32_t &imageIndex);
+    bool getSwapchainImageForDrawing(const VkDevice logicalDevice, const VkSwapchainKHR swapchain,
+                                     VkSemaphore semaphore, uint32_t &imageIndex);
 
     //Presents an image to the screen.
-    bool presentImage(const VkQueue queue, const VkSwapchainKHR swapchain, const VkPresentInfoKHR presentInfo, VkSemaphore &presentationSemaphores);
+    bool presentImage(const VkQueue queue, const VkSwapchainKHR swapchain,
+                      const VkPresentInfoKHR presentInfo, VkSemaphore &presentationSemaphores);
 
     //Creates a semaphore.
     bool createSemaphore(const VkDevice logicalDevice, VkSemaphore &semaphore);
@@ -96,7 +100,8 @@ namespace Raven
     bool resetFences(const VkDevice logicalDevice, std::vector<VkFence> &fences);
 
     //Makes the application wait until the fences are signaled or until timeout has been reached.
-    bool waitForFences(const VkDevice logicalDevice, const uint32_t timeout, const VkBool32 waitForAll, std::vector<VkFence>const &fences);
+    bool waitForFences(const VkDevice logicalDevice, const uint32_t timeout,
+                       const VkBool32 waitForAll, std::vector<VkFence>const &fences);
 
     //Checks if a fence has been signaled or not.
     bool isFenceSignaled(const VkDevice logicalDevice, VkFence &fence);
@@ -114,16 +119,19 @@ namespace Raven
     bool waitUntilQueueIdle(VkQueue &queue);
 
     //Creates a buffer.
-    bool createBuffer(const VkDevice logicalDevice, const VkBufferCreateInfo createInfo, VkBuffer &buffer);
+    bool createBuffer(const VkDevice logicalDevice, const VkBufferCreateInfo createInfo,
+                      VkBuffer &buffer);
 
     //Creates a buffer view.
-    bool createBufferView(const VkDevice logicalDevice, const VkBufferViewCreateInfo createInfo, VkBufferView &bufferView);
+    bool createBufferView(const VkDevice logicalDevice, const VkBufferViewCreateInfo createInfo,
+                          VkBufferView &bufferView);
 
     //Creates an image.
     bool createImage(const VkDevice logicalDevice, const VkImageCreateInfo createInfo, VkImage &image);
 
     //Creates an image view.
-    bool createImageView(const VkDevice logicalDevice, const VkImageViewCreateInfo createInfo, VkImageView &imageView);
+    bool createImageView(const VkDevice logicalDevice, const VkImageViewCreateInfo createInfo,
+                         VkImageView &imageView);
 
     //Gets the correct memory type for image/buffer.
     bool getMemoryType(VkPhysicalDeviceMemoryProperties memoryProperties,
@@ -132,7 +140,8 @@ namespace Raven
                        uint32_t &memoryTypeIndex);
 
     //Allocates memory for buffers and images.
-    bool allocateMemory(const VkDevice logicalDevice, VkMemoryAllocateInfo allocInfo, VkDeviceMemory &memory);
+    bool allocateMemory(const VkDevice logicalDevice, VkMemoryAllocateInfo allocInfo,
+                        VkDeviceMemory &memory);
 
     //Sets buffer memory barriers.
     void setBufferMemoryBarriers(VkCommandBuffer commandBuffer,

@@ -88,8 +88,10 @@ namespace Raven
          */
         bool resetCommandBuffer(VkCommandBuffer &cmdBuffer, VkBool32 releaseResources)
         {
-            VkResult result = vkResetCommandBuffer(cmdBuffer,
-                                                   releaseResources ? VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT : 0);
+            VkResult result =
+                    vkResetCommandBuffer(cmdBuffer,
+                                         releaseResources ?
+                                             VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT : 0);
             if(result != VK_SUCCESS)
             {
                 std::cerr << "Failed to reset a command buffer!" << std::endl;
@@ -107,9 +109,11 @@ namespace Raven
          */
         bool resetCommandPool(VkDevice logicalDevice, VkCommandPool &cmdPool, VkBool32 releaseResources)
         {
-            VkResult result = vkResetCommandPool(logicalDevice,
-                                                 cmdPool,
-                                                 releaseResources ? VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT : 0);
+            VkResult result =
+                    vkResetCommandPool(logicalDevice,
+                                       cmdPool,
+                                       releaseResources ?
+                                           VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT : 0);
             if(result != VK_SUCCESS)
             {
                 std::cerr << "Failed to reset a command pool!" << std::endl;
@@ -121,14 +125,16 @@ namespace Raven
         /**
          * @brief Submits command buffers to a queue and signals the fence when done submitting.
          *        Note that submitting command buffers is fairly expensive
-         *        operation so always try to batch as many command buffers together for submit as possible.
+         *        operation so always try to batch as many command buffers
+         *        together for submit as possible.
          * @param queue
          * @param submitInfoCount
          * @param submitInfo
          * @param fence
          * @return False if the submit fails.
          */
-        bool submitCommandBuffers(const VkQueue queue, const uint32_t submitInfoCount, VkSubmitInfo submitInfo, VkFence &fence)
+        bool submitCommandBuffers(const VkQueue queue, const uint32_t submitInfoCount,
+                                  VkSubmitInfo submitInfo, VkFence &fence)
         {
             VkResult result = vkQueueSubmit(queue, submitInfoCount, &submitInfo, fence);
             if(result != VK_SUCCESS)
@@ -146,11 +152,14 @@ namespace Raven
          * @param cmdPool
          * @param cmdBuffers
          */
-        void freeCommandBuffers(const VkDevice logicalDevice, VkCommandPool &cmdPool, std::vector<VkCommandBuffer> &cmdBuffers)
+        void freeCommandBuffers(const VkDevice logicalDevice,
+                                VkCommandPool &cmdPool,
+                                std::vector<VkCommandBuffer> &cmdBuffers)
         {
             if(cmdBuffers.size() > 0)
             {
-                vkFreeCommandBuffers(logicalDevice, cmdPool, static_cast<uint32_t>(cmdBuffers.size()), cmdBuffers.data());
+                vkFreeCommandBuffers(logicalDevice, cmdPool,
+                                     static_cast<uint32_t>(cmdBuffers.size()), cmdBuffers.data());
                 cmdBuffers.clear();
             }
         }

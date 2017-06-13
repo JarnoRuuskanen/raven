@@ -125,7 +125,8 @@ bool RavenEngine::start(const char* appName)
         return false;
 
     //Acquire the swapchain images.
-    if(!getSwapchainImages(vulkanDevice->getLogicalDevice(), appWindow->getSwapchain(), appWindow->getImages()))
+    if(!getSwapchainImages(vulkanDevice->getLogicalDevice(),
+                           appWindow->getSwapchain(), appWindow->getImages()))
         return false;
 
     //Create vertex buffers.
@@ -234,7 +235,8 @@ bool RavenEngine::selectPhysicalDevice(std::vector<VkPhysicalDevice> &physicalDe
             return true;
         }
     }
-    std::cerr << "Failed to find a physical device that supports all the required device extensions!" << std::endl;
+    std::cerr << "Failed to find a physical device that "
+                 "supports all the required device extensions!" << std::endl;
     return false;
 }
 
@@ -307,7 +309,8 @@ bool RavenEngine::buildSwapchain(VkImageUsageFlags desiredImageUsage,
         return false;
 
     //Check if the desired presentation mode is supported. If not, select a default presentation mode.
-    if(!isPresentationModeSupported(selectedPhysicalDevice, window->getPresentationSurface(), presentationMode))
+    if(!isPresentationModeSupported(selectedPhysicalDevice,
+                                    window->getPresentationSurface(), presentationMode))
     {
         presentationMode = SETTINGS_DEFAULT_PRESENTATION_MODE;
     }
@@ -406,7 +409,10 @@ bool RavenEngine::createVertexBuffers()
 
     //vertexBuffer.size should be the size of the data.
     vertexBuffer.size = 8;
-    VkBufferCreateInfo bufferInfo = VulkanStructures::bufferCreateInfo(vertexBuffer.size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,VK_SHARING_MODE_EXCLUSIVE);
+    VkBufferCreateInfo bufferInfo =
+        VulkanStructures::bufferCreateInfo(vertexBuffer.size,
+                                           VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                                           VK_SHARING_MODE_EXCLUSIVE);
 
     //Create the actual buffer.
     createBuffer(vulkanDevice->getLogicalDevice(), bufferInfo, vertexBuffer.buffer);
@@ -426,7 +432,8 @@ bool RavenEngine::createVertexBuffers()
         return false;
 
     //Create the allocation info:
-    VkMemoryAllocateInfo allocationInfo = VulkanStructures::memoryAllocateInfo(memReq.size, memoryTypeIndex);
+    VkMemoryAllocateInfo allocationInfo =
+        VulkanStructures::memoryAllocateInfo(memReq.size, memoryTypeIndex);
     //Allocate the memory:
     VkDeviceMemory vertexMemory = VK_NULL_HANDLE;
     if(!allocateMemory(vulkanDevice->getLogicalDevice(), allocationInfo, vertexMemory))
@@ -453,7 +460,8 @@ bool RavenEngine::buildCommandBuffers()
     */
 
     //Create the command pool info.
-    VkCommandPoolCreateInfo poolInfo = VulkanStructures::commandPoolCreateInfo(vulkanDevice->getPrimaryQueueFamilyIndex());
+    VkCommandPoolCreateInfo poolInfo =
+            VulkanStructures::commandPoolCreateInfo(vulkanDevice->getPrimaryQueueFamilyIndex());
     //Create a command pool.
     if(!CommandBufferManager::createCommandPool(vulkanDevice->getLogicalDevice(), poolInfo, cmdPool))
     {
@@ -463,11 +471,13 @@ bool RavenEngine::buildCommandBuffers()
 
     VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     uint32_t bufferCount = 3;
-    VkCommandBufferAllocateInfo allocInfo = VulkanStructures::commandBufferAllocateInfo(level, cmdPool, bufferCount);
+    VkCommandBufferAllocateInfo allocInfo =
+            VulkanStructures::commandBufferAllocateInfo(level, cmdPool, bufferCount);
     //Allocate command buffers from the pool into a vector.
     commandBuffers.clear();
     commandBuffers.resize(bufferCount);
-    if(!CommandBufferManager::allocateCommandBuffer(vulkanDevice->getLogicalDevice(), allocInfo, commandBuffers))
+    if(!CommandBufferManager::allocateCommandBuffer(vulkanDevice->getLogicalDevice(),
+                                                    allocInfo, commandBuffers))
     {
         std::cerr << "Failed to allocate command buffers!" << std::endl;
         return false;

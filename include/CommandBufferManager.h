@@ -32,9 +32,11 @@ namespace Raven
         //Resets a command pool and all the buffers in it.
         bool resetCommandPool(VkDevice logicalDevice, VkCommandPool &cmdPool, VkBool32 releaseResources);
         //Submits command buffers to a queue.
-        bool submitCommandBuffers(const VkQueue queue, const uint32_t submitInfoCount, VkSubmitInfo submitInfo, VkFence &fence);
+        bool submitCommandBuffers(const VkQueue queue, const uint32_t submitInfoCount,
+                                  VkSubmitInfo submitInfo, VkFence &fence);
         //Frees the memory of given command buffers and clears the vector.
-        void freeCommandBuffers(const VkDevice logicalDevice, VkCommandPool &cmdPool, std::vector<VkCommandBuffer> &cmdBuffers);
+        void freeCommandBuffers(const VkDevice logicalDevice, VkCommandPool &cmdPool,
+                                std::vector<VkCommandBuffer> &cmdBuffers);
         //Destroys a command pool and all the command buffers allocated from it.
         void destroyCommandPool(const VkDevice logicalDevice, VkCommandPool &cmdPool);
     }

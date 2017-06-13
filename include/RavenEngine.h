@@ -22,7 +22,8 @@ class RavenEngine
                                   VkPhysicalDevice &selectedDevice,
                                   std::vector<const char*> &desiredDeviceExtensions);
         //Creates a logical device
-        bool createVulkanDevice(VkPhysicalDevice &physicalDevice, std::vector<const char*>  &desiredExtensions);
+        bool createVulkanDevice(VkPhysicalDevice &physicalDevice,
+                                std::vector<const char*>  &desiredExtensions);
 
         //Creates a new VulkanWindow. VulkanWindow will hold swapchain and all closely
         //to a presentation window related objects.

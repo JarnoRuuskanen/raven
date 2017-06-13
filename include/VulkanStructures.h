@@ -201,7 +201,7 @@ namespace VulkanStructures
     inline VkImageCreateInfo imageCreateInfo(VkImageUsageFlags usage,
                                              VkImageType imageType,
                                              VkFormat format,
-                                             VkExtent3D extent,
+                                             const VkExtent3D extent,
                                              uint32_t layerCount,
                                              VkSampleCountFlagBits samples,
                                              VkImageLayout initialLayout,

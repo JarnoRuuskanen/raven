@@ -40,7 +40,16 @@ endif()
 add_definitions( -DVK_NO_PROTOTYPES )
 add_definitions( -DVK_USE_PLATFORM_${VK_USE_PLATFORM}_KHR )
 
-# Define include path
+# Define include paths
+# STB SETUP Image library to load texture files from multiple formats.
+set (EXTDIR "${CMAKE_SOURCE_DIR}/Resources/Libraries/stb")
+set (STBINCLUDES "${EXTDIR}")
+get_filename_component(STBINC_PREFIX "${STBINCLUDES}" ABSOLUTE)
+if(NOT EXISTS ${STBINC_PREFIX})
+    message(FATAL_ERROR "Necessary stb headers do not exist: " ${STBINC_PREFIX})
+endif()
+include_directories( ${STBINC_PREFIX} )
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # Gather list of header and source files for compilation.
