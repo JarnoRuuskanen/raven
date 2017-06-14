@@ -69,11 +69,8 @@ bool GraphicsObject::addTexture(const VkDevice logicalDevice,
         return false;
 
     VkDeviceMemory stagingMemory;
-    VkMemoryAllocateInfo allocInfo =
-            VulkanStructures::memoryAllocateInfo(memReq.size,memoryTypeIndex);
-
     //Allocate the memory.
-    if(!allocateMemory(logicalDevice, allocInfo, stagingMemory))
+    if(!allocateMemory(logicalDevice, memReq, memoryTypeIndex, stagingMemory))
         return false;
 
     //Bind the buffer.
@@ -97,10 +94,29 @@ bool GraphicsObject::addTexture(const VkDevice logicalDevice,
                                               format, extent,
                                               layerCount,samples, VK_IMAGE_LAYOUT_UNDEFINED,
                                               VK_SHARING_MODE_EXCLUSIVE, mipLevelCount, false);
+
+    //Make sure that the image is possible to work as the destination of data.
+    if(!(imageInfo.usage & VK_IMAGE_USAGE_TRANSFER_DST_BIT))
+    {
+        imageInfo.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+    }
+
+    //Create the image.
     if(!createImage(logicalDevice, imageInfo, textureObject.image))
         return false;
 
-    //Allocate memory for the image.
+    //Allocate memory for the image. Using the old memReq- and memoryTypeIndex variables.
+    vkGetImageMemoryRequirements(logicalDevice, textureObject.image, &memReq);
+    if(!getMemoryType(memoryProperties, memReq, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                      memoryTypeIndex))
+        return false;
+
+    if(!allocateMemory(logicalDevice, memReq, memoryTypeIndex, textureObject.imageMemory))
+        return false;
+
+    //Bind the image to use.
+    if(!textureObject.bindImageMemory(logicalDevice, textureObject.imageMemory))
+        return false;
 
     //Create an image view for the image.
 }

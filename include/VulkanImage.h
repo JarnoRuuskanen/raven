@@ -27,6 +27,8 @@ namespace Raven
     {
         VkImage image;
         VkImageView imageView;
+        //A "fall back" memory object which can be used but it is not recommended.
+        VkDeviceMemory imageMemory;
         /**
          * @brief Binds memory object to an image. It is better to bind multiple
          *        images to a bigger memory object than to have a unique memory

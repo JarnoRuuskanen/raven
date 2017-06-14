@@ -847,12 +847,17 @@ namespace Raven
     /**
      * @brief Allocates memory for buffers and images.
      * @param logicalDevice
-     * @param allocInfo
+     * @param memReq
+     * @param typeIndex
      * @param memory
-     * @return Returns false if the memory could not be allocated.
+     * @return False if the memory allocation fails.
      */
-    bool allocateMemory(const VkDevice logicalDevice, VkMemoryAllocateInfo allocInfo, VkDeviceMemory &memory)
+    bool allocateMemory(const VkDevice logicalDevice, VkMemoryRequirements memReq, uint32_t typeIndex,
+                        VkDeviceMemory &memory)
     {
+        VkMemoryAllocateInfo allocInfo =
+                VulkanStructures::memoryAllocateInfo(memReq.size,typeIndex);
+
         VkResult result = vkAllocateMemory(logicalDevice, &allocInfo, nullptr, &memory);
         if(result != VK_SUCCESS)
         {
@@ -999,5 +1004,28 @@ namespace Raven
             *pointer = localPointer;
         }
         return true;
+    }
+
+    /**
+     * @brief Copies data between buffers. Command buffer needs to be in recording state
+     *        and the buffers need to have been created with correct usage flags and they
+     *        also require the correct access flags.
+     * @param cmdBuffer
+     * @param sourceBuffer
+     * @param dstBuffer
+     * @param bufferRanges Tells the memory ranges of each source and destination buffer.
+     * @return False if no buffer memory ranges were specified.
+     */
+    bool copyDataBetweenBuffers(VkCommandBuffer cmdBuffer, VkBuffer sourceBuffer,
+                                VkBuffer dstBuffer, std::vector<VkBufferCopy> bufferRanges)
+    {
+        if(bufferRanges.size() > 0)
+        {
+            vkCmdCopyBuffer(cmdBuffer, sourceBuffer, dstBuffer,
+                            static_cast<uint32_t>(bufferRanges.size()), bufferRanges.data());
+            return true;
+        }
+        std::cerr << "Failed to copy data between buffers due to no VkBufferCopy values!" << std::endl;
+        return false;
     }
 }

@@ -140,7 +140,7 @@ namespace Raven
                        uint32_t &memoryTypeIndex);
 
     //Allocates memory for buffers and images.
-    bool allocateMemory(const VkDevice logicalDevice, VkMemoryAllocateInfo allocInfo,
+    bool allocateMemory(const VkDevice logicalDevice, VkMemoryRequirements memReq, uint32_t typeIndex,
                         VkDeviceMemory &memory);
 
     //Sets buffer memory barriers.
@@ -159,4 +159,8 @@ namespace Raven
     bool flushDataToMemory(const VkDevice logicalDevice, VkDeviceMemory deviceMemory,
                            VkDeviceSize offset, VkDeviceSize dataSize, void* data,
                            void **pointer, bool unmap);
+
+    //Copies data between two buffers.
+    bool copyDataBetweenBuffers(VkCommandBuffer cmdBuffer, VkBuffer sourceBuffer,
+                                VkBuffer dstBuffer, std::vector<VkBufferCopy> bufferRanges);
 }
