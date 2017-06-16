@@ -22,7 +22,7 @@ namespace Raven
     //Gets physical device features and properties.
     void getPhysicalDeviceFeaturesAndProperties(VkPhysicalDevice &physicalDevice,
                                                 VkPhysicalDeviceFeatures& features,
-                                                VkPhysicalDeviceProperties& properties);
+                                                VkPhysicalDeviceProperties& properties) noexcept;
     //Gets the index of a desired queue family/families.
     bool getQueueFamilyIndex(std::vector<VkQueueFamilyProperties> &queueFamilies,
                              VkQueueFlags desiredQueueFamily,
@@ -39,7 +39,7 @@ namespace Raven
     void getQueueFamilyQueues(const VkDevice logicalDevice,
                               const uint32_t queueFamilyIndex,
                               const uint32_t queueCount,
-                              std::vector<VkQueue> &queues);
+                              std::vector<VkQueue> &queues) noexcept;
 
     //Checks if the preferred presentation mode is supported by the physical device.
     //If not, chooses a default presentation mode.
@@ -88,13 +88,13 @@ namespace Raven
     bool createSemaphore(const VkDevice logicalDevice, VkSemaphore &semaphore);
 
     //Destroys a semaphore.
-    void destroySemaphore(const VkDevice logicalDevice, VkSemaphore &semaphore);
+    void destroySemaphore(const VkDevice logicalDevice, VkSemaphore &semaphore) noexcept;
 
     //Creates a fence.
     bool createFence(const VkDevice logicalDevice, VkBool32 initializeSignaled, VkFence &fence);
 
     //Destroys a semaphore.
-    void destroyFence(const VkDevice logicalDevice, VkFence &fence);
+    void destroyFence(const VkDevice logicalDevice, VkFence &fence) noexcept;
 
     //Resets fences.
     bool resetFences(const VkDevice logicalDevice, std::vector<VkFence> &fences);
@@ -110,7 +110,7 @@ namespace Raven
     void destroyPresentationSurface(const VkInstance instance, VkSurfaceKHR &surface);
 
     //Destroys a swapchain.
-    void destroySwapchain(const VkDevice logicalDevice, VkSwapchainKHR &swapchain);
+    void destroySwapchain(const VkDevice logicalDevice, VkSwapchainKHR &swapchain) noexcept;
 
     //Makes the application wait until the selected device is idle.
     bool waitUntilDeviceIdle(VkDevice &logicalDevice);
@@ -122,16 +122,28 @@ namespace Raven
     bool createBuffer(const VkDevice logicalDevice, const VkBufferCreateInfo createInfo,
                       VkBuffer &buffer);
 
+    //Destroys a buffer.
+    void destroyBuffer(const VkDevice logicalDevice, VkBuffer &buffer) noexcept;
+
     //Creates a buffer view.
     bool createBufferView(const VkDevice logicalDevice, const VkBufferViewCreateInfo createInfo,
                           VkBufferView &bufferView);
 
+    //Destroys a buffer view.
+    void destroyBufferView(const VkDevice logicalDevice, VkBufferView &bufferView) noexcept;
+
     //Creates an image.
     bool createImage(const VkDevice logicalDevice, const VkImageCreateInfo createInfo, VkImage &image);
+
+    //Destroys an image.
+    void destroyImage(const VkDevice logicalDevice, VkImage &image) noexcept;
 
     //Creates an image view.
     bool createImageView(const VkDevice logicalDevice, const VkImageViewCreateInfo createInfo,
                          VkImageView &imageView);
+
+    //Destroys an image view.
+    void destroyImageView(const VkDevice logicalDevice, VkImageView &imageView) noexcept;
 
     //Gets the correct memory type for image/buffer.
     bool getMemoryType(VkPhysicalDeviceMemoryProperties memoryProperties,
@@ -147,13 +159,13 @@ namespace Raven
     void setBufferMemoryBarriers(VkCommandBuffer commandBuffer,
                                  const VkPipelineStageFlags generatingStages,
                                  const VkPipelineStageFlags consumingStages,
-                                 std::vector<BufferTransition> bufferTransitions);
+                                 std::vector<BufferTransition> bufferTransitions) noexcept;
 
     //Sets image memory barriers.
     void setImageMemoryBarriers(VkCommandBuffer commandBuffer,
                                 const VkPipelineStageFlags generatingStages,
                                 const VkPipelineStageFlags consumingStages,
-                                std::vector<ImageTransition> imageTransitions);
+                                std::vector<ImageTransition> imageTransitions) noexcept;
 
     //This function takes data and pushes it into graphics device memory.
     bool flushDataToMemory(const VkDevice logicalDevice, VkDeviceMemory deviceMemory,

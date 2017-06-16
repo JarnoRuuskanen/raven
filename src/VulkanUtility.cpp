@@ -183,7 +183,7 @@ namespace Raven
      */
     void getPhysicalDeviceFeaturesAndProperties(VkPhysicalDevice &physicalDevice,
                                                 VkPhysicalDeviceFeatures &features,
-                                                VkPhysicalDeviceProperties &properties)
+                                                VkPhysicalDeviceProperties &properties) noexcept
     {
         //Get the features
         vkGetPhysicalDeviceFeatures(physicalDevice, &features);
@@ -287,7 +287,7 @@ namespace Raven
     void getQueueFamilyQueues(const VkDevice logicalDevice,
                               const uint32_t queueFamilyIndex,
                               const uint32_t queueCount,
-                              std::vector<VkQueue> &queues)
+                              std::vector<VkQueue> &queues) noexcept
     {
         for(uint32_t i = 0; i < queueCount; ++i)
         {
@@ -582,7 +582,7 @@ namespace Raven
      * @param logicalDevice
      * @param semaphore
      */
-    void destroySemaphore(const VkDevice logicalDevice, VkSemaphore &semaphore)
+    void destroySemaphore(const VkDevice logicalDevice, VkSemaphore &semaphore) noexcept
     {
         if(semaphore != VK_NULL_HANDLE)
         {
@@ -615,7 +615,7 @@ namespace Raven
      * @param logicalDevice
      * @param fence
      */
-    void destroyFence(const VkDevice logicalDevice, VkFence &fence)
+    void destroyFence(const VkDevice logicalDevice, VkFence &fence) noexcept
     {
         if(fence != VK_NULL_HANDLE)
         {
@@ -704,7 +704,7 @@ namespace Raven
      * @param logicalDevice
      * @param swapchain
      */
-    void destroySwapchain(const VkDevice logicalDevice, VkSwapchainKHR &swapchain)
+    void destroySwapchain(const VkDevice logicalDevice, VkSwapchainKHR &swapchain) noexcept
     {
         if(swapchain)
         {
@@ -764,6 +764,20 @@ namespace Raven
     }
 
     /**
+     * @brief destroyBuffer
+     * @param logicalDevice
+     * @param buffer
+     */
+    void destroyBuffer(const VkDevice logicalDevice, VkBuffer &buffer) noexcept
+    {
+         if(buffer != VK_NULL_HANDLE)
+         {
+             vkDestroyBuffer(logicalDevice, buffer, nullptr);
+             buffer = VK_NULL_HANDLE;
+         }
+    }
+
+    /**
      * @brief Creates a buffer view.
      * @param logicalDevice
      * @param createInfo
@@ -779,6 +793,20 @@ namespace Raven
             return false;
         }
         return true;
+    }
+
+    /**
+     * @brief destroyBufferView
+     * @param logicalDevice
+     * @param bufferView
+     */
+    void destroyBufferView(const VkDevice logicalDevice, VkBufferView &bufferView) noexcept
+    {
+        if(bufferView != VK_NULL_HANDLE)
+        {
+            vkDestroyBufferView(logicalDevice, bufferView, nullptr);
+            bufferView = VK_NULL_HANDLE;
+        }
     }
 
     /**
@@ -800,6 +828,20 @@ namespace Raven
     }
 
     /**
+     * @brief destroyImage
+     * @param logicalDevice
+     * @param image
+     */
+    void destroyImage(const VkDevice logicalDevice, VkImage &image) noexcept
+    {
+        if(image != VK_NULL_HANDLE)
+        {
+            vkDestroyImage(logicalDevice, image, nullptr);
+            image = VK_NULL_HANDLE;
+        }
+    }
+
+    /**
      * @brief Creates an image view.
      * @param logicalDevice
      * @param createInfo
@@ -815,6 +857,20 @@ namespace Raven
           return false;
       }
       return true;
+    }
+
+    /**
+     * @brief destroyImageView
+     * @param logicalDevice
+     * @param imageView
+     */
+    void destroyImageView(const VkDevice logicalDevice, VkImageView &imageView) noexcept
+    {
+        if(imageView != VK_NULL_HANDLE)
+        {
+            vkDestroyImageView(logicalDevice, imageView, nullptr);
+            imageView = VK_NULL_HANDLE;
+        }
     }
 
     /**
@@ -877,7 +933,7 @@ namespace Raven
     void setBufferMemoryBarriers(VkCommandBuffer commandBuffer,
                                  const VkPipelineStageFlags generatingStages,
                                  const VkPipelineStageFlags consumingStages,
-                                 std::vector<BufferTransition> bufferTransitions)
+                                 std::vector<BufferTransition> bufferTransitions) noexcept
     {
         //Create a vector for the buffer memory barriers.
         std::vector<VkBufferMemoryBarrier> barriers;
@@ -916,7 +972,7 @@ namespace Raven
     void setImageMemoryBarriers(VkCommandBuffer commandBuffer,
                                 const VkPipelineStageFlags generatingStages,
                                 const VkPipelineStageFlags consumingStages,
-                                std::vector<ImageTransition> imageTransitions)
+                                std::vector<ImageTransition> imageTransitions) noexcept
     {
         //Create a vector for the image memory barriers.
         std::vector<VkImageMemoryBarrier> barriers;
