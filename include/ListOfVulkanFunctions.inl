@@ -1,7 +1,7 @@
 //Enabled vulkan functions.
-//This file was written following the VulkanCookbook
+//This file was written following the VulkanCookbook.
 
-//Exported vulkan functions
+//Exported vulkan functions.
 #ifndef EXPORTED_VULKAN_FUNCTION
 #define EXPORTED_VULKAN_FUNCTION( function )
 #endif
@@ -10,7 +10,7 @@ EXPORTED_VULKAN_FUNCTION(vkGetInstanceProcAddr)
 
 #undef EXPORTED_VULKAN_FUNCTION
 
-//Global vulkan functions
+//Global vulkan functions.
 #ifndef GLOBAL_LEVEL_VULKAN_FUNCTION
 #define GLOBAL_LEVEL_VULKAN_FUNCTION( function )
 #endif
@@ -38,7 +38,7 @@ INSTANCE_LEVEL_VULKAN_FUNCTION(vkGetDeviceProcAddr)
 
 #undef INSTANCE_LEVEL_VULKAN_FUNCTION
 
-//Instance level vulkan functions from extensions
+//Instance level vulkan functions from extensions.
 #ifndef INSTANCE_LEVEL_VULKAN_FUNCTION_FROM_EXTENSION
 #define INSTANCE_LEVEL_VULKAN_FUNCTION_FROM_EXTENSION( function, extension )
 #endif
@@ -94,6 +94,7 @@ DEVICE_LEVEL_VULKAN_FUNCTION(vkResetCommandPool)
 DEVICE_LEVEL_VULKAN_FUNCTION(vkQueueSubmit)
 DEVICE_LEVEL_VULKAN_FUNCTION(vkQueueWaitIdle)
 DEVICE_LEVEL_VULKAN_FUNCTION(vkAllocateMemory)
+DEVICE_LEVEL_VULKAN_FUNCTION(vkFreeMemory)
 DEVICE_LEVEL_VULKAN_FUNCTION(vkBindBufferMemory)
 DEVICE_LEVEL_VULKAN_FUNCTION(vkBindImageMemory)
 DEVICE_LEVEL_VULKAN_FUNCTION(vkCmdPipelineBarrier)
@@ -105,10 +106,11 @@ DEVICE_LEVEL_VULKAN_FUNCTION(vkDestroyImageView)
 DEVICE_LEVEL_VULKAN_FUNCTION(vkDestroyImage)
 DEVICE_LEVEL_VULKAN_FUNCTION(vkDestroyBufferView)
 DEVICE_LEVEL_VULKAN_FUNCTION(vkDestroyBuffer)
+DEVICE_LEVEL_VULKAN_FUNCTION(vkCmdCopyBufferToImage)
 
 #undef DEVICE_LEVEL_VULKAN_FUNCTION
 
-//Device level vulkan functions from extensions
+//Device level vulkan functions from extensions.
 #ifndef DEVICE_LEVEL_VULKAN_FUNCTION_FROM_EXTENSION
 #define DEVICE_LEVEL_VULKAN_FUNCTION_FROM_EXTENSION( function, extension )
 #endif

@@ -155,6 +155,9 @@ namespace Raven
     bool allocateMemory(const VkDevice logicalDevice, VkMemoryRequirements memReq, uint32_t typeIndex,
                         VkDeviceMemory &memory);
 
+    //Frees allocated memory.
+    void freeMemory(const VkDevice logicalDevice, VkDeviceMemory &memory) noexcept;
+
     //Sets buffer memory barriers.
     void setBufferMemoryBarriers(VkCommandBuffer commandBuffer,
                                  const VkPipelineStageFlags generatingStages,
@@ -174,5 +177,10 @@ namespace Raven
 
     //Copies data between two buffers.
     bool copyDataBetweenBuffers(VkCommandBuffer cmdBuffer, VkBuffer sourceBuffer,
-                                VkBuffer dstBuffer, std::vector<VkBufferCopy> bufferRanges);
+                                VkBuffer dstBuffer, std::vector<VkBufferCopy> memoryRanges);
+
+    //Copies data from a buffer to an image.
+    bool copyDataFromBufferToImage(VkCommandBuffer cmdBuffer, VkBuffer sourceBuffer,
+                                   VkImage dstImage, std::vector<VkBufferImageCopy> memoryRanges,
+                                   VkImageLayout imageLayout);
 }

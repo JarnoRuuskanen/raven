@@ -75,7 +75,8 @@ namespace Raven
         instanceInfo.enabledLayerCount = 0;
         instanceInfo.ppEnabledLayerNames = nullptr;
         instanceInfo.enabledExtensionCount = static_cast<uint32_t>(desiredExtensions.size());
-        instanceInfo.ppEnabledExtensionNames = desiredExtensions.size() > 0 ? desiredExtensions.data() : 0;
+        instanceInfo.ppEnabledExtensionNames =
+                desiredExtensions.size() > 0 ? desiredExtensions.data() : 0;
 
         //Create the vulkan instance
         VkResult result = vkCreateInstance(&instanceInfo, nullptr, &instance);
@@ -95,7 +96,8 @@ namespace Raven
      * @param desiredExtension
      * @return 
      */
-    bool isExtensionSupported(std::vector<VkExtensionProperties> &availableExtensions, const char* desiredExtension)
+    bool isExtensionSupported(std::vector<VkExtensionProperties> &availableExtensions,
+                              const char* desiredExtension)
     {
         //Loop through the whole extension vector and check, if the desired extension is supported
         for(auto& extension : availableExtensions)
@@ -158,7 +160,10 @@ namespace Raven
 
         //Next resize the container and enumerate again to get the extensions
         availableExtensions.resize(extensionCount);
-        result = vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, availableExtensions.data());
+        result = vkEnumerateDeviceExtensionProperties(physicalDevice,
+                                                      nullptr,
+                                                      &extensionCount,
+                                                      availableExtensions.data());
 
         if(result != VK_SUCCESS || availableExtensions.empty())
             return false;
@@ -243,7 +248,9 @@ namespace Raven
 
         //Get the actual queue families
         queueFamilies.resize(queueFamilyCount);
-        vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, queueFamilies.data());
+        vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice,
+                                                 &queueFamilyCount,
+                                                 queueFamilies.data());
         if(queueFamilies.empty())
         {
             std::cerr << "Failed to acquire queue family properties!" << std::endl;
@@ -312,7 +319,9 @@ namespace Raven
         uint32_t presentationModesCount;
 
         VkResult result;
-        result = vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, presentationSurface, &presentationModesCount, nullptr);
+        result = vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice,
+                                                           presentationSurface,
+                                                           &presentationModesCount, nullptr);
 
         if((result != VK_SUCCESS) || (presentationModesCount == 0))
         {
@@ -322,7 +331,10 @@ namespace Raven
 
         //Get all the presentation modes supported by the physical device.
         std::vector<VkPresentModeKHR> presentationModes(presentationModesCount);
-        result = vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, presentationSurface, &presentationModesCount, presentationModes.data());
+        result = vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice,
+                                                           presentationSurface,
+                                                           &presentationModesCount,
+                                                           presentationModes.data());
 
         if((result != VK_SUCCESS) || (presentationModes.empty()))
         {
@@ -330,7 +342,8 @@ namespace Raven
             return false;
         }
 
-        //Enumerate through all presentation modes and find wether the desired presentation mode is supported or not.
+        //Enumerate through all presentation modes and find wether the desired presentation
+        //mode is supported or not.
         for(auto& mode : presentationModes)
         {
             if(mode == desiredPresentMode)
@@ -351,7 +364,9 @@ namespace Raven
                                 VkSurfaceCapabilitiesKHR &surfaceCapabilities)
     {
         VkResult result;
-        result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, presentationSurface, &surfaceCapabilities);
+        result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice,
+                                                           presentationSurface,
+                                                           &surfaceCapabilities);
         if(result != VK_SUCCESS)
         {
             std::cerr << "Failed to acquire surface capabilities!" << std::endl;
@@ -417,7 +432,8 @@ namespace Raven
         uint32_t formatCount = 0;
         VkResult result;
 
-        result = vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, presentationSurface, &formatCount, nullptr);
+        result = vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, presentationSurface,
+                                                      &formatCount, nullptr);
         if(result != VK_SUCCESS || formatCount == 0)
         {
             std::cerr << "Failed to get the number of supported surface formats!" << std::endl;
@@ -426,7 +442,8 @@ namespace Raven
 
         //Next get the supported surface formats.
         std::vector<VkSurfaceFormatKHR> surfaceFormats(formatCount);
-        result = vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, presentationSurface, &formatCount, surfaceFormats.data());
+        result = vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, presentationSurface,
+                                                      &formatCount, surfaceFormats.data());
         if(result != VK_SUCCESS || surfaceFormats.empty())
         {
             std::cerr << "Failed to get supported surface formats!" << std::endl;
@@ -478,7 +495,9 @@ namespace Raven
      * @param swapchain
      * @return False if something went wrong.
      */
-    bool createSwapchain(const VkDevice logicalDevice, const VkSwapchainCreateInfoKHR createInfo, VkSwapchainKHR &swapchain)
+    bool createSwapchain(const VkDevice logicalDevice,
+                         const VkSwapchainCreateInfoKHR createInfo,
+                         VkSwapchainKHR &swapchain)
     {
         if(logicalDevice == VK_NULL_HANDLE)
             return false;
@@ -500,7 +519,9 @@ namespace Raven
      * @param swapchainImages
      * @return False if something went wrong.
      */
-    bool getSwapchainImages(const VkDevice logicalDevice, const VkSwapchainKHR swapchain, std::vector<VkImage> &swapchainImages)
+    bool getSwapchainImages(const VkDevice logicalDevice,
+                            const VkSwapchainKHR swapchain,
+                            std::vector<VkImage> &swapchainImages)
     {
         uint32_t imageCount = 0;
         VkResult result = VK_SUCCESS;
@@ -530,9 +551,13 @@ namespace Raven
      * @param imageIndex The index of the image in the swapchain that was returned.
      * @return False if something went wrong.
      */
-    bool getSwapchainImageForDrawing(const VkDevice logicalDevice, const VkSwapchainKHR swapchain, VkSemaphore semaphore, uint32_t &imageIndex)
+    bool getSwapchainImageForDrawing(const VkDevice logicalDevice,
+                                     const VkSwapchainKHR swapchain,
+                                     VkSemaphore semaphore,
+                                     uint32_t &imageIndex)
     {
-        VkResult result = vkAcquireNextImageKHR(logicalDevice, swapchain, 3000000000, semaphore, nullptr, &imageIndex);
+        VkResult result = vkAcquireNextImageKHR(logicalDevice, swapchain, 3000000000,
+                                                semaphore, nullptr, &imageIndex);
         if(result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR)
             return true;
         else
@@ -546,7 +571,10 @@ namespace Raven
      * @param presentationSemaphore
      * @return False if something went wrong.
      */
-    bool presentImage(const VkQueue queue, const VkSwapchainKHR swapchain, const VkPresentInfoKHR presentInfo, VkSemaphore &presentationSemaphore)
+    bool presentImage(const VkQueue queue,
+                      const VkSwapchainKHR swapchain,
+                      const VkPresentInfoKHR presentInfo,
+                      VkSemaphore &presentationSemaphore)
     {
         VkResult result;
         result = vkQueuePresentKHR(queue, &presentInfo);
@@ -635,7 +663,8 @@ namespace Raven
     {
         if(fences.size() > 0)
         {
-            VkResult result = vkResetFences(logicalDevice, static_cast<uint32_t>(fences.size()), fences.data());
+            VkResult result = vkResetFences(logicalDevice, static_cast<uint32_t>(fences.size()),
+                                            fences.data());
             if(result != VK_SUCCESS)
             {
                 std::cerr << "Failed to reset fences!" << std::endl;
@@ -647,18 +676,23 @@ namespace Raven
     }
 
     /**
-     * @brief Makes the application wait until all the fences are signaled or until timeout has been reached.
+     * @brief Makes the application wait until all the fences are signaled or until timeout
+     *        has been reached.
      * @param logicalDevice
      * @param timeout
      * @param waitForAll
      * @param fences
      * @return False if something went wrong.
      */
-    bool waitForFences(const VkDevice logicalDevice, const uint32_t timeout, const VkBool32 waitForAll, std::vector<VkFence>const &fences)
+    bool waitForFences(const VkDevice logicalDevice,
+                       const uint32_t timeout,
+                       const VkBool32 waitForAll,
+                       std::vector<VkFence>const &fences)
     {
         if(fences.size() > 0)
         {
-            VkResult result = vkWaitForFences(logicalDevice, static_cast<uint32_t>(fences.size()), fences.data(), waitForAll, timeout);
+            VkResult result = vkWaitForFences(logicalDevice, static_cast<uint32_t>(fences.size()),
+                                              fences.data(), waitForAll, timeout);
             if(result != VK_SUCCESS)
             {
                 std::cerr << "Failed to wait for fences!" << std::endl;
@@ -752,7 +786,9 @@ namespace Raven
      * @param buffer
      * @return False if the buffer creation fails.
      */
-    bool createBuffer(const VkDevice logicalDevice, const VkBufferCreateInfo createInfo, VkBuffer &buffer)
+    bool createBuffer(const VkDevice logicalDevice,
+                      const VkBufferCreateInfo createInfo,
+                      VkBuffer &buffer)
     {
         VkResult result = vkCreateBuffer(logicalDevice, &createInfo, nullptr, &buffer);
         if(result != VK_SUCCESS)
@@ -784,7 +820,9 @@ namespace Raven
      * @param bufferView
      * @return False if the buffer cretion fails.
      */
-    bool createBufferView(const VkDevice logicalDevice, const VkBufferViewCreateInfo createInfo, VkBufferView &bufferView)
+    bool createBufferView(const VkDevice logicalDevice,
+                          const VkBufferViewCreateInfo createInfo,
+                          VkBufferView &bufferView)
     {
         VkResult result = vkCreateBufferView(logicalDevice, &createInfo, nullptr, &bufferView);
         if(result != VK_SUCCESS)
@@ -848,7 +886,9 @@ namespace Raven
      * @param imageView
      * @return
      */
-    bool createImageView(const VkDevice logicalDevice, const VkImageViewCreateInfo createInfo, VkImageView &imageView)
+    bool createImageView(const VkDevice logicalDevice,
+                         const VkImageViewCreateInfo createInfo,
+                         VkImageView &imageView)
     {
       VkResult result = vkCreateImageView(logicalDevice, &createInfo, nullptr, &imageView);
       if(result != VK_SUCCESS)
@@ -921,6 +961,20 @@ namespace Raven
             return false;
         }
         return true;
+    }
+
+    /**
+     * @brief Frees allocated memory.
+     * @param logicalDevice
+     * @param memory
+     */
+    void freeMemory(const VkDevice logicalDevice, VkDeviceMemory &memory) noexcept
+    {
+        if(memory != VK_NULL_HANDLE)
+        {
+            vkFreeMemory(logicalDevice, memory, nullptr);
+            memory = VK_NULL_HANDLE;
+        }
     }
 
     /**
@@ -1066,22 +1120,45 @@ namespace Raven
      * @brief Copies data between buffers. Command buffer needs to be in recording state
      *        and the buffers need to have been created with correct usage flags and they
      *        also require the correct access flags.
-     * @param cmdBuffer
+     * @param cmdBuffer The command buffer used which needs to be in recording state.
      * @param sourceBuffer
      * @param dstBuffer
-     * @param bufferRanges Tells the memory ranges of each source and destination buffer.
+     * @param memoryRanges Tells the memory ranges of each source and destination buffer.
      * @return False if no buffer memory ranges were specified.
      */
     bool copyDataBetweenBuffers(VkCommandBuffer cmdBuffer, VkBuffer sourceBuffer,
-                                VkBuffer dstBuffer, std::vector<VkBufferCopy> bufferRanges)
+                                VkBuffer dstBuffer, std::vector<VkBufferCopy> memoryRanges)
     {
-        if(bufferRanges.size() > 0)
+        if(memoryRanges.size() > 0)
         {
             vkCmdCopyBuffer(cmdBuffer, sourceBuffer, dstBuffer,
-                            static_cast<uint32_t>(bufferRanges.size()), bufferRanges.data());
+                            static_cast<uint32_t>(memoryRanges.size()), memoryRanges.data());
             return true;
         }
         std::cerr << "Failed to copy data between buffers due to no VkBufferCopy values!" << std::endl;
+        return false;
+    }
+
+    /**
+     * @brief Copies data from a buffer to an image. Used mainly when an image uses
+     *        device-local memory, which needs to be updated from application.
+     * @param cmdBuffer The command buffer used which needs to be in recording state.
+     * @param sourceBuffer
+     * @param dstImage
+     * @param memoryRanges Memory ranges for source buffers and destination images.
+     * @param imageLayout
+     * @return False if image memory ranges were not specified.
+     */
+    bool copyDataFromBufferToImage(VkCommandBuffer cmdBuffer, VkBuffer sourceBuffer,
+                                   VkImage dstImage, std::vector<VkBufferImageCopy> memoryRanges,
+                                   VkImageLayout imageLayout)
+    {
+        if(memoryRanges.size() > 0)
+        {
+            vkCmdCopyBufferToImage(cmdBuffer, sourceBuffer, dstImage, imageLayout,
+                                   static_cast<uint32_t>(memoryRanges.size()), memoryRanges.data());
+            return true;
+        }
         return false;
     }
 }
