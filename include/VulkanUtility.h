@@ -183,4 +183,9 @@ namespace Raven
     bool copyDataFromBufferToImage(VkCommandBuffer cmdBuffer, VkBuffer sourceBuffer,
                                    VkImage dstImage, std::vector<VkBufferImageCopy> memoryRanges,
                                    VkImageLayout imageLayout);
+
+    //Copies data from an image to a buffer.
+    bool copyDataFromImageToBuffer(VkCommandBuffer cmdBuffer, VkImage sourceImage,
+                                   VkBuffer dstBuffer, std::vector<VkBufferImageCopy> memoryRanges,
+                                   VkImageLayout imageLayout);
 }

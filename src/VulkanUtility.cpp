@@ -1124,7 +1124,7 @@ namespace Raven
      * @param sourceBuffer
      * @param dstBuffer
      * @param memoryRanges Tells the memory ranges of each source and destination buffer.
-     * @return False if no buffer memory ranges were specified.
+     * @return False if memory ranges were not specified.
      */
     bool copyDataBetweenBuffers(VkCommandBuffer cmdBuffer, VkBuffer sourceBuffer,
                                 VkBuffer dstBuffer, std::vector<VkBufferCopy> memoryRanges)
@@ -1147,7 +1147,7 @@ namespace Raven
      * @param dstImage
      * @param memoryRanges Memory ranges for source buffers and destination images.
      * @param imageLayout
-     * @return False if image memory ranges were not specified.
+     * @return False if memory ranges were not specified.
      */
     bool copyDataFromBufferToImage(VkCommandBuffer cmdBuffer, VkBuffer sourceBuffer,
                                    VkImage dstImage, std::vector<VkBufferImageCopy> memoryRanges,
@@ -1159,6 +1159,32 @@ namespace Raven
                                    static_cast<uint32_t>(memoryRanges.size()), memoryRanges.data());
             return true;
         }
+        std::cerr << "Failed to copy data from a buffer to an image due to no "
+                     "VkBufferImageCopy values!" << std::endl;
+        return false;
+    }
+
+    /**
+     * @brief Copies data from an image to a buffer.
+     * @param cmdBuffer The command buffer used which needs to be in recording state.
+     * @param sourceImage
+     * @param dstBuffer
+     * @param memoryRanges
+     * @param imageLayout
+     * @return False if memory ranges were not specified.
+     */
+    bool copyDataFromImageToBuffer(VkCommandBuffer cmdBuffer, VkImage sourceImage,
+                                   VkBuffer dstBuffer, std::vector<VkBufferImageCopy> memoryRanges,
+                                   VkImageLayout imageLayout)
+    {
+        if(memoryRanges.size() > 0)
+        {
+            vkCmdCopyImageToBuffer(cmdBuffer, sourceImage, imageLayout, dstBuffer,
+                                   static_cast<uint32_t>(memoryRanges.size()), memoryRanges.data());
+            return true;
+        }
+        std::cerr << "Failed to copy data from an image to a buffer due to no "
+                     "VkBufferImageCopy values!" << std::endl;
         return false;
     }
 }
