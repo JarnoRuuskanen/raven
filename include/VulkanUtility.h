@@ -170,8 +170,9 @@ namespace Raven
                                 const VkPipelineStageFlags consumingStages,
                                 std::vector<ImageTransition> imageTransitions) noexcept;
 
-    //This function takes data and pushes it into graphics device memory.
-    bool flushDataToMemory(const VkDevice logicalDevice, VkDeviceMemory deviceMemory,
+    //This function takes data and pushes it into a staging resource and then
+    //gives a pointer to that data.
+    bool flushDataToStagingMemory(const VkDevice logicalDevice, VkDeviceMemory deviceMemory,
                            VkDeviceSize offset, VkDeviceSize dataSize, void* data,
                            void **pointer, bool unmap);
 
@@ -188,4 +189,16 @@ namespace Raven
     bool copyDataFromImageToBuffer(VkCommandBuffer cmdBuffer, VkImage sourceImage,
                                    VkBuffer dstBuffer, std::vector<VkBufferImageCopy> memoryRanges,
                                    VkImageLayout imageLayout);
+
+    //Updates a buffer which uses device-local memory.
+    bool updateDeviceLocalMemoryBuffer(VkPhysicalDeviceMemoryProperties memoryProperties,
+                                       VkDevice logicalDevice, VkDeviceSize dataSize,
+                                       void *data, VkBuffer destinationBuffer,
+                                       VkDeviceSize destinationOffset,
+                                       VkAccessFlags destinationBufferCurrentAccess,
+                                       VkAccessFlags destinationBufferNewAccess,
+                                       VkPipelineStageFlags destinationBufferGeneratingStages,
+                                       VkPipelineStageFlags destinationBufferConsumingStages,
+                                       VkQueue queue, VkCommandBuffer cmdBuffer,
+                                       std::vector<VkSemaphore> signalSemaphores);
 }

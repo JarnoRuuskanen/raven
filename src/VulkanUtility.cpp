@@ -1,5 +1,6 @@
 #include "VulkanUtility.h"
 #include "VulkanStructures.h"
+#include "CommandBufferManager.h"
 
 //All vulkan utility functions will be implemented here.
 namespace Raven
@@ -1058,9 +1059,11 @@ namespace Raven
     }
 
     /**
-     * @brief This function takes data and pushes it into graphics device memory.
+     * @brief This function takes data and pushes it into a staging resource and then
+     *        gives a pointer to that data.
      *        This function is mostly a copy from
      *        "VulkanCookbook - Mapping, updating and unmapping host-visible memory".
+     *        This type of memory is host-visible (CPU).
      * @param logicalDevice
      * @param deviceMemory
      * @param offset
@@ -1068,9 +1071,9 @@ namespace Raven
      * @param data
      * @param pointer
      * @param unmap
-     * @return
+     * @return False if memory could not be mapped.
      */
-    bool flushDataToMemory(const VkDevice logicalDevice, VkDeviceMemory deviceMemory,
+    bool flushDataToStagingMemory(const VkDevice logicalDevice, VkDeviceMemory deviceMemory,
                            VkDeviceSize offset, VkDeviceSize dataSize, void *data,
                            void **pointer, bool unmap)
     {
@@ -1186,5 +1189,121 @@ namespace Raven
         std::cerr << "Failed to copy data from an image to a buffer due to no "
                      "VkBufferImageCopy values!" << std::endl;
         return false;
+    }
+
+    /**
+     * @brief Updates a buffer which uses device-local memory.
+     * @param memoryProperties
+     * @param logicalDevice
+     * @param dataSize
+     * @param data
+     * @param destinationBuffer
+     * @param destinationOffset
+     * @param destinationBufferCurrentAccess
+     * @param destinationBufferNewAccess
+     * @param destinationBufferGeneratingStages
+     * @param destinationBufferConsumingStages
+     * @param queue
+     * @param cmdBuffer
+     * @param signalSemaphores
+     * @return False if the buffer with device-local memory could not be updated.
+      */
+    bool updateDeviceLocalMemoryBuffer(VkPhysicalDeviceMemoryProperties memoryProperties,
+                                       VkDevice logicalDevice, VkDeviceSize dataSize,
+                                       void *data, VkBuffer destinationBuffer,
+                                       VkDeviceSize destinationOffset,
+                                       VkAccessFlags destinationBufferCurrentAccess,
+                                       VkAccessFlags destinationBufferNewAccess,
+                                       VkPipelineStageFlags destinationBufferGeneratingStages,
+                                       VkPipelineStageFlags destinationBufferConsumingStages,
+                                       VkQueue queue, VkCommandBuffer cmdBuffer,
+                                       std::vector<VkSemaphore> signalSemaphores)
+    {
+        VulkanBuffer stagingBufferObject;
+        VkBufferCreateInfo stagingInfo =
+                VulkanStructures::bufferCreateInfo(dataSize,
+                                                   VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                                                   VK_SHARING_MODE_EXCLUSIVE);
+        //Create the staging buffer.
+        if(!createBuffer(logicalDevice, stagingInfo, stagingBufferObject.buffer))
+            return false;
+
+        //Allocate memory for the staging buffer.
+        VkMemoryRequirements memReq;
+        vkGetBufferMemoryRequirements(logicalDevice, stagingBufferObject.buffer, &memReq);
+
+        //Find the correct memory type.
+        uint32_t memoryTypeIndex;
+        if(!getMemoryType(memoryProperties, memReq,
+                          VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+                          memoryTypeIndex))
+        {
+            return false;
+        }
+
+        //Allocate the memory and bind the buffer.
+        VkDeviceMemory stagingMemory;
+        if(!allocateMemory(logicalDevice, memReq, memoryTypeIndex, stagingMemory))
+            return false;
+
+        if(!stagingBufferObject.bindBufferMemory(logicalDevice, stagingMemory,0))
+            return false;
+
+        //Flush the data to the staging buffer's memory.
+        if(!flushDataToStagingMemory(logicalDevice, stagingMemory, 0, dataSize, data, nullptr, true))
+            return false;
+
+        //Start recording to the command buffer.
+        VkCommandBufferBeginInfo beginInfo =
+                VulkanStructures::commandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+
+        if(!CommandBufferManager::beginCommandBuffer(cmdBuffer, beginInfo))
+            return false;
+
+        //Set memory barrier to be able to write to the buffer.
+        setBufferMemoryBarriers(cmdBuffer, destinationBufferGeneratingStages,
+                                destinationBufferConsumingStages, {{ destinationBuffer,
+                                                                     destinationBufferCurrentAccess,
+                                                                     VK_ACCESS_TRANSFER_WRITE_BIT,
+                                                                     VK_QUEUE_FAMILY_IGNORED,
+                                                                     VK_QUEUE_FAMILY_IGNORED}});
+
+        //Copy the data to the destination buffer.
+        if(!copyDataBetweenBuffers(cmdBuffer, stagingBufferObject.buffer, destinationBuffer,
+                                    {{0,destinationOffset, dataSize}}))
+        {
+            return false;
+        }
+
+        //Set another barrier so that the destination buffer's data can be read.
+        setBufferMemoryBarriers(cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT,
+                                destinationBufferConsumingStages,
+                                {{destinationBuffer, VK_ACCESS_TRANSFER_WRITE_BIT,
+                                  destinationBufferNewAccess, VK_QUEUE_FAMILY_IGNORED,
+                                  VK_QUEUE_FAMILY_IGNORED}});
+
+        //Stop recording the commands.
+        if(!CommandBufferManager::endCommandBuffer(cmdBuffer))
+            return false;
+
+        //Submit the command to the queue.
+        VkFence fence;
+        if(!createFence(logicalDevice, false, fence))
+            return false;
+
+        VkSubmitInfo submitInfo = VulkanStructures::submitInfo();
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &cmdBuffer;
+        submitInfo.signalSemaphoreCount = static_cast<uint32_t>(signalSemaphores.size());
+        submitInfo.pSignalSemaphores = signalSemaphores.data();
+
+        if(!CommandBufferManager::submitCommandBuffers(queue, 1, submitInfo, fence))
+            return false;
+
+        //Wait for the fence
+        if(!waitForFences(logicalDevice, 500000000, VK_TRUE, {fence}))
+            return false;
+
+        return true;
     }
 }

@@ -79,7 +79,7 @@ bool GraphicsObject::addTexture(const VkDevice logicalDevice,
 
     //Flush the data to the memory object.
     void* dataPointer;
-    flushDataToMemory(logicalDevice, stagingMemory, 0, stagingBuffer.size,
+    flushDataToStagingMemory(logicalDevice, stagingMemory, 0, stagingBuffer.size,
                       pixels, &dataPointer, true);
 
     //Add image extent information.
