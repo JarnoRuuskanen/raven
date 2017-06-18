@@ -1304,6 +1304,10 @@ namespace Raven
         if(!waitForFences(logicalDevice, 500000000, VK_TRUE, {fence}))
             return false;
 
+        //Clean after we are done.
+        destroyBuffer(logicalDevice, stagingBufferObject.buffer);
+        freeMemory(logicalDevice, stagingMemory);
+
         return true;
     }
 }
