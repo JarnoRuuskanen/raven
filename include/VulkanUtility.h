@@ -91,6 +91,12 @@ namespace Raven
     bool presentImage(const VkQueue queue, const VkSwapchainKHR swapchain,
                       const VkPresentInfoKHR presentInfo, VkSemaphore &presentationSemaphores);
 
+    //Destroys a presentation surface.
+    void destroyPresentationSurface(const VkInstance instance, VkSurfaceKHR &surface);
+
+    //Destroys a swapchain.
+    void destroySwapchain(const VkDevice logicalDevice, VkSwapchainKHR &swapchain) noexcept;
+
     //Creates a semaphore.
     bool createSemaphore(const VkDevice logicalDevice, VkSemaphore &semaphore);
 
@@ -113,11 +119,17 @@ namespace Raven
     //Checks if a fence has been signaled or not.
     bool isFenceSignaled(const VkDevice logicalDevice, VkFence &fence);
 
-    //Destroys a presentation surface.
-    void destroyPresentationSurface(const VkInstance instance, VkSurfaceKHR &surface);
+    //Sets buffer memory barriers.
+    void setBufferMemoryBarriers(VkCommandBuffer commandBuffer,
+                                 const VkPipelineStageFlags generatingStages,
+                                 const VkPipelineStageFlags consumingStages,
+                                 std::vector<BufferTransition> bufferTransitions) noexcept;
 
-    //Destroys a swapchain.
-    void destroySwapchain(const VkDevice logicalDevice, VkSwapchainKHR &swapchain) noexcept;
+    //Sets image memory barriers.
+    void setImageMemoryBarriers(VkCommandBuffer commandBuffer,
+                                const VkPipelineStageFlags generatingStages,
+                                const VkPipelineStageFlags consumingStages,
+                                std::vector<ImageTransition> imageTransitions) noexcept;
 
     //Makes the application wait until the selected device is idle.
     bool waitUntilDeviceIdle(VkDevice &logicalDevice);
@@ -160,6 +172,9 @@ namespace Raven
     //Destroys an image view.
     void destroyImageView(const VkDevice logicalDevice, VkImageView &imageView) noexcept;
 
+    //Creates a sampler.
+    bool createSampler(const VkDevice logicalDevice, VkSamplerCreateInfo samplerInfo, VkSampler &sampler);
+
     //Gets the correct memory type for image/buffer.
     bool getMemoryType(VkPhysicalDeviceMemoryProperties memoryProperties,
                        VkMemoryRequirements memReq,
@@ -172,18 +187,6 @@ namespace Raven
 
     //Frees allocated memory.
     void freeMemory(const VkDevice logicalDevice, VkDeviceMemory &memory) noexcept;
-
-    //Sets buffer memory barriers.
-    void setBufferMemoryBarriers(VkCommandBuffer commandBuffer,
-                                 const VkPipelineStageFlags generatingStages,
-                                 const VkPipelineStageFlags consumingStages,
-                                 std::vector<BufferTransition> bufferTransitions) noexcept;
-
-    //Sets image memory barriers.
-    void setImageMemoryBarriers(VkCommandBuffer commandBuffer,
-                                const VkPipelineStageFlags generatingStages,
-                                const VkPipelineStageFlags consumingStages,
-                                std::vector<ImageTransition> imageTransitions) noexcept;
 
     //This function takes data and pushes it into a staging resource and then
     //gives a pointer to that data.

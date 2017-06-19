@@ -1,7 +1,7 @@
 #pragma once
-//Namespace for all of the vulkan structures used in object creation
 #include "Headers.h"
 
+//Namespace for all of the vulkan structures used in object creation
 namespace VulkanStructures
 {
     inline VkApplicationInfo applicationInfo()
@@ -266,5 +266,43 @@ namespace VulkanStructures
             }
         };
         return ranges;
+    }
+
+    inline VkSamplerCreateInfo samplerCreateInfo(VkFilter minFilter,
+                                                 VkFilter magFilter,
+                                                 VkSamplerMipmapMode mipmapMode,
+                                                 VkSamplerAddressMode addressModeU,
+                                                 VkSamplerAddressMode addressModeV,
+                                                 VkSamplerAddressMode addressModeW,
+                                                 float mipLodBias,
+                                                 VkBool32 antisotropyEnable,
+                                                 float maxAnisotropy,
+                                                 VkBool32 compareEnable,
+                                                 VkCompareOp compareOp,
+                                                 float minLod,
+                                                 float maxLod,
+                                                 VkBorderColor borderColor,
+                                                 VkBool32 unnormalizedCoordinates)
+    {
+        VkSamplerCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+        createInfo.pNext = nullptr;
+        createInfo.flags = 0;
+        createInfo.minFilter = minFilter;
+        createInfo.magFilter = magFilter;
+        createInfo.mipmapMode = mipmapMode;
+        createInfo.addressModeU = addressModeU;
+        createInfo.addressModeV = addressModeV;
+        createInfo.addressModeW = addressModeW;
+        createInfo.mipLodBias = mipLodBias;
+        createInfo.anisotropyEnable = antisotropyEnable;
+        createInfo.maxAnisotropy = maxAnisotropy;
+        createInfo.compareEnable = compareEnable;
+        createInfo.compareOp = compareOp;
+        createInfo.minLod = minLod;
+        createInfo.maxLod = maxLod;
+        createInfo.borderColor = borderColor;
+        createInfo.unnormalizedCoordinates = unnormalizedCoordinates;
+        return createInfo;
     }
 }

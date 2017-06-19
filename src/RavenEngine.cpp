@@ -3,7 +3,6 @@
 #include "VulkanStructures.h"
 #include "Settings.h"
 #include "CommandBufferManager.h"
-#include "VulkanBuffer.h"
 
 using namespace Raven;
 

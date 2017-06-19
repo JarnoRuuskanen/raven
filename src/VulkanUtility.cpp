@@ -620,6 +620,36 @@ namespace Raven
         }
     }
 
+
+
+    /**
+     * @brief Destroys a presentation surface.
+     * @param instance
+     * @param surface
+     */
+    void destroyPresentationSurface(const VkInstance instance, VkSurfaceKHR &surface)
+    {
+        if(surface)
+        {
+            vkDestroySurfaceKHR(instance, surface, nullptr);
+            surface = VK_NULL_HANDLE;
+        }
+    }
+
+    /**
+     * @brief Destroys a swapchain.
+     * @param logicalDevice
+     * @param swapchain
+     */
+    void destroySwapchain(const VkDevice logicalDevice, VkSwapchainKHR &swapchain) noexcept
+    {
+        if(swapchain)
+        {
+            vkDestroySwapchainKHR(logicalDevice, swapchain, nullptr);
+            swapchain = VK_NULL_HANDLE;
+        }
+    }
+
     /**
      * @brief Creates a fence. Note that a fence can be created
      *        already in signaled state so this needs to be specified.
@@ -721,30 +751,82 @@ namespace Raven
     }
 
     /**
-     * @brief Destroys a presentation surface.
-     * @param instance
-     * @param surface
+     * @brief Sets buffer memory barriers.
+     * @param commandBuffer
+     * @param generatingStages What stages of the pipeline have been using the buffers so far.
+     * @param consumingStages What stages the buffers will be used afterwards.
+     * @param bufferTransitions
      */
-    void destroyPresentationSurface(const VkInstance instance, VkSurfaceKHR &surface)
+    void setBufferMemoryBarriers(VkCommandBuffer commandBuffer,
+                                 const VkPipelineStageFlags generatingStages,
+                                 const VkPipelineStageFlags consumingStages,
+                                 std::vector<BufferTransition> bufferTransitions) noexcept
     {
-        if(surface)
+        //Create a vector for the buffer memory barriers.
+        std::vector<VkBufferMemoryBarrier> barriers;
+        for(auto& bufferTransition : bufferTransitions)
         {
-            vkDestroySurfaceKHR(instance, surface, nullptr);
-            surface = VK_NULL_HANDLE;
+            //Set a barrier for each buffer.
+            barriers.push_back(VulkanStructures::bufferMemoryBarrier(bufferTransition.currentAccess,
+                                                                     bufferTransition.newAccess,
+                                                                     bufferTransition.currentQueueFamily,
+                                                                     bufferTransition.newQueueFamily,
+                                                                     bufferTransition.buffer,
+                                                                     0,
+                                                                     VK_WHOLE_SIZE));
+        }
+
+        //Set the barriers.
+        if(barriers.size() > 0)
+        {
+            vkCmdPipelineBarrier(commandBuffer, generatingStages, consumingStages, 0, 0,
+                                 nullptr, static_cast<uint32_t>(barriers.size()),
+                                 barriers.data(),0, nullptr);
         }
     }
 
     /**
-     * @brief Destroys a swapchain.
-     * @param logicalDevice
-     * @param swapchain
+     * @brief Sets image memory barriers. Memory barriers are used to change the
+     *        use case of images/buffers/memory and to make command buffers wait
+     *        for each other to finish working.
+     *        It is always better to define as many images in
+     *        as few barriers as possible to achieve better performance.
+     * @param commandBuffer
+     * @param generatingStages
+     * @param consumingStages
+     * @param imageTransitions
      */
-    void destroySwapchain(const VkDevice logicalDevice, VkSwapchainKHR &swapchain) noexcept
+    void setImageMemoryBarriers(VkCommandBuffer commandBuffer,
+                                const VkPipelineStageFlags generatingStages,
+                                const VkPipelineStageFlags consumingStages,
+                                std::vector<ImageTransition> imageTransitions) noexcept
     {
-        if(swapchain)
+        //Create a vector for the image memory barriers.
+        std::vector<VkImageMemoryBarrier> barriers;
+        for(auto& imageTransition : imageTransitions)
         {
-            vkDestroySwapchainKHR(logicalDevice, swapchain, nullptr);
-            swapchain = VK_NULL_HANDLE;
+            barriers.push_back(VulkanStructures::imageMemoryBarrier(imageTransition.image,
+                                                                    imageTransition.currentAccess,
+                                                                    imageTransition.newAccess,
+                                                                    imageTransition.currentQueueFamily,
+                                                                    imageTransition.newQueueFamily,
+                                                                    imageTransition.currentLayout,
+                                                                    imageTransition.newLayout,
+                                                                    {
+                                                                        imageTransition.aspect,
+                                                                        0,
+                                                                        VK_REMAINING_MIP_LEVELS,
+                                                                        0,
+                                                                        VK_REMAINING_ARRAY_LAYERS
+                                                                    }));
+        }
+
+        //Set the barriers.
+        if(barriers.size() > 0)
+        {
+            vkCmdPipelineBarrier(commandBuffer, generatingStages, consumingStages, 0, 0,
+                                 nullptr, 0, nullptr, static_cast<uint32_t>(barriers.size()),
+                                 barriers.data());
         }
     }
 
@@ -962,6 +1044,24 @@ namespace Raven
     }
 
     /**
+     * @brief Creates a sampler.
+     * @param logicalDevice
+     * @param samplerInfo
+     * @param sampler
+     * @return False if sampler could not be created.
+     */
+    bool createSampler(const VkDevice logicalDevice, VkSamplerCreateInfo samplerInfo, VkSampler &sampler)
+    {
+        VkResult result = vkCreateSampler(logicalDevice, &samplerInfo, nullptr, &sampler);
+        if(result != VK_SUCCESS)
+        {
+            std::cerr << "Failed to create a sampler!" << std::endl;
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * @brief Gets the correct memory type for image/buffer.
      * @param physicalDeviceMemoryProperties
      * @param memReq Such memory requirements as size and alignment.
@@ -1022,86 +1122,6 @@ namespace Raven
         {
             vkFreeMemory(logicalDevice, memory, nullptr);
             memory = VK_NULL_HANDLE;
-        }
-    }
-
-    /**
-     * @brief Sets buffer memory barriers.
-     * @param commandBuffer
-     * @param generatingStages What stages of the pipeline have been using the buffers so far.
-     * @param consumingStages What stages the buffers will be used afterwards.
-     * @param bufferTransitions
-     */
-    void setBufferMemoryBarriers(VkCommandBuffer commandBuffer,
-                                 const VkPipelineStageFlags generatingStages,
-                                 const VkPipelineStageFlags consumingStages,
-                                 std::vector<BufferTransition> bufferTransitions) noexcept
-    {
-        //Create a vector for the buffer memory barriers.
-        std::vector<VkBufferMemoryBarrier> barriers;
-        for(auto& bufferTransition : bufferTransitions)
-        {
-            //Set a barrier for each buffer.
-            barriers.push_back(VulkanStructures::bufferMemoryBarrier(bufferTransition.currentAccess,
-                                                                     bufferTransition.newAccess,
-                                                                     bufferTransition.currentQueueFamily,
-                                                                     bufferTransition.newQueueFamily,
-                                                                     bufferTransition.buffer,
-                                                                     0,
-                                                                     VK_WHOLE_SIZE));
-        }
-
-        //Set the barriers.
-        if(barriers.size() > 0)
-        {
-            vkCmdPipelineBarrier(commandBuffer, generatingStages, consumingStages, 0, 0,
-                                 nullptr, static_cast<uint32_t>(barriers.size()),
-                                 barriers.data(),0, nullptr);
-        }
-    }
-
-    /**
-     * @brief Sets image memory barriers. Memory barriers are used to change the
-     *        use case of images/buffers/memory and to make command buffers wait
-     *        for each other to finish working.
-     *        It is always better to define as many images in
-     *        as few barriers as possible to achieve better performance.
-     * @param commandBuffer
-     * @param generatingStages
-     * @param consumingStages
-     * @param imageTransitions
-     */
-    void setImageMemoryBarriers(VkCommandBuffer commandBuffer,
-                                const VkPipelineStageFlags generatingStages,
-                                const VkPipelineStageFlags consumingStages,
-                                std::vector<ImageTransition> imageTransitions) noexcept
-    {
-        //Create a vector for the image memory barriers.
-        std::vector<VkImageMemoryBarrier> barriers;
-        for(auto& imageTransition : imageTransitions)
-        {
-            barriers.push_back(VulkanStructures::imageMemoryBarrier(imageTransition.image,
-                                                                    imageTransition.currentAccess,
-                                                                    imageTransition.newAccess,
-                                                                    imageTransition.currentQueueFamily,
-                                                                    imageTransition.newQueueFamily,
-                                                                    imageTransition.currentLayout,
-                                                                    imageTransition.newLayout,
-                                                                    {
-                                                                        imageTransition.aspect,
-                                                                        0,
-                                                                        VK_REMAINING_MIP_LEVELS,
-                                                                        0,
-                                                                        VK_REMAINING_ARRAY_LAYERS
-                                                                    }));
-        }
-
-        //Set the barriers.
-        if(barriers.size() > 0)
-        {
-            vkCmdPipelineBarrier(commandBuffer, generatingStages, consumingStages, 0, 0,
-                                 nullptr, 0, nullptr, static_cast<uint32_t>(barriers.size()),
-                                 barriers.data());
         }
     }
 

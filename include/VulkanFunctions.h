@@ -1,7 +1,7 @@
 #pragma once
 //This namespace defines the enabled vulkan functions in the Raven
 //namespace.
-//Define preprocessor definition
+//Define preprocessor definition.
 #include <vulkan/vulkan.h>
 
 namespace Raven
