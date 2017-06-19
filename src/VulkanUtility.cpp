@@ -849,6 +849,53 @@ namespace Raven
     }
 
     /**
+     * @brief Creates and prepares a staging buffer which can be used for
+              updating device-local memory in particular.
+     * @param logicalDevice
+     * @param memoryProperties
+     * @param allocationSize
+     * @param stagingBuffer
+     * @param stagingMemory
+     * @return False if the staging buffer creation or memory allocation fails.
+     */
+    bool prepareStagingBuffer(const VkDevice logicalDevice,
+                              VkPhysicalDeviceMemoryProperties memoryProperties,
+                              VkDeviceSize allocationSize,
+                              VulkanBuffer &stagingBufferObject,
+                              VkDeviceMemory &stagingMemory)
+    {
+        VkBufferCreateInfo stagingInfo =
+                VulkanStructures::bufferCreateInfo(allocationSize,
+                                                   VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                                                   VK_SHARING_MODE_EXCLUSIVE);
+        //Create the staging buffer.
+        if(!createBuffer(logicalDevice, stagingInfo, stagingBufferObject.buffer))
+            return false;
+
+        //Save the staging buffer size.
+        stagingBufferObject.size = allocationSize;
+
+        //Allocate memory for the staging buffer.
+        VkMemoryRequirements memReq;
+        vkGetBufferMemoryRequirements(logicalDevice, stagingBufferObject.buffer, &memReq);
+
+        //Find the correct memory type.
+        uint32_t memoryTypeIndex;
+        if(!getMemoryType(memoryProperties, memReq,
+                          VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+                          memoryTypeIndex))
+        {
+            return false;
+        }
+
+        //Allocate the memory and bind the buffer.
+        if(!allocateMemory(logicalDevice, memReq, memoryTypeIndex, stagingMemory))
+            return false;
+
+        return true;
+    }
+
+    /**
      * @brief Creates an image.
      * @param logicalDevice
      * @param createInfo
@@ -1209,10 +1256,10 @@ namespace Raven
      * @param signalSemaphores
      * @return False if the buffer with device-local memory could not be updated.
       */
-    bool updateDeviceLocalMemoryBuffer(VkPhysicalDeviceMemoryProperties memoryProperties,
-                                       VkDevice logicalDevice,
-                                       VkDeviceSize dataSize,
+    bool updateDeviceLocalMemoryBuffer(VkDevice logicalDevice,
                                        void *data,
+                                       VulkanBuffer stagingBufferObject,
+                                       VkDeviceMemory stagingMemory,
                                        VkBuffer destinationBuffer,
                                        VkDeviceSize destinationOffset,
                                        VkAccessFlags destinationBufferCurrentAccess,
@@ -1223,38 +1270,15 @@ namespace Raven
                                        VkCommandBuffer cmdBuffer,
                                        std::vector<VkSemaphore> signalSemaphores)
     {
-        VulkanBuffer stagingBufferObject;
-        VkBufferCreateInfo stagingInfo =
-                VulkanStructures::bufferCreateInfo(dataSize,
-                                                   VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                                                   VK_SHARING_MODE_EXCLUSIVE);
-        //Create the staging buffer.
-        if(!createBuffer(logicalDevice, stagingInfo, stagingBufferObject.buffer))
-            return false;
-
-        //Allocate memory for the staging buffer.
-        VkMemoryRequirements memReq;
-        vkGetBufferMemoryRequirements(logicalDevice, stagingBufferObject.buffer, &memReq);
-
-        //Find the correct memory type.
-        uint32_t memoryTypeIndex;
-        if(!getMemoryType(memoryProperties, memReq,
-                          VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
-                          memoryTypeIndex))
-        {
-            return false;
-        }
-
-        //Allocate the memory and bind the buffer.
-        VkDeviceMemory stagingMemory;
-        if(!allocateMemory(logicalDevice, memReq, memoryTypeIndex, stagingMemory))
-            return false;
-
+        //First bind the staging buffer.
         if(!stagingBufferObject.bindBufferMemory(logicalDevice, stagingMemory,0))
             return false;
 
-        //Flush the data to the staging buffer's memory.
-        if(!flushDataToHostLocalMemory(logicalDevice, stagingMemory, 0, dataSize, data, nullptr, true))
+        //Flush the data to the staging buffer's memory. Note that data's size
+        //must match the size of stagingBufferObject's size. Staging buffer object
+        //must have been prepared prematurely.
+        if(!flushDataToHostLocalMemory(logicalDevice, stagingMemory, 0,
+                                       stagingBufferObject.size, data, nullptr, true))
             return false;
 
         //Start recording to the command buffer.
@@ -1274,7 +1298,11 @@ namespace Raven
 
         //Copy the data to the destination buffer.
         if(!copyDataBetweenBuffers(cmdBuffer, stagingBufferObject.buffer, destinationBuffer,
-                                    {{0,destinationOffset, dataSize}}))
+                                    {{
+                                        0,
+                                        destinationOffset,
+                                        stagingBufferObject.size
+                                    }}))
         {
             return false;
         }
@@ -1308,11 +1336,8 @@ namespace Raven
         if(!waitForFences(logicalDevice, 500000000, VK_TRUE, {fence}))
             return false;
 
-        //Clean after we are done. Preferably use an existing staging
-        //buffer so we don't need so create and destroy one each time.
-        //This would also free us from using a fence.
-        destroyBuffer(logicalDevice, stagingBufferObject.buffer);
-        freeMemory(logicalDevice, stagingMemory);
+        //Clean up afterwards. It might not be required to use a fence as
+        //the staging buffer stays in scope after this function.
         destroyFence(logicalDevice, fence);
 
         return true;
@@ -1340,10 +1365,10 @@ namespace Raven
      * @param signalSemaphores
      * @return False if the device-local image memory could not be updated.
      */
-    bool updateDeviceLocalMemoryImage(VkPhysicalDeviceMemoryProperties memoryProperties,
-                                      VkDevice logicalDevice,
-                                      VkDeviceSize dataSize,
+    bool updateDeviceLocalMemoryImage(VkDevice logicalDevice,
                                       void *data,
+                                      VulkanBuffer stagingBufferObject,
+                                      VkDeviceMemory stagingMemory,
                                       VkImage destinationImage,
                                       VkImageSubresourceLayers destinationImageSubresource,
                                       VkOffset3D destinationImageOffset,
@@ -1359,38 +1384,16 @@ namespace Raven
                                       VkCommandBuffer cmdBuffer,
                                       std::vector<VkSemaphore> signalSemaphores)
     {
-        VulkanBuffer stagingBufferObject;
-        VkBufferCreateInfo stagingInfo =
-                VulkanStructures::bufferCreateInfo(dataSize,
-                                                   VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                                                   VK_SHARING_MODE_EXCLUSIVE);
-        //Create the staging buffer.
-        if(!createBuffer(logicalDevice, stagingInfo, stagingBufferObject.buffer))
-            return false;
 
-        //Allocate memory for the staging buffer.
-        VkMemoryRequirements memReq;
-        vkGetBufferMemoryRequirements(logicalDevice, stagingBufferObject.buffer, &memReq);
-
-        //Find the correct memory type.
-        uint32_t memoryTypeIndex;
-        if(!getMemoryType(memoryProperties, memReq,
-                          VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
-                          memoryTypeIndex))
-        {
-            return false;
-        }
-
-        //Allocate the memory and bind the buffer.
-        VkDeviceMemory stagingMemory;
-        if(!allocateMemory(logicalDevice, memReq, memoryTypeIndex, stagingMemory))
-            return false;
-
+        //First bind the staging buffer to use.
         if(!stagingBufferObject.bindBufferMemory(logicalDevice, stagingMemory,0))
             return false;
 
-        //Flush the data to the staging buffer's memory.
-        if(!flushDataToHostLocalMemory(logicalDevice, stagingMemory, 0, dataSize, data, nullptr, true))
+        //Flush the data to the staging buffer's memory. Note that data's size must match
+        //stagingBufferObject's size at this point. Staging buffer must have been prepared prematurely
+        //for this.
+        if(!flushDataToHostLocalMemory(logicalDevice, stagingMemory, 0, stagingBufferObject.size,
+                                       data, nullptr, true))
             return false;
 
         //Start recording to the command buffer.
@@ -1468,12 +1471,8 @@ namespace Raven
         if(!waitForFences(logicalDevice, 500000000, VK_TRUE, {fence}))
             return false;
 
-        //Clean after we are done. Preferably use an existing staging
-        //buffer so we don't need so create and destroy one each time.
-        //This would also free us from using a fence since the buffer
-        //would live longer and not go out of scope at the end of the function.
-        destroyBuffer(logicalDevice, stagingBufferObject.buffer);
-        freeMemory(logicalDevice, stagingMemory);
+        //Clean up afterwards. It might not be required to use a fence as
+        //the staging buffer stays in scope after this function.
         destroyFence(logicalDevice, fence);
 
         return true;

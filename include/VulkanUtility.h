@@ -132,6 +132,14 @@ namespace Raven
     //Destroys a buffer.
     void destroyBuffer(const VkDevice logicalDevice, VkBuffer &buffer) noexcept;
 
+    //Creates and prepares a staging buffer which can be used for
+    //updating device-local memory in particular.
+    bool prepareStagingBuffer(const VkDevice logicalDevice,
+                              VkPhysicalDeviceMemoryProperties memoryProperties,
+                              VkDeviceSize allocationSize,
+                              VkBuffer &stagingBuffer,
+                              VkDeviceMemory &stagingMemory);
+
     //Creates a buffer view.
     bool createBufferView(const VkDevice logicalDevice, const VkBufferViewCreateInfo createInfo,
                           VkBufferView &bufferView);
@@ -198,22 +206,25 @@ namespace Raven
                                    std::vector<VkBufferImageCopy> memoryRanges);
 
     //Updates a buffer which uses device-local memory.
-    bool updateDeviceLocalMemoryBuffer(VkPhysicalDeviceMemoryProperties memoryProperties,
-                                       VkDevice logicalDevice, VkDeviceSize dataSize,
-                                       void *data, VkBuffer destinationBuffer,
+    bool updateDeviceLocalMemoryBuffer(VkDevice logicalDevice,
+                                       void *data,
+                                       VulkanBuffer stagingBufferObject,
+                                       VkDeviceMemory stagingMemory,
+                                       VkBuffer destinationBuffer,
                                        VkDeviceSize destinationOffset,
                                        VkAccessFlags destinationBufferCurrentAccess,
                                        VkAccessFlags destinationBufferNewAccess,
                                        VkPipelineStageFlags destinationBufferGeneratingStages,
                                        VkPipelineStageFlags destinationBufferConsumingStages,
-                                       VkQueue queue, VkCommandBuffer cmdBuffer,
+                                       VkQueue queue,
+                                       VkCommandBuffer cmdBuffer,
                                        std::vector<VkSemaphore> signalSemaphores);
 
     //Updates an image that is using device-local memory.
-    bool updateDeviceLocalMemoryImage(VkPhysicalDeviceMemoryProperties memoryProperties,
-                                      VkDevice logicalDevice,
-                                      VkDeviceSize dataSize,
+    bool updateDeviceLocalMemoryImage(VkDevice logicalDevice,
                                       void *data,
+                                      VulkanBuffer stagingBufferObject,
+                                      VkDeviceMemory stagingMemory,
                                       VkImage destinationImage,
                                       VkImageSubresourceLayers destinationImageSubresource,
                                       VkOffset3D destinationImageOffset,
