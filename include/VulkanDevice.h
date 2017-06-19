@@ -1,5 +1,6 @@
 #pragma once
 #include "Headers.h"
+#include "VulkanImage.h"
 
 struct VulkanQueueInfo
 {
@@ -11,6 +12,7 @@ struct VulkanQueueInfo
 
 //A class which holds and manages logical device operations. Logical devices
 //are the main working force in a Vulkan-powered applications.
+using namespace Raven;
 class VulkanDevice
 {
     public:
@@ -22,6 +24,21 @@ class VulkanDevice
         //Sends commands to the gpu for computing. This function also chooses the
         //queue which the commands will be submitted to.
         bool executeCommands(VkSubmitInfo &submitInfo, VkFence &submitFence);
+
+        //Creates a sampled image.
+        bool createSampledImage(VkPhysicalDevice physicalDevice,
+                                VkImageType imageType,
+                                VkFormat format,
+                                VkExtent3D size,
+                                uint32_t numMipmaps,
+                                uint32_t numLayers,
+                                VkImageUsageFlags usage,
+                                VkImageViewType viewType,
+                                VkImageAspectFlags aspect,
+                                VkBool32 linearFiltering,
+                                VulkanImage &sampledImageObject,
+                                VkDeviceMemory &memoryObject);
+
         //Returns a queue family reference by index
         inline VkQueueFamilyProperties& getQueueFamily(int index){return queueFamilies[index];}
         //Returns the queueFamilyIndex for the family that is currently used.

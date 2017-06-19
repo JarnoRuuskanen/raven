@@ -118,6 +118,85 @@ bool VulkanDevice::executeCommands(VkSubmitInfo &submitInfo, VkFence &submitFenc
 }
 
 /**
+ * @brief Creates a sampled image.
+ * @param physicalDevice
+ * @param imageType
+ * @param format
+ * @param size
+ * @param numMipmaps
+ * @param numLayers
+ * @param usage
+ * @param viewType
+ * @param aspect
+ * @param linearFiltering
+ * @param sampledImageObject
+ * @param memoryObject
+ * @return
+ */
+bool VulkanDevice::createSampledImage(VkPhysicalDevice physicalDevice,
+                                      VkImageType imageType,
+                                      VkFormat format,
+                                      VkExtent3D size,
+                                      uint32_t numMipmaps,
+                                      uint32_t numLayers,
+                                      VkImageUsageFlags usage,
+                                      VkImageViewType viewType,
+                                      VkImageAspectFlags aspect,
+                                      VkBool32 linearFiltering,
+                                      VulkanImage &sampledImageObject,
+                                      VkDeviceMemory &memoryObject)
+{
+    VkFormatProperties formatProperties;
+    vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &formatProperties);
+
+    if(!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT))
+    {
+        std::cerr << "Image sampling does not support provided format!" << std::endl;
+        return false;
+    }
+    if(linearFiltering && !(formatProperties.optimalTilingFeatures
+                            & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
+    {
+        std::cerr << "Linear image filtering does not support provided format." << std::endl;
+        return false;
+    }
+
+    VkImageCreateInfo imageCreateInfo =
+            VulkanStructures::imageCreateInfo(usage | VK_IMAGE_USAGE_SAMPLED_BIT,
+                                              imageType, format, size, numLayers,
+                                              VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_LAYOUT_UNDEFINED,
+                                              VK_SHARING_MODE_EXCLUSIVE, numMipmaps, false);
+    if(!createImage(logicalDevice, imageCreateInfo, sampledImageObject.image))
+        return false;
+
+    //Find correct type of memory for the image and bind it.
+    VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties;
+    vkGetPhysicalDeviceMemoryProperties(physicalDevice, &physicalDeviceMemoryProperties);
+
+    VkMemoryRequirements memReq;
+    vkGetImageMemoryRequirements(logicalDevice, sampledImageObject.image, &memReq);
+
+    uint32_t memoryTypeIndex;
+    if(!getMemoryType(physicalDeviceMemoryProperties, memReq, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                      memoryTypeIndex))
+    {
+        return false;
+    }
+
+    allocateMemory(logicalDevice, memReq, memoryTypeIndex, memoryObject);
+    sampledImageObject.bindImageMemory(logicalDevice, memoryObject);
+
+    VkImageViewCreateInfo imageViewInfo =
+            VulkanStructures::imageViewCreateInfo(sampledImageObject.image, format, aspect, viewType);
+
+    //Lastly create the image view.
+    if(!createImageView(logicalDevice, imageViewInfo, sampledImageObject.imageView))
+        return false;
+
+    return true;
+}
+
+/**
  * @brief Initializes the queues this logical vulkan device will be using.
  * @param familyInfo
  * @return

@@ -228,6 +228,27 @@ namespace VulkanStructures
         return createInfo;
     }
 
+    inline VkImageViewCreateInfo imageViewCreateInfo(VkImage image,
+                                                     VkFormat format,
+                                                     VkImageAspectFlags aspect,
+                                                     VkImageViewType viewType)
+    {
+        VkImageViewCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        createInfo.pNext = nullptr;
+        createInfo.flags = 0;
+        createInfo.image = image;
+        createInfo.format = format;
+        createInfo.viewType = viewType;
+        createInfo.subresourceRange = { aspect, 0 , VK_REMAINING_MIP_LEVELS,
+                                        0, VK_REMAINING_ARRAY_LAYERS };
+        createInfo.components = { VK_COMPONENT_SWIZZLE_IDENTITY,
+                                  VK_COMPONENT_SWIZZLE_IDENTITY,
+                                  VK_COMPONENT_SWIZZLE_IDENTITY,
+                                  VK_COMPONENT_SWIZZLE_IDENTITY };
+        return createInfo;
+    }
+
     inline VkImageMemoryBarrier imageMemoryBarrier(VkImage image,
                                                    VkAccessFlags currentAccess,
                                                    VkAccessFlags newAccess,

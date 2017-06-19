@@ -36,6 +36,7 @@ namespace Raven
     //Gets all physical device queues and their properties.
     bool getPhysicalDeviceQueuesWithProperties(VkPhysicalDevice &physicalDevice,
                                                std::vector<VkQueueFamilyProperties> &queueFamilies); 
+
     //Creates a vulkan logical device.
     bool createLogicalDevice(VkPhysicalDevice &physicalDevice,
                              VkDeviceCreateInfo createInfo,
@@ -174,6 +175,9 @@ namespace Raven
 
     //Creates a sampler.
     bool createSampler(const VkDevice logicalDevice, VkSamplerCreateInfo samplerInfo, VkSampler &sampler);
+
+    //Destroys a sampler.
+    void destroySampler(const VkDevice logicalDevice, VkSampler &sampler);
 
     //Gets the correct memory type for image/buffer.
     bool getMemoryType(VkPhysicalDeviceMemoryProperties memoryProperties,

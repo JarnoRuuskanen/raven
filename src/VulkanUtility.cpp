@@ -1062,6 +1062,20 @@ namespace Raven
     }
 
     /**
+     * @brief Destroys a sampler.
+     * @param logicalDevice
+     * @param sampler
+     */
+    void destroySampler(const VkDevice logicalDevice, VkSampler &sampler)
+    {
+        if(sampler != VK_NULL_HANDLE)
+        {
+            vkDestroySampler(logicalDevice, sampler, nullptr);
+            sampler = VK_NULL_HANDLE;
+        }
+    }
+
+    /**
      * @brief Gets the correct memory type for image/buffer.
      * @param physicalDeviceMemoryProperties
      * @param memReq Such memory requirements as size and alignment.
