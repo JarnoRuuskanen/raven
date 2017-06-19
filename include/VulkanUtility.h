@@ -179,7 +179,7 @@ namespace Raven
 
     //This function takes data and pushes it into a staging resource and then
     //gives a pointer to that data.
-    bool flushDataToStagingMemory(const VkDevice logicalDevice, VkDeviceMemory deviceMemory,
+    bool flushDataToHostLocalMemory(const VkDevice logicalDevice, VkDeviceMemory deviceMemory,
                            VkDeviceSize offset, VkDeviceSize dataSize, void* data,
                            void **pointer, bool unmap);
 
@@ -189,13 +189,13 @@ namespace Raven
 
     //Copies data from a buffer to an image.
     bool copyDataFromBufferToImage(VkCommandBuffer cmdBuffer, VkBuffer sourceBuffer,
-                                   VkImage dstImage, std::vector<VkBufferImageCopy> memoryRanges,
-                                   VkImageLayout imageLayout);
+                                   VkImage dstImage, VkImageLayout imageLayout,
+                                   std::vector<VkBufferImageCopy> memoryRanges);
 
     //Copies data from an image to a buffer.
     bool copyDataFromImageToBuffer(VkCommandBuffer cmdBuffer, VkImage sourceImage,
-                                   VkBuffer dstBuffer, std::vector<VkBufferImageCopy> memoryRanges,
-                                   VkImageLayout imageLayout);
+                                   VkImageLayout imageLayout, VkBuffer dstBuffer,
+                                   std::vector<VkBufferImageCopy> memoryRanges);
 
     //Updates a buffer which uses device-local memory.
     bool updateDeviceLocalMemoryBuffer(VkPhysicalDeviceMemoryProperties memoryProperties,
@@ -208,4 +208,24 @@ namespace Raven
                                        VkPipelineStageFlags destinationBufferConsumingStages,
                                        VkQueue queue, VkCommandBuffer cmdBuffer,
                                        std::vector<VkSemaphore> signalSemaphores);
+
+    //Updates an image that is using device-local memory.
+    bool updateDeviceLocalMemoryImage(VkPhysicalDeviceMemoryProperties memoryProperties,
+                                      VkDevice logicalDevice,
+                                      VkDeviceSize dataSize,
+                                      void *data,
+                                      VkImage destinationImage,
+                                      VkImageSubresourceLayers destinationImageSubresource,
+                                      VkOffset3D destinationImageOffset,
+                                      VkExtent3D destinationImageSize,
+                                      VkAccessFlags destinationImageCurrentAccess,
+                                      VkAccessFlags destinationImageNewAccess,
+                                      VkImageAspectFlags destinationImageAspect,
+                                      VkPipelineStageFlags destinationImageGeneratingStages,
+                                      VkPipelineStageFlags destinationImageConsumingStages,
+                                      VkImageLayout destinationImageCurrentLayout,
+                                      VkImageLayout destinationImageNewLayout,
+                                      VkQueue queue,
+                                      VkCommandBuffer cmdBuffer,
+                                      std::vector<VkSemaphore> signalSemaphores);
 }

@@ -1073,7 +1073,7 @@ namespace Raven
      * @param unmap
      * @return False if memory could not be mapped.
      */
-    bool flushDataToStagingMemory(const VkDevice logicalDevice, VkDeviceMemory deviceMemory,
+    bool flushDataToHostLocalMemory(const VkDevice logicalDevice, VkDeviceMemory deviceMemory,
                            VkDeviceSize offset, VkDeviceSize dataSize, void *data,
                            void **pointer, bool unmap)
     {
@@ -1148,13 +1148,14 @@ namespace Raven
      * @param cmdBuffer The command buffer used which needs to be in recording state.
      * @param sourceBuffer
      * @param dstImage
-     * @param memoryRanges Memory ranges for source buffers and destination images.
      * @param imageLayout
+     * @param memoryRanges Memory ranges for source buffers and destination images.
      * @return False if memory ranges were not specified.
      */
     bool copyDataFromBufferToImage(VkCommandBuffer cmdBuffer, VkBuffer sourceBuffer,
-                                   VkImage dstImage, std::vector<VkBufferImageCopy> memoryRanges,
-                                   VkImageLayout imageLayout)
+                                   VkImage dstImage, VkImageLayout imageLayout,
+                                   std::vector<VkBufferImageCopy> memoryRanges)
+
     {
         if(memoryRanges.size() > 0)
         {
@@ -1169,16 +1170,16 @@ namespace Raven
 
     /**
      * @brief Copies data from an image to a buffer.
-     * @param cmdBuffer The command buffer used which needs to be in recording state.
+     * @param cmdBuffer
      * @param sourceImage
-     * @param dstBuffer
-     * @param memoryRanges
      * @param imageLayout
+     * @param dstBuffer
+     * @param memoryRangest
      * @return False if memory ranges were not specified.
      */
     bool copyDataFromImageToBuffer(VkCommandBuffer cmdBuffer, VkImage sourceImage,
-                                   VkBuffer dstBuffer, std::vector<VkBufferImageCopy> memoryRanges,
-                                   VkImageLayout imageLayout)
+                                   VkImageLayout imageLayout, VkBuffer dstBuffer,
+                                   std::vector<VkBufferImageCopy> memoryRanges)
     {
         if(memoryRanges.size() > 0)
         {
@@ -1209,14 +1210,17 @@ namespace Raven
      * @return False if the buffer with device-local memory could not be updated.
       */
     bool updateDeviceLocalMemoryBuffer(VkPhysicalDeviceMemoryProperties memoryProperties,
-                                       VkDevice logicalDevice, VkDeviceSize dataSize,
-                                       void *data, VkBuffer destinationBuffer,
+                                       VkDevice logicalDevice,
+                                       VkDeviceSize dataSize,
+                                       void *data,
+                                       VkBuffer destinationBuffer,
                                        VkDeviceSize destinationOffset,
                                        VkAccessFlags destinationBufferCurrentAccess,
                                        VkAccessFlags destinationBufferNewAccess,
                                        VkPipelineStageFlags destinationBufferGeneratingStages,
                                        VkPipelineStageFlags destinationBufferConsumingStages,
-                                       VkQueue queue, VkCommandBuffer cmdBuffer,
+                                       VkQueue queue,
+                                       VkCommandBuffer cmdBuffer,
                                        std::vector<VkSemaphore> signalSemaphores)
     {
         VulkanBuffer stagingBufferObject;
@@ -1250,7 +1254,7 @@ namespace Raven
             return false;
 
         //Flush the data to the staging buffer's memory.
-        if(!flushDataToStagingMemory(logicalDevice, stagingMemory, 0, dataSize, data, nullptr, true))
+        if(!flushDataToHostLocalMemory(logicalDevice, stagingMemory, 0, dataSize, data, nullptr, true))
             return false;
 
         //Start recording to the command buffer.
@@ -1304,10 +1308,175 @@ namespace Raven
         if(!waitForFences(logicalDevice, 500000000, VK_TRUE, {fence}))
             return false;
 
-        //Clean after we are done.
+        //Clean after we are done. Preferably use an existing staging
+        //buffer so we don't need so create and destroy one each time.
+        //This would also free us from using a fence.
         destroyBuffer(logicalDevice, stagingBufferObject.buffer);
         freeMemory(logicalDevice, stagingMemory);
+        destroyFence(logicalDevice, fence);
 
         return true;
     }
+
+    /**
+     * @brief Updates an image that is using device-local memory.
+     * @param memoryProperties
+     * @param logicalDevice
+     * @param dataSize
+     * @param data
+     * @param destinationImage
+     * @param destinationImageSubresource
+     * @param destinationImageOffset
+     * @param destinationImageSize
+     * @param destinationImageCurrentAccess
+     * @param destinationImageNewAccess
+     * @param destinationImageAspect
+     * @param destinationImageGeneratingStages
+     * @param destinationImageConsumingStages
+     * @param destinationImageCurrentLayout
+     * @param destinationImageNewLayout
+     * @param queue
+     * @param cmdBuffer
+     * @param signalSemaphores
+     * @return False if the device-local image memory could not be updated.
+     */
+    bool updateDeviceLocalMemoryImage(VkPhysicalDeviceMemoryProperties memoryProperties,
+                                      VkDevice logicalDevice,
+                                      VkDeviceSize dataSize,
+                                      void *data,
+                                      VkImage destinationImage,
+                                      VkImageSubresourceLayers destinationImageSubresource,
+                                      VkOffset3D destinationImageOffset,
+                                      VkExtent3D destinationImageSize,
+                                      VkAccessFlags destinationImageCurrentAccess,
+                                      VkAccessFlags destinationImageNewAccess,
+                                      VkImageAspectFlags destinationImageAspect,
+                                      VkPipelineStageFlags destinationImageGeneratingStages,
+                                      VkPipelineStageFlags destinationImageConsumingStages,
+                                      VkImageLayout destinationImageCurrentLayout,
+                                      VkImageLayout destinationImageNewLayout,
+                                      VkQueue queue,
+                                      VkCommandBuffer cmdBuffer,
+                                      std::vector<VkSemaphore> signalSemaphores)
+    {
+        VulkanBuffer stagingBufferObject;
+        VkBufferCreateInfo stagingInfo =
+                VulkanStructures::bufferCreateInfo(dataSize,
+                                                   VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                                                   VK_SHARING_MODE_EXCLUSIVE);
+        //Create the staging buffer.
+        if(!createBuffer(logicalDevice, stagingInfo, stagingBufferObject.buffer))
+            return false;
+
+        //Allocate memory for the staging buffer.
+        VkMemoryRequirements memReq;
+        vkGetBufferMemoryRequirements(logicalDevice, stagingBufferObject.buffer, &memReq);
+
+        //Find the correct memory type.
+        uint32_t memoryTypeIndex;
+        if(!getMemoryType(memoryProperties, memReq,
+                          VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+                          memoryTypeIndex))
+        {
+            return false;
+        }
+
+        //Allocate the memory and bind the buffer.
+        VkDeviceMemory stagingMemory;
+        if(!allocateMemory(logicalDevice, memReq, memoryTypeIndex, stagingMemory))
+            return false;
+
+        if(!stagingBufferObject.bindBufferMemory(logicalDevice, stagingMemory,0))
+            return false;
+
+        //Flush the data to the staging buffer's memory.
+        if(!flushDataToHostLocalMemory(logicalDevice, stagingMemory, 0, dataSize, data, nullptr, true))
+            return false;
+
+        //Start recording to the command buffer.
+        VkCommandBufferBeginInfo beginInfo =
+                VulkanStructures::commandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+
+        if(!CommandBufferManager::beginCommandBuffer(cmdBuffer, beginInfo))
+            return false;
+
+        //Set an image memory barrier.
+        setImageMemoryBarriers(cmdBuffer, destinationImageGeneratingStages,
+                               VK_PIPELINE_STAGE_TRANSFER_BIT,
+                               {
+                                   {
+                                      destinationImage,
+                                      destinationImageCurrentAccess,
+                                      VK_ACCESS_TRANSFER_WRITE_BIT,
+                                      destinationImageCurrentLayout,
+                                      VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                                      VK_QUEUE_FAMILY_IGNORED,
+                                      VK_QUEUE_FAMILY_IGNORED
+                                   }
+                               });
+
+        //Copy the data to the device-local image.
+        if(!copyDataFromBufferToImage(cmdBuffer, stagingBufferObject.buffer, destinationImage,
+                                      VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                                      {
+                                        {
+                                           0,                           //VkDeviceSize bufferOffset
+                                           0,                           //uint32_t bufferRowLength
+                                           0,                           //uint32_t bufferImageHeight
+                                           destinationImageSubresource, //VkImageSubresourceLayers imageSubR
+                                           destinationImageOffset,      //VkOffset3D imageOffset
+                                           destinationImageSize         //VkExtent3D imageExtent
+                                        }
+                                       }))
+        {
+            return false;
+        }
+
+        //Set another image memory barrier after the data has been updated to the image.
+        setImageMemoryBarriers(cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT,
+                               destinationImageConsumingStages,
+                               {{
+                                    destinationImage,
+                                    VK_ACCESS_TRANSFER_WRITE_BIT,
+                                    destinationImageNewAccess,
+                                    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                                    destinationImageNewLayout,
+                                    VK_QUEUE_FAMILY_IGNORED,
+                                    VK_QUEUE_FAMILY_IGNORED,
+                                    destinationImageAspect
+                               }});
+
+        //After this, stop recording the command.
+        if(!CommandBufferManager::endCommandBuffer(cmdBuffer))
+            return false;
+
+        //Submit the command to the queue.
+        VkFence fence;
+        if(!createFence(logicalDevice, false, fence))
+            return false;
+
+        VkSubmitInfo submitInfo = VulkanStructures::submitInfo();
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &cmdBuffer;
+        submitInfo.signalSemaphoreCount = static_cast<uint32_t>(signalSemaphores.size());
+        submitInfo.pSignalSemaphores = signalSemaphores.data();
+
+        if(!CommandBufferManager::submitCommandBuffers(queue, 1, submitInfo, fence))
+            return false;
+
+        //Wait for the fence
+        if(!waitForFences(logicalDevice, 500000000, VK_TRUE, {fence}))
+            return false;
+
+        //Clean after we are done. Preferably use an existing staging
+        //buffer so we don't need so create and destroy one each time.
+        //This would also free us from using a fence since the buffer
+        //would live longer and not go out of scope at the end of the function.
+        destroyBuffer(logicalDevice, stagingBufferObject.buffer);
+        freeMemory(logicalDevice, stagingMemory);
+        destroyFence(logicalDevice, fence);
+
+        return true;
+    }
+
 }
