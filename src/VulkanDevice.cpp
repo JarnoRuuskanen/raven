@@ -176,14 +176,8 @@ bool VulkanDevice::createSampledImage(VkPhysicalDevice physicalDevice,
     VkMemoryRequirements memReq;
     vkGetImageMemoryRequirements(logicalDevice, sampledImageObject.image, &memReq);
 
-    uint32_t memoryTypeIndex;
-    if(!getMemoryType(physicalDeviceMemoryProperties, memReq, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                      memoryTypeIndex))
-    {
-        return false;
-    }
-
-    allocateMemory(logicalDevice, memReq, memoryTypeIndex, memoryObject);
+    allocateMemory(logicalDevice,physicalDeviceMemoryProperties,
+                   memReq, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, memoryObject);
     sampledImageObject.bindImageMemory(logicalDevice, memoryObject);
 
     VkImageViewCreateInfo imageViewInfo =

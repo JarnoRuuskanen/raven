@@ -186,7 +186,10 @@ namespace Raven
                        uint32_t &memoryTypeIndex);
 
     //Allocates memory for buffers and images.
-    bool allocateMemory(const VkDevice logicalDevice, VkMemoryRequirements memReq, uint32_t typeIndex,
+    bool allocateMemory(const VkDevice logicalDevice,
+                        VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties,
+                        VkMemoryRequirements memReq,
+                        VkFlags requiredMemoryPropertyFlags,
                         VkDeviceMemory &memory);
 
     //Frees allocated memory.

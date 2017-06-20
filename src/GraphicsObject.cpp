@@ -62,17 +62,13 @@ bool GraphicsObject::addTexture(const VkDevice logicalDevice,
     VkMemoryRequirements memReq;
     vkGetBufferMemoryRequirements(logicalDevice, stagingBuffer.buffer, &memReq);
 
-    //Find the correct kind of memory.
-    uint32_t memoryTypeIndex;
-    if(!getMemoryType(memoryProperties, memReq, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                  VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, memoryTypeIndex))
-        return false;
-
     VkDeviceMemory stagingMemory;
     //Allocate the memory.
-    if(!allocateMemory(logicalDevice, memReq, memoryTypeIndex, stagingMemory))
+    if(!allocateMemory(logicalDevice,memoryProperties, memReq, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                       VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingMemory))
+    {
         return false;
-
+    }
     //Bind the buffer.
     if(!stagingBuffer.bindBufferMemory(logicalDevice, stagingMemory,0))
         return false;
@@ -107,12 +103,12 @@ bool GraphicsObject::addTexture(const VkDevice logicalDevice,
 
     //Allocate memory for the image. Using the old memReq- and memoryTypeIndex variables.
     vkGetImageMemoryRequirements(logicalDevice, textureObject.image, &memReq);
-    if(!getMemoryType(memoryProperties, memReq, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                      memoryTypeIndex))
-        return false;
 
-    if(!allocateMemory(logicalDevice, memReq, memoryTypeIndex, textureObject.imageMemory))
+    if(!allocateMemory(logicalDevice, memoryProperties, memReq,
+                       VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureObject.imageMemory))
+    {
         return false;
+    }
 
     //Bind the image to use.
     if(!textureObject.bindImageMemory(logicalDevice, textureObject.imageMemory))

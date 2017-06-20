@@ -961,18 +961,12 @@ namespace Raven
         VkMemoryRequirements memReq;
         vkGetBufferMemoryRequirements(logicalDevice, stagingBufferObject.buffer, &memReq);
 
-        //Find the correct memory type.
-        uint32_t memoryTypeIndex;
-        if(!getMemoryType(memoryProperties, memReq,
-                          VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
-                          memoryTypeIndex))
+        //Allocate the memory and bind the buffer.
+        if(!allocateMemory(logicalDevice, memoryProperties, memReq,
+                           VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, stagingMemory))
         {
             return false;
         }
-
-        //Allocate the memory and bind the buffer.
-        if(!allocateMemory(logicalDevice, memReq, memoryTypeIndex, stagingMemory))
-            return false;
 
         return true;
     }
@@ -1103,18 +1097,30 @@ namespace Raven
     }
 
     /**
-     * @brief Allocates memory for buffers and images.
+     * @brief Finds the correct type of memory and allocates the memory.
      * @param logicalDevice
      * @param memReq
-     * @param typeIndex
+     * @param requiredMemoryPropertyFlags
      * @param memory
      * @return False if the memory allocation fails.
      */
-    bool allocateMemory(const VkDevice logicalDevice, VkMemoryRequirements memReq, uint32_t typeIndex,
+    bool allocateMemory(const VkDevice logicalDevice,
+                        VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties,
+                        VkMemoryRequirements memReq,
+                        VkFlags requiredMemoryPropertyFlags,
                         VkDeviceMemory &memory)
     {
+        //Find the index of the correct memory type.
+        uint32_t memoryTypeIndex;
+        if(!getMemoryType(physicalDeviceMemoryProperties, memReq, requiredMemoryPropertyFlags,
+                          memoryTypeIndex))
+        {
+            return false;
+        }
+
+        //Create the allocation info and allocate the memory.
         VkMemoryAllocateInfo allocInfo =
-                VulkanStructures::memoryAllocateInfo(memReq.size,typeIndex);
+                VulkanStructures::memoryAllocateInfo(memReq.size,memoryTypeIndex);
 
         VkResult result = vkAllocateMemory(logicalDevice, &allocInfo, nullptr, &memory);
         if(result != VK_SUCCESS)

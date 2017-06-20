@@ -39,6 +39,9 @@ class VulkanDevice
                                 VulkanImage &sampledImageObject,
                                 VkDeviceMemory &memoryObject);
 
+        //Makes a combined image sampler.
+        bool createCombinedImageSampler(VkSampler sampler, VulkanImage samplerImageObject);
+
         //Returns a queue family reference by index
         inline VkQueueFamilyProperties& getQueueFamily(int index){return queueFamilies[index];}
         //Returns the queueFamilyIndex for the family that is currently used.
