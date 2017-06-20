@@ -1161,8 +1161,8 @@ namespace Raven
      * @return False if memory could not be mapped.
      */
     bool flushDataToHostLocalMemory(const VkDevice logicalDevice, VkDeviceMemory deviceMemory,
-                           VkDeviceSize offset, VkDeviceSize dataSize, void *data,
-                           void **pointer, bool unmap)
+                                    VkDeviceSize offset, VkDeviceSize dataSize, void *data,
+                                    void **pointer, bool unmap)
     {
         //Map the memory.
         void* localPointer;

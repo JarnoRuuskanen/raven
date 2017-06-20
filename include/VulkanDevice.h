@@ -26,8 +26,7 @@ class VulkanDevice
         bool executeCommands(VkSubmitInfo &submitInfo, VkFence &submitFence);
 
         //Creates a sampled image.
-        bool createSampledImage(VkPhysicalDevice physicalDevice,
-                                VkImageType imageType,
+        bool createSampledImage(VkImageType imageType,
                                 VkFormat format,
                                 VkExtent3D size,
                                 uint32_t numMipmaps,
@@ -40,7 +39,18 @@ class VulkanDevice
                                 VkDeviceMemory &memoryObject);
 
         //Makes a combined image sampler.
-        bool createCombinedImageSampler(VkSampler sampler, VulkanImage samplerImageObject);
+        bool createCombinedImageSampler(VkSamplerCreateInfo samplerInfo,
+                                        VkImageType imageType,
+                                        VkFormat format,
+                                        VkExtent3D imageSize,
+                                        uint32_t numMipmaps,
+                                        uint32_t numLayers,
+                                        VkImageUsageFlags usage,
+                                        VkImageViewType viewType,
+                                        VkImageAspectFlags aspect,
+                                        VkSampler &sampler,
+                                        VkDeviceMemory &sampledImageMemory,
+                                        VulkanImage &sampledImageObject);
 
         //Returns a queue family reference by index
         inline VkQueueFamilyProperties& getQueueFamily(int index){return queueFamilies[index];}

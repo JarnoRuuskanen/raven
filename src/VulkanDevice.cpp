@@ -119,7 +119,6 @@ bool VulkanDevice::executeCommands(VkSubmitInfo &submitInfo, VkFence &submitFenc
 
 /**
  * @brief Creates a sampled image.
- * @param physicalDevice
  * @param imageType
  * @param format
  * @param size
@@ -133,8 +132,7 @@ bool VulkanDevice::executeCommands(VkSubmitInfo &submitInfo, VkFence &submitFenc
  * @param memoryObject
  * @return
  */
-bool VulkanDevice::createSampledImage(VkPhysicalDevice physicalDevice,
-                                      VkImageType imageType,
+bool VulkanDevice::createSampledImage(VkImageType imageType,
                                       VkFormat format,
                                       VkExtent3D size,
                                       uint32_t numMipmaps,
@@ -187,6 +185,53 @@ bool VulkanDevice::createSampledImage(VkPhysicalDevice physicalDevice,
     if(!createImageView(logicalDevice, imageViewInfo, sampledImageObject.imageView))
         return false;
 
+    return true;
+}
+
+/**
+ * @brief Creates a sampler and a sampled image.
+ * @param samplerInfo
+ * @param imageType
+ * @param format
+ * @param imageSize
+ * @param numMipmaps
+ * @param numLayers
+ * @param usage
+ * @param viewType
+ * @param aspect
+ * @param sampler
+ * @param sampledImageMemory
+ * @param sampledImageObject
+ * @return False if either one of the operations fails to complete.
+ */
+bool VulkanDevice::createCombinedImageSampler(VkSamplerCreateInfo samplerInfo,
+                                              VkImageType imageType,
+                                              VkFormat format,
+                                              VkExtent3D imageSize,
+                                              uint32_t numMipmaps,
+                                              uint32_t numLayers,
+                                              VkImageUsageFlags usage,
+                                              VkImageViewType viewType,
+                                              VkImageAspectFlags aspect,
+                                              VkSampler &sampler,
+                                              VkDeviceMemory &sampledImageMemory,
+                                              VulkanImage &sampledImageObject)
+{
+    //First create a sampler.
+    if(!createSampler(logicalDevice, samplerInfo, sampler))
+        return false;
+
+    //Check if we are using linear filtering.
+    bool linearFiltering = (samplerInfo.magFilter == VK_FILTER_LINEAR) ||
+                           (samplerInfo.minFilter == VK_FILTER_LINEAR) ||
+                           (samplerInfo.mipmapMode == VK_SAMPLER_MIPMAP_MODE_LINEAR);
+
+    //Create the sampled image.
+    if(!createSampledImage(imageType, format, imageSize, numMipmaps, numLayers, usage,
+                           viewType, aspect, linearFiltering, sampledImageObject, sampledImageMemory))
+    {
+        return false;
+    }
     return true;
 }
 
