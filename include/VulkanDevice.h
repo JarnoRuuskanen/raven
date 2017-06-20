@@ -1,6 +1,7 @@
 #pragma once
 #include "Headers.h"
 #include "VulkanImage.h"
+#include "VulkanBuffer.h"
 
 struct VulkanQueueInfo
 {
@@ -65,6 +66,13 @@ class VulkanDevice
                                 VkBool32 atomicOperations,
                                 VulkanImage &storageImage,
                                 VkDeviceMemory &memoryObject);
+
+        //Creates a uniform texel buffer.
+        bool createUniformTexelBuffer(VkFormat format,
+                                      VkDeviceSize bufferSize,
+                                      VkImageUsageFlags usage,
+                                      VulkanBuffer &uniformTexelBufferObject,
+                                      VkDeviceMemory &memoryObject);
 
         //Returns a queue family reference by index
         inline VkQueueFamilyProperties& getQueueFamily(int index){return queueFamilies[index];}

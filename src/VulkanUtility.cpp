@@ -968,7 +968,7 @@ namespace Raven
             return false;
         }
 
-        stagingBufferObject.bindBufferMemory(logicalDevice, stagingMemory, 0);
+        stagingBufferObject.bindMemoryObject(logicalDevice, stagingMemory, 0);
 
         return true;
     }
@@ -1279,5 +1279,30 @@ namespace Raven
         std::cerr << "Failed to copy data from an image to a buffer due to no "
                      "VkBufferImageCopy values!" << std::endl;
         return false;
+    }
+
+    /**
+     * @brief doesFormatSupportRequiredFeature
+     * @param physicalDevice
+     * @param format
+     * @param requiredFeature
+     * @param formatProperties
+     * @return
+     */
+    bool doesFormatSupportRequiredFeature(const VkPhysicalDevice physicalDevice,
+                                          VkFormat format,
+                                          VkFormatFeatureFlagBits requiredFeature,
+                                          VkFormatProperties &formatProperties)
+    {
+        //Get the properties of the selected format.
+        vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &formatProperties);
+
+        //Check that the selected format supports storaging feature.
+        if(!(formatProperties.optimalTilingFeatures & requiredFeature))
+        {
+            std::cerr << "Provided format does not support the required feature!" << std::endl;
+            return false;
+        }
+        return true;
     }
 }

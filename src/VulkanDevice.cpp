@@ -146,14 +146,16 @@ bool VulkanDevice::createSampledImage(VkImageType imageType,
                                       VulkanImage &sampledImageObject,
                                       VkDeviceMemory &memoryObject)
 {
+    //Check that the given format supports image sampling.
     VkFormatProperties formatProperties;
-    vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &formatProperties);
-
-    if(!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT))
+    if(!doesFormatSupportRequiredFeature(physicalDevice,
+                                         format,
+                                         VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT,
+                                         formatProperties))
     {
-        std::cerr << "Image sampling does not support provided format!" << std::endl;
         return false;
     }
+
     if(linearFiltering && !(formatProperties.optimalTilingFeatures
                             & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
     {
@@ -176,7 +178,7 @@ bool VulkanDevice::createSampledImage(VkImageType imageType,
     allocateMemory(logicalDevice,physicalDeviceMemoryProperties,
                    memReq, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, memoryObject);
 
-    sampledImageObject.bindImageMemory(logicalDevice, memoryObject);
+    sampledImageObject.bindMemoryObject(logicalDevice, memoryObject);
 
     VkImageViewCreateInfo imageViewInfo =
             VulkanStructures::imageViewCreateInfo(sampledImageObject.image, format, aspect, viewType);
@@ -263,14 +265,11 @@ bool VulkanDevice::createStorageImage(VkImageType imageType,
                                       VulkanImage &storageImage,
                                       VkDeviceMemory &memoryObject)
 {
-    //Get the properties of the selected format.
-    VkFormatProperties formatProperties;
-    vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &formatProperties);
-
     //Check that the selected format supports storaging feature.
-    if(!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT))
+    VkFormatProperties formatProperties;
+    if(!doesFormatSupportRequiredFeature(physicalDevice, format, VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT,
+                                         formatProperties))
     {
-        std::cerr << "Provided format is not supported for a storage image!" << std::endl;
         return false;
     }
 
@@ -304,7 +303,7 @@ bool VulkanDevice::createStorageImage(VkImageType imageType,
    }
 
    //Bind the image memory to use.
-   storageImage.bindImageMemory(logicalDevice, memoryObject);
+   storageImage.bindMemoryObject(logicalDevice, memoryObject);
 
    //Create the image view.
    VkImageViewCreateInfo viewCreateInfo =
@@ -314,6 +313,63 @@ bool VulkanDevice::createStorageImage(VkImageType imageType,
         return false;
 
    return true;
+}
+
+/**
+ * @brief Creates a uniform texel buffer.
+ * @param format
+ * @param bufferSize
+ * @param usage
+ * @param uniformTexelBufferObject
+ * @param memoryObject
+ * @return False if the texel buffer could not be created.
+ */
+bool VulkanDevice::createUniformTexelBuffer(VkFormat format,
+                                            VkDeviceSize bufferSize,
+                                            VkImageUsageFlags usage,
+                                            VulkanBuffer &uniformTexelBufferObject,
+                                            VkDeviceMemory &memoryObject)
+{
+    //Check that the chosen format supports the required feature.
+    VkFormatProperties formatProperties;
+    if(!doesFormatSupportRequiredFeature(physicalDevice,
+                                         format,
+                                         VK_FORMAT_FEATURE_UNIFORM_TEXEL_BUFFER_BIT,
+                                         formatProperties))
+    {
+        return false;
+    }
+
+    //Create the texel buffer.
+    VkBufferCreateInfo bufferInfo =
+            VulkanStructures::bufferCreateInfo(bufferSize,
+                                               usage | VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT,
+                                               VK_SHARING_MODE_EXCLUSIVE);
+
+    if(!createBuffer(logicalDevice, bufferInfo, uniformTexelBufferObject.buffer))
+        return false;
+
+    //Allocate and bind the memory for the buffer.
+    VkMemoryRequirements memReq;
+    vkGetBufferMemoryRequirements(logicalDevice, uniformTexelBufferObject.buffer, &memReq);
+
+    if(!allocateMemory(logicalDevice, physicalDeviceMemoryProperties,
+                       memReq, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, memoryObject))
+    {
+        return false;
+    }
+    //Bind the buffer.
+    uniformTexelBufferObject.bindMemoryObject(logicalDevice, memoryObject, 0);
+
+    //Create the buffer view.
+    VkBufferViewCreateInfo viewCreateInfo =
+            VulkanStructures::bufferViewCreateInfo(uniformTexelBufferObject.buffer, format,
+                                                   0, VK_WHOLE_SIZE);
+
+    if(!createBufferView(logicalDevice, viewCreateInfo, uniformTexelBufferObject.bufferView))
+        return false;
+
+    return true;
 }
 
 /**

@@ -249,4 +249,10 @@ namespace Raven
                                       VkQueue queue,
                                       VkCommandBuffer cmdBuffer,
                                       std::vector<VkSemaphore> signalSemaphores);
+
+    //Checks wether a format supports a required feature.
+    bool doesFormatSupportRequiredFeature(const VkPhysicalDevice physicalDevice,
+                                          VkFormat format,
+                                          VkFormatFeatureFlagBits requiredFeature,
+                                          VkFormatProperties &formatProperties);
 }

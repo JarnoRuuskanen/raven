@@ -70,7 +70,7 @@ bool GraphicsObject::addTexture(const VkDevice logicalDevice,
         return false;
     }
     //Bind the buffer.
-    if(!stagingBuffer.bindBufferMemory(logicalDevice, stagingMemory,0))
+    if(!stagingBuffer.bindMemoryObject(logicalDevice, stagingMemory,0))
         return false;
 
     //Flush the data to the memory object.
@@ -111,7 +111,7 @@ bool GraphicsObject::addTexture(const VkDevice logicalDevice,
     }
 
     //Bind the image to use.
-    if(!textureObject.bindImageMemory(logicalDevice, textureObject.imageMemory))
+    if(!textureObject.bindMemoryObject(logicalDevice, textureObject.imageMemory))
         return false;
 
     //Create an image view for the image.

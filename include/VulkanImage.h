@@ -38,7 +38,7 @@ namespace Raven
          * @param memory
          * @return False if the memory binding fails.
          */
-        bool bindImageMemory(const VkDevice logicalDevice, VkDeviceMemory &memory)
+        bool bindMemoryObject(const VkDevice logicalDevice, VkDeviceMemory &memory)
         {
             if(memory == VK_NULL_HANDLE)
             {

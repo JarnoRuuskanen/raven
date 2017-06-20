@@ -44,7 +44,7 @@ namespace Raven
          * @param offset
          * @return False if the memory could not be bound to the buffer.
          */
-        bool bindBufferMemory(const VkDevice logicalDevice,VkDeviceMemory &memory,VkDeviceSize offset = 0)
+        bool bindMemoryObject(const VkDevice logicalDevice,VkDeviceMemory &memory,VkDeviceSize offset = 0)
         {
             VkResult result = vkBindBufferMemory(logicalDevice, buffer, memory, offset);
             if(result != VK_SUCCESS)
