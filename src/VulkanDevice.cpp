@@ -440,6 +440,44 @@ bool VulkanDevice::createStorageTexelBuffer(VkFormat format,
 }
 
 /**
+ * @brief Creates an uniform buffer, which is used to
+          provide values for read-only uniform variables inside shaders.
+ * @param bufferSize
+ * @param usage
+ * @param uniformBufferObject
+ * @param memoryObject
+ * @return
+ */
+bool VulkanDevice::createUniformBuffer(VkDeviceSize bufferSize,
+                                       VkBufferUsageFlags usage,
+                                       VulkanBuffer &uniformBufferObject,
+                                       VkDeviceMemory &memoryObject)
+{
+    //First create the uniform buffer.
+    VkBufferCreateInfo bufferInfo =
+            VulkanStructures::bufferCreateInfo(bufferSize,
+                                               usage | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                                               VK_SHARING_MODE_EXCLUSIVE);
+    if(!createBuffer(logicalDevice, bufferInfo, uniformBufferObject.buffer))
+        return false;
+
+    //Allocate memory for the uniform buffer.
+    VkMemoryRequirements memReq;
+    vkGetBufferMemoryRequirements(logicalDevice, uniformBufferObject.buffer, &memReq);
+
+    if(!allocateMemory(logicalDevice, physicalDeviceMemoryProperties,
+                       memReq, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                       memoryObject))
+    {
+        return false;
+    }
+    //Bind the memory.
+    uniformBufferObject.bindMemoryObject(logicalDevice, memoryObject, 0);
+
+    return true;
+}
+
+/**
  * @brief Initializes the queues this logical vulkan device will be using.
  * @param familyInfo
  * @return

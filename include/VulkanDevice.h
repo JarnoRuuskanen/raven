@@ -83,6 +83,13 @@ class VulkanDevice
                                       VulkanBuffer &storageTexelBuffer,
                                       VkDeviceMemory &memoryObject);
 
+        //Creates an uniform buffer, which is used to
+        //provide values for read-only uniform variables inside shaders.
+        bool createUniformBuffer(VkDeviceSize bufferSize,
+                                 VkBufferUsageFlags usage,
+                                 VulkanBuffer &uniformBufferObject,
+                                 VkDeviceMemory &memoryObject);
+
         //Returns a queue family reference by index
         inline VkQueueFamilyProperties& getQueueFamily(int index){return queueFamilies[index];}
         //Returns the queueFamilyIndex for the family that is currently used.
