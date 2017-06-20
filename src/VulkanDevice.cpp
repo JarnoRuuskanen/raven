@@ -340,7 +340,7 @@ bool VulkanDevice::createUniformTexelBuffer(VkFormat format,
         return false;
     }
 
-    //Create the texel buffer.
+    //Create the uniform texel buffer.
     VkBufferCreateInfo bufferInfo =
             VulkanStructures::bufferCreateInfo(bufferSize,
                                                usage | VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT,
@@ -367,6 +367,73 @@ bool VulkanDevice::createUniformTexelBuffer(VkFormat format,
                                                    0, VK_WHOLE_SIZE);
 
     if(!createBufferView(logicalDevice, viewCreateInfo, uniformTexelBufferObject.bufferView))
+        return false;
+
+    return true;
+}
+
+/**
+ * @brief Creates a storage texel buffer, which can be used for reading and storing
+          large amounts of image-like data among other things.
+ * @param format
+ * @param bufferSize
+ * @param usage
+ * @param atomicOperations
+ * @param storageTexelBuffer
+ * @param memoryObject
+ * @return False if storage texel buffer could not be created.
+ */
+bool VulkanDevice::createStorageTexelBuffer(VkFormat format,
+                                            VkDeviceSize bufferSize,
+                                            VkImageUsageFlags usage,
+                                            VkBool32 atomicOperations,
+                                            VulkanBuffer &storageTexelBuffer,
+                                            VkDeviceMemory &memoryObject)
+{
+    //First check if the format supports required feature.
+    VkFormatProperties formatProperties;
+    if(!doesFormatSupportRequiredFeature(physicalDevice, format,
+                                         VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_BIT,
+                                         formatProperties))
+    {
+        return false;
+    }
+
+    //If atomic operations are required, check if format supports required feature.
+    if(atomicOperations &&
+            !(formatProperties.bufferFeatures & VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_ATOMIC_BIT))
+    {
+        std::cerr << "Given format is not supported for atomic operations on "
+                     "storage texel buffers!" << std::endl;
+        return false;
+    }
+
+    //Create the storage texel buffer.
+    VkBufferCreateInfo bufferInfo =
+            VulkanStructures::bufferCreateInfo(bufferSize,
+                                               usage | VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT,
+                                               VK_SHARING_MODE_EXCLUSIVE);
+    if(!createBuffer(logicalDevice, bufferInfo, storageTexelBuffer.buffer))
+        return false;
+
+    //Allocate memory for the buffer and bind it.
+    VkMemoryRequirements memReq;
+    vkGetBufferMemoryRequirements(logicalDevice, storageTexelBuffer.buffer, &memReq);
+
+    if(!allocateMemory(logicalDevice, physicalDeviceMemoryProperties,
+                       memReq, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                       memoryObject))
+    {
+        return false;
+    }
+    //Bind the memory.
+    storageTexelBuffer.bindMemoryObject(logicalDevice, memoryObject, 0);
+
+    //Create the buffer view.
+    VkBufferViewCreateInfo viewInfo =
+            VulkanStructures::bufferViewCreateInfo(storageTexelBuffer.buffer,
+                                                   format, 0, VK_WHOLE_SIZE);
+    if(!createBufferView(logicalDevice, viewInfo, storageTexelBuffer.bufferView))
         return false;
 
     return true;

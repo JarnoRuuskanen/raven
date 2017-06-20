@@ -67,11 +67,20 @@ class VulkanDevice
                                 VulkanImage &storageImage,
                                 VkDeviceMemory &memoryObject);
 
-        //Creates a uniform texel buffer.
+        //Creates an uniform texel buffer for reading large amounts of image-like data.
         bool createUniformTexelBuffer(VkFormat format,
                                       VkDeviceSize bufferSize,
                                       VkImageUsageFlags usage,
                                       VulkanBuffer &uniformTexelBufferObject,
+                                      VkDeviceMemory &memoryObject);
+
+        //Creates a storage texel buffer, which can be used for reading and storing
+        //large amounts of image-like data among other things.
+        bool createStorageTexelBuffer(VkFormat format,
+                                      VkDeviceSize bufferSize,
+                                      VkImageUsageFlags usage,
+                                      VkBool32 atomicOperations,
+                                      VulkanBuffer &storageTexelBuffer,
                                       VkDeviceMemory &memoryObject);
 
         //Returns a queue family reference by index
