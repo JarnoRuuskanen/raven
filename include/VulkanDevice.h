@@ -52,6 +52,20 @@ class VulkanDevice
                                         VkDeviceMemory &sampledImageMemory,
                                         VulkanImage &sampledImageObject);
 
+        //Creates a storage image, which can be used for loading unfiltered data
+        //from pipeline-bound images or for storing data from shaders.
+        bool createStorageImage(VkImageType imageType,
+                                VkFormat format,
+                                VkExtent3D imageSize,
+                                uint32_t numMipmaps,
+                                uint32_t numLayers,
+                                VkImageUsageFlags usage,
+                                VkImageViewType viewType,
+                                VkImageAspectFlags aspect,
+                                VkBool32 atomicOperations,
+                                VulkanImage &storageImage,
+                                VkDeviceMemory &memoryObject);
+
         //Returns a queue family reference by index
         inline VkQueueFamilyProperties& getQueueFamily(int index){return queueFamilies[index];}
         //Returns the queueFamilyIndex for the family that is currently used.
@@ -69,6 +83,8 @@ class VulkanDevice
 
         //The physical device this class is using.
         VkPhysicalDevice physicalDevice;
+        //Memory properties of the physical device.
+        VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties;
         //The logical device created under the physical device
         VkDevice logicalDevice;
         //Every queue family the physical device supports

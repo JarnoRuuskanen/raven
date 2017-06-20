@@ -45,7 +45,9 @@ bool VulkanDevice::initializeDevice(VkPhysicalDevice &device,
         return false;
     }
 
+    //Save the physical device and query it's memory properties.
     physicalDevice = device;
+    vkGetPhysicalDeviceMemoryProperties(physicalDevice, &physicalDeviceMemoryProperties);
 
     //Initialize all device queues.
     if(!initializeQueues(queueFamilyInfo))
@@ -168,14 +170,12 @@ bool VulkanDevice::createSampledImage(VkImageType imageType,
         return false;
 
     //Find correct type of memory for the image and bind it.
-    VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties;
-    vkGetPhysicalDeviceMemoryProperties(physicalDevice, &physicalDeviceMemoryProperties);
-
     VkMemoryRequirements memReq;
     vkGetImageMemoryRequirements(logicalDevice, sampledImageObject.image, &memReq);
 
     allocateMemory(logicalDevice,physicalDeviceMemoryProperties,
                    memReq, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, memoryObject);
+
     sampledImageObject.bindImageMemory(logicalDevice, memoryObject);
 
     VkImageViewCreateInfo imageViewInfo =
@@ -233,6 +233,87 @@ bool VulkanDevice::createCombinedImageSampler(VkSamplerCreateInfo samplerInfo,
         return false;
     }
     return true;
+}
+
+/**
+ * @brief Creates a storage image, which can be used for loading unfiltered data
+ *        from pipeline-bound images or for storing data from shaders.
+ * @param imageType
+ * @param format The storage format.
+ * @param imageSize
+ * @param numMipmaps
+ * @param numLayers
+ * @param usage
+ * @param viewType
+ * @param aspect
+ * @param atomicOperations
+ * @param storageImage
+ * @param memoryObject
+ * @return False if the storage image could not be created.
+ */
+bool VulkanDevice::createStorageImage(VkImageType imageType,
+                                      VkFormat format,
+                                      VkExtent3D imageSize,
+                                      uint32_t numMipmaps,
+                                      uint32_t numLayers,
+                                      VkImageUsageFlags usage,
+                                      VkImageViewType viewType,
+                                      VkImageAspectFlags aspect,
+                                      VkBool32 atomicOperations,
+                                      VulkanImage &storageImage,
+                                      VkDeviceMemory &memoryObject)
+{
+    //Get the properties of the selected format.
+    VkFormatProperties formatProperties;
+    vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &formatProperties);
+
+    //Check that the selected format supports storaging feature.
+    if(!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT))
+    {
+        std::cerr << "Provided format is not supported for a storage image!" << std::endl;
+        return false;
+    }
+
+    //If we want to use atomic operations, check that atomic feature is supported.
+    if(atomicOperations &&
+            !(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_STORAGE_IMAGE_ATOMIC_BIT))
+    {
+        std::cerr << "Provided format is not supported for atomic operations on storage images!"
+                  << std::endl;
+        return false;
+    }
+
+    //Create the image.
+    VkImageCreateInfo imageCreateInfo =
+            VulkanStructures::imageCreateInfo(usage | VK_IMAGE_USAGE_STORAGE_BIT,
+                                              imageType, format, imageSize, numLayers,
+                                              VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_LAYOUT_UNDEFINED,
+                                              VK_SHARING_MODE_EXCLUSIVE, numMipmaps, false);
+
+    if(!createImage(logicalDevice, imageCreateInfo, storageImage.image))
+        return false;
+
+    //Allocate memory for the image.
+    VkMemoryRequirements memReq;
+    vkGetImageMemoryRequirements(logicalDevice, storageImage.image, &memReq);
+
+   if(!allocateMemory(logicalDevice, physicalDeviceMemoryProperties, memReq,
+                      VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, memoryObject))
+   {
+       return false;
+   }
+
+   //Bind the image memory to use.
+   storageImage.bindImageMemory(logicalDevice, memoryObject);
+
+   //Create the image view.
+   VkImageViewCreateInfo viewCreateInfo =
+           VulkanStructures::imageViewCreateInfo(storageImage.image, format, aspect, viewType);
+
+   if(!createImageView(logicalDevice, viewCreateInfo, storageImage.imageView))
+        return false;
+
+   return true;
 }
 
 /**
