@@ -1286,21 +1286,45 @@ namespace Raven
      * @param physicalDevice
      * @param format
      * @param requiredFeature
-     * @param formatProperties
      * @return
      */
-    bool doesFormatSupportRequiredFeature(const VkPhysicalDevice physicalDevice,
-                                          VkFormat format,
-                                          VkFormatFeatureFlagBits requiredFeature,
-                                          VkFormatProperties &formatProperties)
+    bool doesFormatSupportRequiredOptimalTilingFeature(const VkPhysicalDevice physicalDevice,
+                                                       VkFormat format,
+                                                       VkFormatFeatureFlagBits requiredFeature)
     {
+        VkFormatProperties formatProperties;
         //Get the properties of the selected format.
         vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &formatProperties);
 
-        //Check that the selected format supports storaging feature.
+        //Check that the selected format supports required feature.
         if(!(formatProperties.optimalTilingFeatures & requiredFeature))
         {
-            std::cerr << "Provided format does not support the required feature!" << std::endl;
+            std::cerr << "Provided format does not support "
+                         "the required optimal tiling feature!" << std::endl;
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * @brief Checks wether a format supports a required buffer feature.
+     * @param physicalDevice
+     * @param format
+     * @param requiredFeature
+     * @return False if required feature was not supported.
+     */
+    bool doesFormatSupportRequiredBufferFeature(const VkPhysicalDevice physicalDevice,
+                                                VkFormat format,
+                                                VkFormatFeatureFlagBits requiredFeature)
+    {
+        VkFormatProperties formatProperties;
+        vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &formatProperties);
+
+        //Check that the selected format supports required feature.
+        if(!(formatProperties.bufferFeatures & requiredFeature))
+        {
+            std::cerr << "Provided format does not support "
+                         "the required buffer feature!" << std::endl;
             return false;
         }
         return true;

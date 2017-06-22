@@ -146,18 +146,18 @@ bool VulkanDevice::createSampledImage(VkImageType imageType,
                                       VulkanImage &sampledImageObject,
                                       VkDeviceMemory &memoryObject)
 {
-    //Check that the given format supports image sampling.
-    VkFormatProperties formatProperties;
-    if(!doesFormatSupportRequiredFeature(physicalDevice,
-                                         format,
-                                         VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT,
-                                         formatProperties))
+    //Check that the given format supports image sampling
+    if(!doesFormatSupportRequiredOptimalTilingFeature(physicalDevice,
+                                                      format,
+                                                      VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT))
     {
         return false;
     }
 
-    if(linearFiltering && !(formatProperties.optimalTilingFeatures
-                            & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
+    if(linearFiltering &&
+            !(doesFormatSupportRequiredOptimalTilingFeature(physicalDevice,
+                                                            format,
+                                                            VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)))
     {
         std::cerr << "Linear image filtering does not support provided format." << std::endl;
         return false;
@@ -267,16 +267,18 @@ bool VulkanDevice::createStorageImage(VkImageType imageType,
                                       VkDeviceMemory &memoryObject)
 {
     //Check that the selected format supports storaging feature.
-    VkFormatProperties formatProperties;
-    if(!doesFormatSupportRequiredFeature(physicalDevice, format, VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT,
-                                         formatProperties))
+    if(!doesFormatSupportRequiredOptimalTilingFeature(physicalDevice,
+                                                      format,
+                                                      VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT))
     {
         return false;
     }
 
     //If we want to use atomic operations, check that atomic feature is supported.
     if(atomicOperations &&
-            !(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_STORAGE_IMAGE_ATOMIC_BIT))
+            !(doesFormatSupportRequiredOptimalTilingFeature(physicalDevice,
+                                                            format,
+                                                            VK_FORMAT_FEATURE_STORAGE_IMAGE_ATOMIC_BIT)))
     {
         std::cerr << "Provided format is not supported for atomic operations on storage images!"
                   << std::endl;
@@ -371,11 +373,9 @@ bool VulkanDevice::createUniformTexelBuffer(VkFormat format,
                                             VkDeviceMemory &memoryObject)
 {
     //Check that the chosen format supports the required feature.
-    VkFormatProperties formatProperties;
-    if(!doesFormatSupportRequiredFeature(physicalDevice,
-                                         format,
-                                         VK_FORMAT_FEATURE_UNIFORM_TEXEL_BUFFER_BIT,
-                                         formatProperties))
+    if(!doesFormatSupportRequiredBufferFeature(physicalDevice,
+                                               format,
+                                               VK_FORMAT_FEATURE_UNIFORM_TEXEL_BUFFER_BIT))
     {
         return false;
     }
@@ -432,17 +432,18 @@ bool VulkanDevice::createStorageTexelBuffer(VkFormat format,
                                             VkDeviceMemory &memoryObject)
 {
     //First check if the format supports required feature.
-    VkFormatProperties formatProperties;
-    if(!doesFormatSupportRequiredFeature(physicalDevice, format,
-                                         VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_BIT,
-                                         formatProperties))
+    if(!doesFormatSupportRequiredBufferFeature(physicalDevice,
+                                               format,
+                                               VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_BIT))
     {
         return false;
     }
 
     //If atomic operations are required, check if format supports required feature.
     if(atomicOperations &&
-            !(formatProperties.bufferFeatures & VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_ATOMIC_BIT))
+            !(doesFormatSupportRequiredBufferFeature(physicalDevice,
+                                                     format,
+                                                     VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_ATOMIC_BIT)))
     {
         std::cerr << "Given format is not supported for atomic operations on "
                      "storage texel buffers!" << std::endl;
@@ -517,6 +518,84 @@ bool VulkanDevice::createUniformBuffer(VkDeviceSize bufferSize,
         return false;
 
     return true;
+}
+
+/**
+ * @brief Creates an input attachment. Input attachment is an image resource
+ *        from which we can read unfiltered data inside fragment shaders.
+ * @param imageType
+ * @param format
+ * @param size
+ * @param usage
+ * @param viewType
+ * @param aspect
+ * @param inputAttachmentObject
+ * @param memoryObject
+ * @return False if input attachment creation fails.
+ */
+bool VulkanDevice::createInputAttachment(VkImageType imageType,
+                                         VkFormat format,
+                                         VkExtent3D size,
+                                         VkImageUsageFlags usage,
+                                         VkImageViewType viewType,
+                                         VkImageAspectFlags aspect,
+                                         VulkanImage &inputAttachmentObject,
+                                         VkDeviceMemory &memoryObject)
+{
+    //Check if chosen format supports required features.
+    if((aspect & VK_IMAGE_ASPECT_COLOR_BIT) &&
+        !(doesFormatSupportRequiredOptimalTilingFeature(physicalDevice,
+                                                       format,
+                                                       VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT)))
+    {
+        std::cerr << "Provided format is not supported for an input attachment!" << std::endl;
+          return false;
+    }
+
+    if((aspect & VK_IMAGE_ASPECT_DEPTH_BIT) &&
+        !(doesFormatSupportRequiredOptimalTilingFeature(physicalDevice,
+                                                        format,
+                                                        VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)))
+    {
+        std::cerr << "Provided format is not supported for an input attachment!" << std::endl;
+        return false;
+    }
+
+    //Create the image.
+    VkImageCreateInfo imageInfo =
+            VulkanStructures::imageCreateInfo(usage | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT,
+                                              imageType, format, size,
+                                              1, VK_SAMPLE_COUNT_1_BIT,
+                                              VK_IMAGE_LAYOUT_UNDEFINED,
+                                              VK_SHARING_MODE_EXCLUSIVE, 1, false);
+    if(!createImage(logicalDevice, imageInfo, inputAttachmentObject.image))
+        return false;
+
+    //Allocate memory.
+    VkMemoryRequirements memReq;
+    vkGetImageMemoryRequirements(logicalDevice, inputAttachmentObject.image, &memReq);
+    if(!allocateMemory(logicalDevice, physicalDeviceMemoryProperties, memReq,
+                       VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, memoryObject))
+    {
+        return false;
+    }
+    //Bind the memory.
+    if(!inputAttachmentObject.bindMemoryObject(logicalDevice, memoryObject))
+        return false;
+
+    //Create an image view.
+    VkImageViewCreateInfo viewInfo =
+            VulkanStructures::imageViewCreateInfo(inputAttachmentObject.image,
+                                                  format,
+                                                  aspect,
+                                                  viewType);
+    if(!createImageView(logicalDevice, viewInfo, inputAttachmentObject.imageView))
+    {
+        return false;
+    }
+
+    return true;
+
 }
 
 /**

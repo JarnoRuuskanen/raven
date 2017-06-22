@@ -250,9 +250,13 @@ namespace Raven
                                       VkCommandBuffer cmdBuffer,
                                       std::vector<VkSemaphore> signalSemaphores);
 
-    //Checks wether a format supports a required feature.
-    bool doesFormatSupportRequiredFeature(const VkPhysicalDevice physicalDevice,
-                                          VkFormat format,
-                                          VkFormatFeatureFlagBits requiredFeature,
-                                          VkFormatProperties &formatProperties);
+    //Checks wether a format supports a required optimal tiling feature.
+    bool doesFormatSupportRequiredOptimalTilingFeature(const VkPhysicalDevice physicalDevice,
+                                                       VkFormat format,
+                                                       VkFormatFeatureFlagBits requiredFeature);
+
+    //Checks wether a format supports a required buffer feature.
+    bool doesFormatSupportRequiredBufferFeature(const VkPhysicalDevice physicalDevice,
+                                                VkFormat format,
+                                                VkFormatFeatureFlagBits requiredFeature);
 }

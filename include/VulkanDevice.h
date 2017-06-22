@@ -97,6 +97,17 @@ class VulkanDevice
                                  VulkanBuffer &uniformBufferObject,
                                  VkDeviceMemory &memoryObject);
 
+        //Creates an input attachment which can be used for reading data inside fragment shaders
+        //for an example.
+        bool createInputAttachment(VkImageType imageType,
+                                   VkFormat format,
+                                   VkExtent3D size,
+                                   VkImageUsageFlags usage,
+                                   VkImageViewType viewType,
+                                   VkImageAspectFlags aspect,
+                                   VulkanImage &inputAttachmentObject,
+                                   VkDeviceMemory &memoryObject);
+
         //Returns a queue family reference by index
         inline VkQueueFamilyProperties& getQueueFamily(int index){return queueFamilies[index];}
         //Returns the queueFamilyIndex for the family that is currently used.
