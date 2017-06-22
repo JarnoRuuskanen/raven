@@ -178,7 +178,8 @@ bool VulkanDevice::createSampledImage(VkImageType imageType,
     allocateMemory(logicalDevice,physicalDeviceMemoryProperties,
                    memReq, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, memoryObject);
 
-    sampledImageObject.bindMemoryObject(logicalDevice, memoryObject);
+    if(!sampledImageObject.bindMemoryObject(logicalDevice, memoryObject))
+        return false;
 
     VkImageViewCreateInfo imageViewInfo =
             VulkanStructures::imageViewCreateInfo(sampledImageObject.image, format, aspect, viewType);
@@ -316,6 +317,45 @@ bool VulkanDevice::createStorageImage(VkImageType imageType,
 }
 
 /**
+ * @brief Creates a storage buffer, which is used for reading from buffers
+          inside shaders and for storing data.
+ * @param usage
+ * @param bufferSize
+ * @param storageBuffer
+ * @param storageMemoryObject
+ * @return False if storage buffer creation fails for any reason.
+ */
+bool VulkanDevice::createStorageBuffer(VkBufferUsageFlags usage,
+                                       VkDeviceSize bufferSize,
+                                       VulkanBuffer &storageBuffer,
+                                       VkDeviceMemory &storageMemoryObject)
+{
+    //Create the storage buffer.
+    VkBufferCreateInfo createInfo =
+            VulkanStructures::bufferCreateInfo(bufferSize,
+                                               usage | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+                                               VK_SHARING_MODE_EXCLUSIVE);
+    if(!createBuffer(logicalDevice, createInfo, storageBuffer.buffer))
+        return false;
+
+    //Allocate memory.
+    VkMemoryRequirements memReq;
+    vkGetBufferMemoryRequirements(logicalDevice, storageBuffer.buffer, &memReq);
+
+    if(!allocateMemory(logicalDevice, physicalDeviceMemoryProperties,
+                       memReq, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, storageMemoryObject))
+    {
+        return false;
+    }
+    //Bind the memory.
+    if(!storageBuffer.bindMemoryObject(logicalDevice, storageMemoryObject, 0))
+        return false;
+
+    return true;
+
+}
+
+/**
  * @brief Creates a uniform texel buffer.
  * @param format
  * @param bufferSize
@@ -359,7 +399,8 @@ bool VulkanDevice::createUniformTexelBuffer(VkFormat format,
         return false;
     }
     //Bind the buffer.
-    uniformTexelBufferObject.bindMemoryObject(logicalDevice, memoryObject, 0);
+    if(!uniformTexelBufferObject.bindMemoryObject(logicalDevice, memoryObject, 0))
+        return false;
 
     //Create the buffer view.
     VkBufferViewCreateInfo viewCreateInfo =
@@ -472,7 +513,8 @@ bool VulkanDevice::createUniformBuffer(VkDeviceSize bufferSize,
         return false;
     }
     //Bind the memory.
-    uniformBufferObject.bindMemoryObject(logicalDevice, memoryObject, 0);
+    if(!uniformBufferObject.bindMemoryObject(logicalDevice, memoryObject, 0))
+        return false;
 
     return true;
 }

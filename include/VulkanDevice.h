@@ -67,6 +67,13 @@ class VulkanDevice
                                 VulkanImage &storageImage,
                                 VkDeviceMemory &memoryObject);
 
+        //Creates a storage buffer, which is used for reading from buffers
+        //inside shaders and for storing data.
+        bool createStorageBuffer(VkBufferUsageFlags usage,
+                                 VkDeviceSize bufferSize,
+                                 VulkanBuffer &storageBuffer,
+                                 VkDeviceMemory &storageMemoryObject);
+
         //Creates an uniform texel buffer for reading large amounts of image-like data.
         bool createUniformTexelBuffer(VkFormat format,
                                       VkDeviceSize bufferSize,
