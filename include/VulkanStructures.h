@@ -339,4 +339,20 @@ namespace VulkanStructures
         createInfo.pBindings = bindings.data();
         return createInfo;
     }
+
+    inline VkDescriptorPoolCreateInfo
+        descriptorPoolCreateInfo(VkBool32 freeIndividualSets,
+                                 uint32_t maxSets,
+                                 std::vector<VkDescriptorPoolSize> descriptorTypes)
+    {
+        VkDescriptorPoolCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        createInfo.pNext = nullptr;
+        createInfo.flags = freeIndividualSets ?
+                                VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT : 0;
+        createInfo.maxSets = maxSets;
+        createInfo.poolSizeCount = static_cast<uint32_t>(descriptorTypes.size());
+        createInfo.pPoolSizes = descriptorTypes.data();
+        return createInfo;
+    }
 }

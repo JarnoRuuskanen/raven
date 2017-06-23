@@ -32,7 +32,8 @@ namespace Raven
          * @param logicalDevice
          * @param layout
          */
-        void destroyDescriptorSetLayout(const VkDevice logicalDevice, VkDescriptorSetLayout &layout) noexcept
+        void destroyDescriptorSetLayout(const VkDevice logicalDevice,
+                                        VkDescriptorSetLayout &layout) noexcept
         {
             if(layout != VK_NULL_HANDLE)
             {
@@ -41,6 +42,28 @@ namespace Raven
             }
         }
 
+        /**
+         * @brief Creates a descriptor pool.
+         * @param logicalDevice
+         * @param createInfo
+         * @param pool
+         * @return False if descriptor pool could not be created.
+         */
+        bool createDescriptorPool(const VkDevice logicalDevice,
+                                  VkDescriptorPoolCreateInfo createInfo,
+                                  VkDescriptorPool &pool) noexcept
+        {
+            VkResult result = vkCreateDescriptorPool(logicalDevice,
+                                                     &createInfo,
+                                                     nullptr,
+                                                     &pool);
+            if(result != VK_SUCCESS)
+            {
+                std::cerr << "Failed to create a descriptor pool!" << std::endl;
+                return false;
+            }
+            return true;
+        }
         /**
          * @brief destroyDescriptorPool. Make sure that no descriptor set allocated from this pool
          *        is in use when the pool gets destroyed.

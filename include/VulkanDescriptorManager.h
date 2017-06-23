@@ -13,6 +13,10 @@ namespace Raven
         void destroyDescriptorSetLayout(const VkDevice logicalDevice,
                                         VkDescriptorSetLayout &layout) noexcept;
 
+        //Creates a descriptor pool.
+        bool createDescriptorPool(const VkDevice logicalDevice,
+                                  VkDescriptorPoolCreateInfo createInfo,
+                                  VkDescriptorPool &pool) noexcept;
         //Destroys a descriptor pool.
         void destroyDescriptorPool(const VkDevice logicalDevice,
                                    VkDescriptorPool &pool) noexcept;
