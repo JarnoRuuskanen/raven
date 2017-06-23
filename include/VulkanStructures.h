@@ -326,4 +326,17 @@ namespace VulkanStructures
         createInfo.unnormalizedCoordinates = unnormalizedCoordinates;
         return createInfo;
     }
+
+    inline VkDescriptorSetLayoutCreateInfo
+        descriptorSetLayoutCreateInfo(const uint32_t bindingCount,
+                                      const std::vector<VkDescriptorSetLayoutBinding> bindings)
+    {
+        VkDescriptorSetLayoutCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        createInfo.pNext = nullptr;
+        createInfo.flags = 0;
+        createInfo.bindingCount = bindingCount;
+        createInfo.pBindings = bindings.data();
+        return createInfo;
+    }
 }
