@@ -98,6 +98,27 @@ namespace Raven
         }
 
         /**
+         * @brief Allocates descriptor sets from a descriptor pool defined in the allocInfo.
+         * @param logicalDevice
+         * @param allocInfo
+         * @param descriptorSets
+         * @return
+         */
+        bool allocateDescriptorSets(const VkDevice logicalDevice,
+                                    VkDescriptorSetAllocateInfo allocInfo,
+                                    std::vector<VkDescriptorSet> descriptorSets) noexcept
+        {
+            descriptorSets.resize(allocInfo.descriptorSetCount);
+            VkResult result = vkAllocateDescriptorSets(logicalDevice, &allocInfo, descriptorSets.data());
+            if(result != VK_SUCCESS)
+            {
+                std::cerr << "Failed to allocate descriptor sets!" << std::endl;
+                return false;
+            }
+            return true;
+        }
+
+        /**
          * @brief Frees descriptor sets that were allocated from the same pool.
          *        The descriptor pool must have been created with correct flags to allow
          *        freeing individual descriptor sets.

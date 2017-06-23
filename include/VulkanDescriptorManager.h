@@ -25,6 +25,11 @@ namespace Raven
         bool resetDescriptorPool(const VkDevice logicalDevice,
                                  VkDescriptorPool &pool) noexcept;
 
+        //Allocates descriptor sets from a pool.
+        bool allocateDescriptorSets(const VkDevice logicalDevice,
+                                    VkDescriptorSetAllocateInfo allocInfo,
+                                    std::vector<VkDescriptorSet> descriptorSets) noexcept;
+
         //Frees descriptor sets.
         bool freeDescriptorSets(const VkDevice logicalDevice,
                                 VkDescriptorPool &pool,

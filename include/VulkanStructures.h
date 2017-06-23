@@ -355,4 +355,17 @@ namespace VulkanStructures
         createInfo.pPoolSizes = descriptorTypes.data();
         return createInfo;
     }
+
+    inline VkDescriptorSetAllocateInfo
+        descriptorSetAllocateInfo(VkDescriptorPool descriptorPool,
+                                  std::vector<VkDescriptorSetLayout> descriptorSetLayouts)
+    {
+        VkDescriptorSetAllocateInfo allocInfo = {};
+        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        allocInfo.pNext = nullptr;
+        allocInfo.descriptorPool = descriptorPool;
+        allocInfo.descriptorSetCount = static_cast<uint32_t>(descriptorSetLayouts.size());
+        allocInfo.pSetLayouts = descriptorSetLayouts.data();
+        return allocInfo;
+    }
 }
