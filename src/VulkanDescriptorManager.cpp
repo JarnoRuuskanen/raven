@@ -145,5 +145,100 @@ namespace Raven
             }
             return true;
         }
+
+        /**
+         * @brief Updates descriptor sets.
+         * @param logicalDevice
+         * @param imageDescriptorInfos
+         * @param bufferDescriptorInfos
+         * @param texelBufferDescriptorInfos
+         * @param copyDescriptorInfos
+         */
+        void updateDescriptorSets(VkDevice logicalDevice,
+                                  const std::vector<ImageDescriptorInfo> &imageDescriptorInfos,
+                                  const std::vector<BufferDescriptorInfo> &bufferDescriptorInfos,
+                                  const std::vector<TexelBufferDescriptorInfo> &texelBufferDescriptorInfos,
+                                  const std::vector<CopyDescriptorInfo> &copyDescriptorInfos) noexcept
+        {
+                std::vector<VkWriteDescriptorSet> writeDescriptors;
+                std::vector<VkCopyDescriptorSet> copyDescriptors;
+
+                /** Image Descriptors **/
+                for(auto &imageDescriptor : imageDescriptorInfos)
+                {
+                    writeDescriptors.push_back(
+                    {
+                        VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+                        nullptr,
+                        imageDescriptor.targetDescriptorSet,
+                        imageDescriptor.targetDescriptorBinding,
+                        imageDescriptor.targetArrayElement,
+                        static_cast<uint32_t>(imageDescriptor.imageInfos.size()),
+                        imageDescriptor.targetDescriptorType,
+                        imageDescriptor.imageInfos.data(),
+                        nullptr,
+                        nullptr
+                    });
+                }
+
+                /** Buffer Descriptors **/
+                for(auto &bufferDescriptor : bufferDescriptorInfos)
+                {
+                    writeDescriptors.push_back(
+                    {
+                        VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+                        nullptr,
+                        bufferDescriptor.targetDescriptorSet,
+                        bufferDescriptor.targetDescriptorBinding,
+                        bufferDescriptor.targetArrayElement,
+                        static_cast<uint32_t>(bufferDescriptor.bufferInfos.size()),
+                        bufferDescriptor.targetDescriptorType,
+                        nullptr,
+                        bufferDescriptor.bufferInfos.data(),
+                        nullptr
+                    });
+                }
+
+                /** Texel Buffer Descriptors **/
+                for(auto &texelDescriptorInfo : texelBufferDescriptorInfos)
+                {
+                    writeDescriptors.push_back(
+                    {
+                        VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+                        nullptr,
+                        texelDescriptorInfo.targetDescriptorSet,
+                        texelDescriptorInfo.targetDescriptorBinding,
+                        texelDescriptorInfo.targetArrayElement,
+                        static_cast<uint32_t>(texelDescriptorInfo.texelBufferViews.size()),
+                        texelDescriptorInfo.targetDescriptorType,
+                        nullptr,
+                        nullptr,
+                        texelDescriptorInfo.texelBufferViews.data()
+                    });
+                }
+
+                /** Copy Descriptors **/
+                for(auto &copyDescriptor : copyDescriptorInfos)
+                {
+                    copyDescriptors.push_back(
+                    {
+                         VK_STRUCTURE_TYPE_COPY_DESCRIPTOR_SET,
+                         nullptr,
+                         copyDescriptor.sourceDescriptorSet,
+                         copyDescriptor.sourceDescriptorBinding,
+                         copyDescriptor.sourceArrayElement,
+                         copyDescriptor.targetDescriptorSet,
+                         copyDescriptor.targetDescriptorBinding,
+                         copyDescriptor.targetArrayElement,
+                         copyDescriptor.descriptorCount
+                    });
+                }
+
+                /** Update the descriptor sets **/
+                vkUpdateDescriptorSets(logicalDevice, static_cast<uint32_t>(writeDescriptors.size()),
+                                       writeDescriptors.data(),
+                                       static_cast<uint32_t>(copyDescriptors.size()),
+                                       copyDescriptors.data());
+        }
     }
 }

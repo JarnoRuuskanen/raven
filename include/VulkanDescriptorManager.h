@@ -3,6 +3,52 @@
 
 namespace Raven
 {
+    //Structs for updating descriptors.
+    //These are from VulkanCookbook:
+    //Descriptor Sets - Updating descriptor sets.
+
+    //Samplers and all kinds of image resources:
+    struct ImageDescriptorInfo
+    {
+        VkDescriptorSet targetDescriptorSet;
+        uint32_t targetDescriptorBinding;
+        uint32_t targetArrayElement;
+        VkDescriptorType targetDescriptorType;
+        std::vector<VkDescriptorImageInfo> imageInfos;
+    };
+
+    //Uniform and storage buffers (dynamic and non-dynamic):
+    struct BufferDescriptorInfo
+    {
+        VkDescriptorSet targetDescriptorSet;
+        uint32_t targetDescriptorBinding;
+        uint32_t targetArrayElement;
+        VkDescriptorType targetDescriptorType;
+        std::vector<VkDescriptorBufferInfo> bufferInfos;
+    };
+
+    //Uniform and storag texel buffers:
+    struct TexelBufferDescriptorInfo
+    {
+        VkDescriptorSet                     targetDescriptorSet;
+        uint32_t                            targetDescriptorBinding;
+        uint32_t                            targetArrayElement;
+        VkDescriptorType                    targetDescriptorType;
+        std::vector<VkBufferView>           texelBufferViews;
+    };
+
+    //For copying descriptor data from other, already updated sets.
+    struct CopyDescriptorInfo
+    {
+        VkDescriptorSet targetDescriptorSet;
+        uint32_t targetDescriptorBinding;
+        uint32_t targetArrayElement;
+        VkDescriptorSet sourceDescriptorSet;
+        uint32_t sourceDescriptorBinding;
+        uint32_t sourceArrayElement;
+        uint32_t descriptorCount;
+    };
+
     namespace VulkanDescriptorManager
     {
         //Creates a descriptor set layout.
@@ -34,5 +80,12 @@ namespace Raven
         bool freeDescriptorSets(const VkDevice logicalDevice,
                                 VkDescriptorPool &pool,
                                 std::vector<VkDescriptorSet> &descriptorSets) noexcept;
+
+        //Updates descriptor sets.
+        void updateDescriptorSets(VkDevice logicalDevice,
+                                  std::vector<ImageDescriptorInfo> const &imageDescriptorInfos,
+                                  std::vector<BufferDescriptorInfo> const &bufferDescriptorInfos,
+                                  std::vector<TexelBufferDescriptorInfo> const &texelBufferDescriptorInfos,
+                                  std::vector<CopyDescriptorInfo> const &copyDescriptorInfos) noexcept;
     }
 }
