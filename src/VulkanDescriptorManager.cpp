@@ -119,34 +119,6 @@ namespace Raven
         }
 
         /**
-         * @brief Frees descriptor sets that were allocated from the same pool.
-         *        The descriptor pool must have been created with correct flags to allow
-         *        freeing individual descriptor sets.
-         * @param logicalDevice
-         * @param pool
-         * @param descriptorSets
-         * @return False if the descriptor sets could not be freed.
-         */
-        bool freeDescriptorSets(const VkDevice logicalDevice,
-                                VkDescriptorPool &pool,
-                                std::vector<VkDescriptorSet> &descriptorSets) noexcept
-        {
-            VkResult result =
-                    vkFreeDescriptorSets(logicalDevice,
-                                         pool,
-                                         static_cast<uint32_t>(descriptorSets.size()),
-                                         descriptorSets.data());
-            if(result != VK_SUCCESS)
-            {
-                std::cerr << "Failed to free descriptor sets! Was descriptor pool "
-                             "created with VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT flag?"
-                          << std::endl;
-                return false;
-            }
-            return true;
-        }
-
-        /**
          * @brief Updates descriptor sets.
          * @param logicalDevice
          * @param imageDescriptorInfos
@@ -200,20 +172,20 @@ namespace Raven
                 }
 
                 /** Texel Buffer Descriptors **/
-                for(auto &texelDescriptorInfo : texelBufferDescriptorInfos)
+                for(auto &texelDescriptor : texelBufferDescriptorInfos)
                 {
                     writeDescriptors.push_back(
                     {
                         VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
                         nullptr,
-                        texelDescriptorInfo.targetDescriptorSet,
-                        texelDescriptorInfo.targetDescriptorBinding,
-                        texelDescriptorInfo.targetArrayElement,
-                        static_cast<uint32_t>(texelDescriptorInfo.texelBufferViews.size()),
-                        texelDescriptorInfo.targetDescriptorType,
+                        texelDescriptor.targetDescriptorSet,
+                        texelDescriptor.targetDescriptorBinding,
+                        texelDescriptor.targetArrayElement,
+                        static_cast<uint32_t>(texelDescriptor.texelBufferViews.size()),
+                        texelDescriptor.targetDescriptorType,
                         nullptr,
                         nullptr,
-                        texelDescriptorInfo.texelBufferViews.data()
+                        texelDescriptor.texelBufferViews.data()
                     });
                 }
 
@@ -239,6 +211,56 @@ namespace Raven
                                        writeDescriptors.data(),
                                        static_cast<uint32_t>(copyDescriptors.size()),
                                        copyDescriptors.data());
+        }
+
+        /**
+         * @brief Binds descriptor sets to a command buffer. This function is also almost a
+         *        direct copy from VulkanCookbook.
+         * @param cmdBuffer
+         * @param pipelineType
+         * @param pipelineLayout
+         * @param indexForFirstSet
+         * @param descriptorSets
+         * @param dynamicOffsets
+         */
+        void bindDescriptorSets(VkCommandBuffer cmdBuffer,
+                                VkPipelineBindPoint pipelineType,
+                                VkPipelineLayout pipelineLayout,
+                                uint32_t indexForFirstSet,
+                                std::vector<VkDescriptorSet> const &descriptorSets,
+                                std::vector<uint32_t> const &dynamicOffsets) noexcept
+        {
+            vkCmdBindDescriptorSets(cmdBuffer, pipelineType, pipelineLayout, indexForFirstSet,
+                                    static_cast<uint32_t>(descriptorSets.size()), descriptorSets.data(),
+                                    static_cast<uint32_t>(dynamicOffsets.size()), dynamicOffsets.data());
+        }
+
+        /**
+         * @brief Frees descriptor sets that were allocated from the same pool.
+         *        The descriptor pool must have been created with correct flags to allow
+         *        freeing individual descriptor sets.
+         * @param logicalDevice
+         * @param pool
+         * @param descriptorSets
+         * @return False if the descriptor sets could not be freed.
+         */
+        bool freeDescriptorSets(const VkDevice logicalDevice,
+                                VkDescriptorPool &pool,
+                                std::vector<VkDescriptorSet> &descriptorSets) noexcept
+        {
+            VkResult result =
+                    vkFreeDescriptorSets(logicalDevice,
+                                         pool,
+                                         static_cast<uint32_t>(descriptorSets.size()),
+                                         descriptorSets.data());
+            if(result != VK_SUCCESS)
+            {
+                std::cerr << "Failed to free descriptor sets! Was descriptor pool "
+                             "created with VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT flag?"
+                          << std::endl;
+                return false;
+            }
+            return true;
         }
     }
 }

@@ -76,16 +76,24 @@ namespace Raven
                                     VkDescriptorSetAllocateInfo allocInfo,
                                     std::vector<VkDescriptorSet> descriptorSets) noexcept;
 
-        //Frees descriptor sets.
-        bool freeDescriptorSets(const VkDevice logicalDevice,
-                                VkDescriptorPool &pool,
-                                std::vector<VkDescriptorSet> &descriptorSets) noexcept;
-
         //Updates descriptor sets.
         void updateDescriptorSets(VkDevice logicalDevice,
                                   std::vector<ImageDescriptorInfo> const &imageDescriptorInfos,
                                   std::vector<BufferDescriptorInfo> const &bufferDescriptorInfos,
                                   std::vector<TexelBufferDescriptorInfo> const &texelBufferDescriptorInfos,
                                   std::vector<CopyDescriptorInfo> const &copyDescriptorInfos) noexcept;
+
+        //Binds descriptor sets to a command buffer.
+        void bindDescriptorSets(VkCommandBuffer cmdBuffer,
+                                VkPipelineBindPoint pipelineType,
+                                VkPipelineLayout pipelineLayout,
+                                uint32_t indexForFirstSet,
+                                std::vector<VkDescriptorSet> const &descriptorSets,
+                                std::vector<uint32_t> const &dynamicOffsets) noexcept;
+
+        //Frees descriptor sets.
+        bool freeDescriptorSets(const VkDevice logicalDevice,
+                                VkDescriptorPool &pool,
+                                std::vector<VkDescriptorSet> &descriptorSets) noexcept;
     }
 }
