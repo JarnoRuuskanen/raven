@@ -18,7 +18,7 @@ namespace Raven
         //Creates a new command pool.
         bool createCommandPool(const VkDevice logicalDevice,
                                const VkCommandPoolCreateInfo createInfo,
-                               VkCommandPool &cmdPool);
+                               VkCommandPool &cmdPool)noexcept;
         //Allocates a new command buffer from a given command pool.
         bool allocateCommandBuffer(const VkDevice logicalDevice,
                                    const VkCommandBufferAllocateInfo allocInfo,

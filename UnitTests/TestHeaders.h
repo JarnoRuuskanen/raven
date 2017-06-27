@@ -16,6 +16,8 @@
 #include "VulkanFunctions.h"
 #include "VulkanFunctions.cpp"
 #include "VulkanStructures.h"
+#include "VulkanDescriptorManager.h"
+#include "VulkanDescriptorManager.cpp"
 /** **/
 #include "VulkanDevice.h"
 #include "VulkanDevice.cpp"

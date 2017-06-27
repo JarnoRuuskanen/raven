@@ -108,6 +108,18 @@ class VulkanDevice
                                    VulkanImage &inputAttachmentObject,
                                    VkDeviceMemory &memoryObject);
 
+        //Creates descriptors with a texture and uniform buffer.
+        bool createDescriptorsWithTextureAndUniformBuffer(VkExtent3D sampledImageSize,
+                                                          uint32_t uniformBufferSize,
+                                                          VkSampler &sampler,
+                                                          VulkanImage &sampledImageObject,
+                                                          VkDeviceMemory &sampledImageMemoryObject,
+                                                          VulkanBuffer &uniformBufferObject,
+                                                          VkDeviceMemory &uniformBuffeMemoryObject,
+                                                          VkDescriptorSetLayout &descriptorSetLayout,
+                                                          VkDescriptorPool &descriptorPool,
+                                                          std::vector<VkDescriptorSet> &descriptorSets);
+
         //Returns a queue family reference by index
         inline VkQueueFamilyProperties& getQueueFamily(int index){return queueFamilies[index];}
         //Returns the queueFamilyIndex for the family that is currently used.

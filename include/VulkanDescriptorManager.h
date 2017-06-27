@@ -78,10 +78,10 @@ namespace Raven
 
         //Updates descriptor sets.
         void updateDescriptorSets(VkDevice logicalDevice,
-                                  std::vector<ImageDescriptorInfo> const &imageDescriptorInfos,
-                                  std::vector<BufferDescriptorInfo> const &bufferDescriptorInfos,
-                                  std::vector<TexelBufferDescriptorInfo> const &texelBufferDescriptorInfos,
-                                  std::vector<CopyDescriptorInfo> const &copyDescriptorInfos) noexcept;
+                                  const std::vector<ImageDescriptorInfo> &imageDescriptorInfos,
+                                  const std::vector<BufferDescriptorInfo> &bufferDescriptorInfos,
+                                  const std::vector<TexelBufferDescriptorInfo> &texelBufferDescriptorInfos,
+                                  const std::vector<CopyDescriptorInfo> &copyDescriptorInfos) noexcept;
 
         //Binds descriptor sets to a command buffer.
         void bindDescriptorSets(VkCommandBuffer cmdBuffer,

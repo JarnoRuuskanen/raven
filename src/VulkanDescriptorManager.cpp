@@ -9,7 +9,7 @@ namespace Raven
          * @param logicalDevice
          * @param createInfo
          * @param descriptorSetLayout
-         * @return False
+         * @return False if descriptor set layout could not be created.
          */
         bool createDescriptorSetLayout(const VkDevice logicalDevice,
                                        VkDescriptorSetLayoutCreateInfo createInfo,

@@ -15,7 +15,7 @@ namespace Raven
          */
         bool createCommandPool(const VkDevice logicalDevice,
                                const VkCommandPoolCreateInfo createInfo,
-                               VkCommandPool &cmdPool)
+                               VkCommandPool &cmdPool) noexcept
         {
             VkResult result = vkCreateCommandPool(logicalDevice, &createInfo, nullptr, &cmdPool);
             if(result != VK_SUCCESS)

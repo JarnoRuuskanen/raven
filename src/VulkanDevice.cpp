@@ -3,6 +3,7 @@
 #include "VulkanStructures.h"
 #include "VulkanUtility.h"
 #include "CommandBufferManager.h"
+#include "VulkanDescriptorManager.h"
 
 //Using the Raven namespace.
 using namespace Raven;
@@ -596,6 +597,147 @@ bool VulkanDevice::createInputAttachment(VkImageType imageType,
 
     return true;
 
+}
+
+bool VulkanDevice::createDescriptorsWithTextureAndUniformBuffer(VkExtent3D sampledImageSize,
+                                                 uint32_t uniformBufferSize,
+                                                 VkSampler &sampler,
+                                                 VulkanImage &sampledImageObject,
+                                                 VkDeviceMemory &sampledImageMemoryObject,
+                                                 VulkanBuffer &uniformBufferObject,
+                                                 VkDeviceMemory &uniformBufferMemoryObject,
+                                                 VkDescriptorSetLayout &descriptorSetLayout,
+                                                 VkDescriptorPool &descriptorPool,
+                                                 std::vector<VkDescriptorSet> &descriptorSets)
+{
+    VkSamplerCreateInfo samplerInfo =
+            VulkanStructures::samplerCreateInfo(VK_FILTER_LINEAR,
+                                                VK_FILTER_LINEAR,
+                                                VK_SAMPLER_MIPMAP_MODE_NEAREST,
+                                                VK_SAMPLER_ADDRESS_MODE_REPEAT,
+                                                VK_SAMPLER_ADDRESS_MODE_REPEAT,
+                                                VK_SAMPLER_ADDRESS_MODE_REPEAT,
+                                                0.0f, VK_FALSE, 1.0f, VK_FALSE,
+                                                VK_COMPARE_OP_ALWAYS, 0.0f,
+                                                0.0f, VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE,
+                                                VK_FALSE);
+    //First create the combined image sampler.
+    if(!createCombinedImageSampler(samplerInfo, VK_IMAGE_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM,
+                                   sampledImageSize, 1, 1, VK_IMAGE_USAGE_TRANSFER_DST_BIT,
+                                   VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_ASPECT_COLOR_BIT, sampler,
+                                   sampledImageMemoryObject, sampledImageObject))
+    {
+        return false;
+    }
+
+    //Next create the uniform buffer.
+    if(!createUniformBuffer(uniformBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                            uniformBufferObject, uniformBufferMemoryObject))
+    {
+        return false;
+    }
+
+    //Define pipeline bindings:
+    std::vector<VkDescriptorSetLayoutBinding> bindings =
+    {
+        {
+            0,                                              //binding.
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,      //descriptorType.
+            1,                                              //descriptorCount.
+            VK_SHADER_STAGE_FRAGMENT_BIT,                   //stageFlags.
+            nullptr                                         //pImmutableSamplers.
+        },
+        {
+            1,
+            VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+            1,
+            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+            nullptr
+        }
+    };
+    //Create the descriptor set layout.
+    VkDescriptorSetLayoutCreateInfo layoutInfo =
+            VulkanStructures::descriptorSetLayoutCreateInfo(static_cast<uint32_t>(bindings.size()),
+                                                            bindings);
+    if(!VulkanDescriptorManager::createDescriptorSetLayout(logicalDevice,
+                                                           layoutInfo,
+                                                           descriptorSetLayout))
+    {
+        return false;
+    }
+
+    //Create the descriptor pool.
+    std::vector<VkDescriptorPoolSize> descriptorTypes =
+    {
+        {
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,      //descriptorType.
+            1                                               //descriptorCount.
+        },
+        {
+            VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+            1
+        }
+    };
+
+    VkDescriptorPoolCreateInfo poolInfo =
+            VulkanStructures::descriptorPoolCreateInfo(VK_FALSE, 1, descriptorTypes);
+    if(!VulkanDescriptorManager::createDescriptorPool(logicalDevice,
+                                                      poolInfo,
+                                                      descriptorPool))
+    {
+        return false;
+    }
+
+    //Allocate the descriptor sets.
+    VkDescriptorSetAllocateInfo descriptorSetAllocateInfo =
+            VulkanStructures::descriptorSetAllocateInfo(descriptorPool, {descriptorSetLayout});
+    if(!VulkanDescriptorManager::allocateDescriptorSets(logicalDevice,
+                                                        descriptorSetAllocateInfo,
+                                                        descriptorSets))
+    {
+        return false;
+    }
+
+    //Now create the information for the descriptor sets.
+    std::vector<ImageDescriptorInfo> imageDescriptorInfos =
+    {
+        {
+            descriptorSets[0],                              //targetDescriptorSet.
+            0,                                              //targetDescriptorBinding.
+            0,                                              //targetArrayElement.
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,      //descriptorType.
+            {                                               //imageInfos.
+                {
+                    sampler,                                //sampler.
+                    sampledImageObject.imageView,           //imageView.
+                    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL//imageLayout.
+                }
+            }
+        }
+    };
+
+    std::vector<BufferDescriptorInfo> bufferDescriptorInfos =
+    {
+        {
+            descriptorSets[0],                              //targetDescriptorSet.
+            1,                                              //targetBinding.
+            0,                                              //targetArrayElement.
+            VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,              //targetBufferType.
+            {                                               //bufferInfos.
+                {
+                    uniformBufferObject.buffer,             //buffer.
+                    0,                                      //offset.
+                    VK_WHOLE_SIZE                           //range.
+                }
+            }
+        }
+    };
+
+    //Lastly update the descriptor sets so that the data described can be used.
+    VulkanDescriptorManager::updateDescriptorSets(logicalDevice, imageDescriptorInfos,
+                                                  bufferDescriptorInfos, {}, {});
+
+    return true;
 }
 
 /**
