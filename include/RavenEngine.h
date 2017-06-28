@@ -3,6 +3,7 @@
 #include "VulkanWindow.h"
 #include "VulkanDevice.h"
 #include "CommandBufferManager.h"
+#include "VulkanRenderer.h"
 
 //The main class for Raven
 using namespace Raven;

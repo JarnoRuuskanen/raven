@@ -599,7 +599,8 @@ bool VulkanDevice::createInputAttachment(VkImageType imageType,
 
 }
 
-bool VulkanDevice::createDescriptorsWithTextureAndUniformBuffer(VkExtent3D sampledImageSize,
+bool VulkanDevice::
+    createDescriptorsWithTextureAndUniformBuffer(VkExtent3D sampledImageSize,
                                                  uint32_t uniformBufferSize,
                                                  VkSampler &sampler,
                                                  VulkanImage &sampledImageObject,
