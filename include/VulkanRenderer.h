@@ -33,6 +33,13 @@ class VulkanRenderer
         //Specifies subpass descriptions.
         void specifySubpassDescriptions(std::vector<SubpassParameters> const &subpassParameters,
                                         std::vector<VkSubpassDescription> &subpassDescriptions);
+        //Creates a new render pass, which describes how rendering operations should be run.
+        bool createRenderPass(const VkDevice logicalDevice,
+                              std::vector<VkAttachmentDescription> const &attachmentDescriptions,
+                              std::vector<SubpassParameters> const &subpassParameters,
+                              std::vector<VkSubpassDependency> const &subpassDepedencies,
+                              VkRenderPass &renderPass);
+
     private:
         std::vector<VkRenderPass> renderPasses;
         //Pointers to the windows into which the renderer should render the contents.

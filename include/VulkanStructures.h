@@ -368,4 +368,22 @@ namespace VulkanStructures
         allocInfo.pSetLayouts = descriptorSetLayouts.data();
         return allocInfo;
     }
+
+    inline VkRenderPassCreateInfo
+        renderPassCreateInfo(const std::vector<VkAttachmentDescription> attachmentDescriptions,
+                             const std::vector<VkSubpassDescription> subpassDescriptions,
+                             const std::vector<VkSubpassDependency> subpassDepedencies)
+    {
+        VkRenderPassCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        createInfo.pNext = nullptr;
+        createInfo.flags = 0;
+        createInfo.attachmentCount = static_cast<uint32_t>(attachmentDescriptions.size());
+        createInfo.pAttachments = attachmentDescriptions.data();
+        createInfo.subpassCount = static_cast<uint32_t>(subpassDescriptions.size());
+        createInfo.pSubpasses = subpassDescriptions.data();
+        createInfo.dependencyCount = static_cast<uint32_t>(subpassDepedencies.size());
+        createInfo.pDependencies = subpassDepedencies.data();
+        return createInfo;
+    }
 }
