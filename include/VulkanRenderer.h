@@ -37,7 +37,7 @@ class VulkanRenderer
         bool createRenderPass(const VkDevice logicalDevice,
                               std::vector<VkAttachmentDescription> const &attachmentDescriptions,
                               std::vector<SubpassParameters> const &subpassParameters,
-                              std::vector<VkSubpassDependency> const &subpassDepedencies,
+                              std::vector<VkSubpassDependency> const &subpassDependencies,
                               VkRenderPass &renderPass);
 
         //Creates a new framebuffer for the given render pass.
@@ -48,6 +48,10 @@ class VulkanRenderer
                                uint32_t height,
                                uint32_t layers,
                                VkFramebuffer &framebuffer);
+
+        //Builds a basic render pass for geometry and post processing subpasses.
+        bool buildGeometryAndPostProcessingRenderPass(const VkDevice logicalDevice,
+                                                      VkRenderPass &renderPass);
     private:
         std::vector<VkRenderPass> renderPasses;
         //Pointers to the windows into which the renderer should render the contents.
