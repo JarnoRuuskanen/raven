@@ -51,7 +51,7 @@ void VulkanRenderer::specifySubpassDescriptions(const std::vector<SubpassParamet
  * @param subpassParameters
  * @param subpassDepedenccies
  * @param renderPass
- * @return
+ * @return False if render pass creation fails.
  */
 bool VulkanRenderer::createRenderPass(const VkDevice logicalDevice,
                                       const std::vector<VkAttachmentDescription> &attachmentDescriptions,
@@ -77,6 +77,40 @@ bool VulkanRenderer::createRenderPass(const VkDevice logicalDevice,
     if(result != VK_SUCCESS)
     {
         std::cerr << "Failed to create a render pass!" << std::endl;
+        return false;
+    }
+    return true;
+}
+
+/**
+ * @brief Creates a new framebuffer for the given render pass.
+ * @param logicalDevice
+ * @param renderPass
+ * @param attachments
+ * @param width
+ * @param height
+ * @param layers
+ * @param framebuffer
+ * @return False if framebuffer creation fails.
+ */
+bool VulkanRenderer::createFramebuffer(const VkDevice logicalDevice,
+                                       VkRenderPass renderPass,
+                                       std::vector<VkImageView> const &attachments,
+                                       uint32_t width,
+                                       uint32_t height,
+                                       uint32_t layers,
+                                       VkFramebuffer &framebuffer)
+{
+    VkFramebufferCreateInfo createInfo =
+            VulkanStructures::framebufferCreateInfo(renderPass,
+                                                    attachments,
+                                                    width, height, layers);
+
+    //Create the framebuffer.
+    VkResult result = vkCreateFramebuffer(logicalDevice, &createInfo, nullptr, &framebuffer);
+    if(result != VK_SUCCESS)
+    {
+        std::cerr << "Failed to create a framebuffer!" << std::endl;
         return false;
     }
     return true;

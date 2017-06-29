@@ -40,6 +40,14 @@ class VulkanRenderer
                               std::vector<VkSubpassDependency> const &subpassDepedencies,
                               VkRenderPass &renderPass);
 
+        //Creates a new framebuffer for the given render pass.
+        bool createFramebuffer(const VkDevice logicalDevice,
+                               VkRenderPass renderPass,
+                               std::vector<VkImageView> const &attachments,
+                               uint32_t width,
+                               uint32_t height,
+                               uint32_t layers,
+                               VkFramebuffer &framebuffer);
     private:
         std::vector<VkRenderPass> renderPasses;
         //Pointers to the windows into which the renderer should render the contents.
