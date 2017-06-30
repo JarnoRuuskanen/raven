@@ -66,6 +66,14 @@ class VulkanRenderer
                                                        VkRenderPass &renderPass,
                                                        VkFramebuffer &framebuffer);
 
+        //Begins a render pass.
+        void beginRenderPass(VkCommandBuffer cmdBuffer,
+                             VkRenderPass renderPass,
+                             VkFramebuffer framebuffer,
+                             VkRect2D renderArea,
+                             std::vector<VkClearValue> const &clearValues,
+                             VkSubpassContents subpassContents);
+
     private:
         std::vector<VkRenderPass> renderPasses;
         //Pointers to the windows into which the renderer should render the contents.

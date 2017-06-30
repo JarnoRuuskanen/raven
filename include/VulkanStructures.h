@@ -387,6 +387,22 @@ namespace VulkanStructures
         return createInfo;
     }
 
+    inline VkRenderPassBeginInfo renderPassBeginInfo(VkRenderPass renderPass,
+                                                     VkFramebuffer framebuffer,
+                                                     std::vector<VkClearValue> clearValues,
+                                                     VkRect2D renderArea)
+    {
+        VkRenderPassBeginInfo beginInfo = {};
+        beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        beginInfo.pNext = nullptr;
+        beginInfo.renderPass = renderPass;
+        beginInfo.framebuffer = framebuffer;
+        beginInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+        beginInfo.pClearValues = clearValues.data();
+        beginInfo.renderArea = renderArea;
+        return beginInfo;
+    }
+
     inline VkFramebufferCreateInfo framebufferCreateInfo(VkRenderPass renderPass,
                                                          std::vector<VkImageView> attachments,
                                                          uint32_t width,

@@ -235,7 +235,8 @@ bool VulkanRenderer::buildGeometryAndPostProcessingRenderPass(const VkDevice log
 }
 
 /**
- * @brief Builds a render pass and a framebuffer with color and depth attachments.
+ * @brief Builds a render pass and a framebuffer with color and depth attachments. Images will be
+ *        created with sampled-flags so that they can be used in shaders after rendering onto them.
  *        Parts of this function were copied from VulkanCookbook. They are marked with comments.
  * @param memoryProperties
  * @param logicalDevice
@@ -317,6 +318,8 @@ bool VulkanRenderer::
       VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,   // VkImageLayout                        layout
     };
 
+    //"Define a single subpass which uses the first attachment for color writes and the second attachment
+    //for depth/stencil data."
     std::vector<SubpassParameters> subpassParameters = {
       {
         VK_PIPELINE_BIND_POINT_GRAPHICS,                  // VkPipelineBindPoint                  PipelineType
@@ -333,6 +336,9 @@ bool VulkanRenderer::
       }
     };
 
+    //"Define a depedency between the subpass and the commands that will be performed after the
+    //render pass. This is required because we don't want other commands to start reading our images
+    //before their contents are fully written in the render pass."
     std::vector<VkSubpassDependency> subpassDependencies = {
       {
         0,                                                // uint32_t                 srcSubpass
@@ -358,4 +364,26 @@ bool VulkanRenderer::
         return false;
 
     return true;
+}
+
+/**
+ * @brief Begins a render pass.
+ * @param cmdBuffer
+ * @param renderPass
+ * @param framebuffer
+ * @param renderArea
+ * @param clearValues
+ * @param subpassContents
+ */
+void VulkanRenderer::beginRenderPass(VkCommandBuffer cmdBuffer,
+                                     VkRenderPass renderPass,
+                                     VkFramebuffer framebuffer,
+                                     VkRect2D renderArea,
+                                     std::vector<VkClearValue> const &clearValues,
+                                     VkSubpassContents subpassContents)
+{
+    VkRenderPassBeginInfo beginInfo =
+            VulkanStructures::renderPassBeginInfo(renderPass, framebuffer, clearValues, renderArea);
+
+    vkCmdBeginRenderPass(cmdBuffer, &beginInfo, subpassContents);
 }
