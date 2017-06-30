@@ -1334,19 +1334,34 @@ namespace Raven
      * @brief Creates an image with an image view.
      * @param logicalDevice
      * @param memoryProperties
-     * @param imageInfo
-     * @param imageViewInfo
+     * @param usage
+     * @param imageType
+     * @param imageViewType
+     * @param format
+     * @param extent
+     * @param layerCount
+     * @param samples
+     * @param initialLayout
+     * @param sharingMode
+     * @param mipLevels
+     * @param cubemap
+     * @param aspect
      * @param imageObject
      * @param imageMemoryObject
-     * @return False if any of the operations fails.
+     * @return False if any of the operations fail.
      */
     bool createImageWithImageView(const VkDevice logicalDevice,
                                   VkPhysicalDeviceMemoryProperties memoryProperties,
-                                  VkImageCreateInfo imageInfo,
-                                  VkImageViewCreateInfo imageViewInfo,
-                                  VulkanImage &imageObject,
-                                  VkDeviceMemory &imageMemoryObject)
+                                  VkImageUsageFlags usage, VkImageType imageType,
+                                  VkImageViewType imageViewType, VkFormat format, VkExtent3D extent,
+                                  uint32_t layerCount, VkSampleCountFlagBits samples,
+                                  VkImageLayout initialLayout, VkSharingMode sharingMode,
+                                  uint32_t mipLevels, VkBool32 cubemap, VkImageAspectFlags aspect,
+                                  VulkanImage &imageObject, VkDeviceMemory &imageMemoryObject)
     {
+        VkImageCreateInfo imageInfo =
+                VulkanStructures::imageCreateInfo(usage, imageType, format, extent, layerCount, samples,
+                                                  initialLayout, sharingMode, mipLevels, cubemap);
         //First create the image.
         if(!createImage(logicalDevice, imageInfo, imageObject.image))
             return false;
@@ -1364,6 +1379,9 @@ namespace Raven
         //Bind the memory.
         if(!imageObject.bindMemoryObject(logicalDevice, imageMemoryObject))
             return false;
+
+        VkImageViewCreateInfo imageViewInfo =
+                VulkanStructures::imageViewCreateInfo(imageObject.image, format, aspect, imageViewType);
 
         //Lastly create the image view.
         if(!createImageView(logicalDevice, imageViewInfo, imageObject.imageView))

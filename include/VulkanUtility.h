@@ -263,8 +263,10 @@ namespace Raven
     //Creates an image with an image view.
     bool createImageWithImageView(const VkDevice logicalDevice,
                                   VkPhysicalDeviceMemoryProperties memoryProperties,
-                                  VkImageCreateInfo imageInfo,
-                                  VkImageViewCreateInfo imageViewInfo,
-                                  VulkanImage &imageObject,
-                                  VkDeviceMemory &imageMemoryObject);
+                                  VkImageUsageFlags usage, VkImageType imageType,
+                                  VkImageViewType imageViewType, VkFormat format, VkExtent3D extent,
+                                  uint32_t layerCount, VkSampleCountFlagBits samples,
+                                  VkImageLayout initialLayout, VkSharingMode sharingMode,
+                                  uint32_t mipLevels, VkBool32 cubemap, VkImageAspectFlags aspect,
+                                  VulkanImage &imageObject, VkDeviceMemory &imageMemoryObject);
 }

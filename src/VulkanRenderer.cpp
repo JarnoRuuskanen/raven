@@ -263,38 +263,23 @@ bool VulkanRenderer::
 {
     //First create the color image + image view.
     VkExtent3D imageExtent = {width, height, 1};
-    VkImageCreateInfo colorImageInfo =
-            VulkanStructures::imageCreateInfo(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
-                                              VK_IMAGE_USAGE_SAMPLED_BIT, VK_IMAGE_TYPE_2D,
-                                              VK_FORMAT_R8G8B8A8_UNORM,
-                                              imageExtent, 1, VK_SAMPLE_COUNT_1_BIT,
-                                              VK_IMAGE_LAYOUT_UNDEFINED, VK_SHARING_MODE_EXCLUSIVE,
-                                              1, false);
 
-    VkImageViewCreateInfo colorImageViewInfo =
-            VulkanStructures::imageViewCreateInfo(colorImageObject.image, VK_FORMAT_R8G8B8A8_UNORM,
-                                                  VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_VIEW_TYPE_2D);
-
-    if(!createImageWithImageView(logicalDevice, memoryProperties, colorImageInfo, colorImageViewInfo,
-                                 colorImageObject, colorImageMemory))
+    if(!createImageWithImageView(logicalDevice, memoryProperties, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
+                                 VK_IMAGE_USAGE_SAMPLED_BIT, VK_IMAGE_TYPE_2D, VK_IMAGE_VIEW_TYPE_2D,
+                                 VK_FORMAT_R8G8B8A8_UNORM, imageExtent, 1, VK_SAMPLE_COUNT_1_BIT,
+                                 VK_IMAGE_LAYOUT_UNDEFINED, VK_SHARING_MODE_EXCLUSIVE, 1, VK_FALSE,
+                                 VK_IMAGE_ASPECT_COLOR_BIT, colorImageObject, colorImageMemory))
     {
         return false;
     }
 
     //Next create the depth image + image view.
-    VkImageCreateInfo depthImageInfo =
-        VulkanStructures::imageCreateInfo(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT |
-                                          VK_IMAGE_USAGE_SAMPLED_BIT, VK_IMAGE_TYPE_2D,
-                                          VK_FORMAT_D16_UNORM, imageExtent, 1, VK_SAMPLE_COUNT_1_BIT,
-                                          VK_IMAGE_LAYOUT_UNDEFINED, VK_SHARING_MODE_EXCLUSIVE,
-                                          1, false);
-
-    VkImageViewCreateInfo depthImageViewInfo =
-        VulkanStructures::imageViewCreateInfo(depthImageObject.image, VK_FORMAT_D16_UNORM,
-                                              VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_VIEW_TYPE_2D);
-
-    if(!createImageWithImageView(logicalDevice, memoryProperties, depthImageInfo, depthImageViewInfo,
-                                 depthImageObject, depthImageMemory))
+    if(!createImageWithImageView(logicalDevice, memoryProperties,
+                                 VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT |
+                                 VK_IMAGE_USAGE_SAMPLED_BIT, VK_IMAGE_TYPE_2D, VK_IMAGE_VIEW_TYPE_2D,
+                                 VK_FORMAT_D16_UNORM, imageExtent, 1, VK_SAMPLE_COUNT_1_BIT,
+                                 VK_IMAGE_LAYOUT_UNDEFINED, VK_SHARING_MODE_EXCLUSIVE, 1, VK_FALSE,
+                                 VK_IMAGE_ASPECT_DEPTH_BIT, depthImageObject, depthImageMemory))
     {
         return false;
     }
