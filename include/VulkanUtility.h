@@ -259,4 +259,12 @@ namespace Raven
     bool doesFormatSupportRequiredBufferFeature(const VkPhysicalDevice physicalDevice,
                                                 VkFormat format,
                                                 VkFormatFeatureFlagBits requiredFeature);
+
+    //Creates an image with an image view.
+    bool createImageWithImageView(const VkDevice logicalDevice,
+                                  VkPhysicalDeviceMemoryProperties memoryProperties,
+                                  VkImageCreateInfo imageInfo,
+                                  VkImageViewCreateInfo imageViewInfo,
+                                  VulkanImage &imageObject,
+                                  VkDeviceMemory &imageMemoryObject);
 }

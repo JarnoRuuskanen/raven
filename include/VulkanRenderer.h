@@ -1,6 +1,7 @@
 #pragma once
 #include "Headers.h"
 #include "VulkanWindow.h"
+#include "VulkanImage.h"
 
 namespace Raven
 {
@@ -52,6 +53,19 @@ class VulkanRenderer
         //Builds a basic render pass for geometry and post processing subpasses.
         bool buildGeometryAndPostProcessingRenderPass(const VkDevice logicalDevice,
                                                       VkRenderPass &renderPass);
+
+        //Builds a render pass and a framebuffer with color and depth attachments.
+        bool buildRendererWithColorAndDepthAttachments(VkPhysicalDeviceMemoryProperties memoryProperties,
+                                                       const VkDevice logicalDevice,
+                                                       uint32_t width,
+                                                       uint32_t height,
+                                                       VulkanImage &colorImageObject,
+                                                       VkDeviceMemory &colorImageMemory,
+                                                       VulkanImage &depthImageObject,
+                                                       VkDeviceMemory &depthImageMemory,
+                                                       VkRenderPass &renderPass,
+                                                       VkFramebuffer &framebuffer);
+
     private:
         std::vector<VkRenderPass> renderPasses;
         //Pointers to the windows into which the renderer should render the contents.

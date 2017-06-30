@@ -1329,4 +1329,46 @@ namespace Raven
         }
         return true;
     }
+
+    /**
+     * @brief Creates an image with an image view.
+     * @param logicalDevice
+     * @param memoryProperties
+     * @param imageInfo
+     * @param imageViewInfo
+     * @param imageObject
+     * @param imageMemoryObject
+     * @return False if any of the operations fails.
+     */
+    bool createImageWithImageView(const VkDevice logicalDevice,
+                                  VkPhysicalDeviceMemoryProperties memoryProperties,
+                                  VkImageCreateInfo imageInfo,
+                                  VkImageViewCreateInfo imageViewInfo,
+                                  VulkanImage &imageObject,
+                                  VkDeviceMemory &imageMemoryObject)
+    {
+        //First create the image.
+        if(!createImage(logicalDevice, imageInfo, imageObject.image))
+            return false;
+
+        //Get image memory requirements.
+        VkMemoryRequirements memReq;
+        vkGetImageMemoryRequirements(logicalDevice, imageObject.image, &memReq);
+
+        //Allocate memory for the image.
+        if(!allocateMemory(logicalDevice, memoryProperties, memReq, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                           imageMemoryObject))
+        {
+            return false;
+        }
+        //Bind the memory.
+        if(!imageObject.bindMemoryObject(logicalDevice, imageMemoryObject))
+            return false;
+
+        //Lastly create the image view.
+        if(!createImageView(logicalDevice, imageViewInfo, imageObject.imageView))
+            return false;
+
+        return true;
+    }
 }

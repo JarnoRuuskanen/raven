@@ -1,5 +1,6 @@
 #include "VulkanRenderer.h"
 #include "VulkanStructures.h"
+#include "VulkanUtility.h"
 /**
  * @brief VulkanRenderer::VulkanRenderer
  */
@@ -230,5 +231,146 @@ bool VulkanRenderer::buildGeometryAndPostProcessingRenderPass(const VkDevice log
     {
         return false;
     }
+    return true;
+}
+
+/**
+ * @brief Builds a render pass and a framebuffer with color and depth attachments.
+ *        Parts of this function were copied from VulkanCookbook. They are marked with comments.
+ * @param memoryProperties
+ * @param logicalDevice
+ * @param width
+ * @param height
+ * @param colorImageObject
+ * @param colorImageMemory
+ * @param depthImageObject
+ * @param depthImageMemory
+ * @param renderPass
+ * @param framebuffer
+ * @return False if some of the operations fails.
+ */
+bool VulkanRenderer::
+    buildRendererWithColorAndDepthAttachments(VkPhysicalDeviceMemoryProperties memoryProperties,
+                                               const VkDevice logicalDevice,
+                                               uint32_t width,
+                                               uint32_t height,
+                                               VulkanImage &colorImageObject,
+                                               VkDeviceMemory &colorImageMemory,
+                                               VulkanImage &depthImageObject,
+                                               VkDeviceMemory &depthImageMemory,
+                                               VkRenderPass &renderPass,
+                                               VkFramebuffer &framebuffer)
+{
+    //First create the color image + image view.
+    VkExtent3D imageExtent = {width, height, 1};
+    VkImageCreateInfo colorImageInfo =
+            VulkanStructures::imageCreateInfo(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
+                                              VK_IMAGE_USAGE_SAMPLED_BIT, VK_IMAGE_TYPE_2D,
+                                              VK_FORMAT_R8G8B8A8_UNORM,
+                                              imageExtent, 1, VK_SAMPLE_COUNT_1_BIT,
+                                              VK_IMAGE_LAYOUT_UNDEFINED, VK_SHARING_MODE_EXCLUSIVE,
+                                              1, false);
+
+    VkImageViewCreateInfo colorImageViewInfo =
+            VulkanStructures::imageViewCreateInfo(colorImageObject.image, VK_FORMAT_R8G8B8A8_UNORM,
+                                                  VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_VIEW_TYPE_2D);
+
+    if(!createImageWithImageView(logicalDevice, memoryProperties, colorImageInfo, colorImageViewInfo,
+                                 colorImageObject, colorImageMemory))
+    {
+        return false;
+    }
+
+    //Next create the depth image + image view.
+    VkImageCreateInfo depthImageInfo =
+        VulkanStructures::imageCreateInfo(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT |
+                                          VK_IMAGE_USAGE_SAMPLED_BIT, VK_IMAGE_TYPE_2D,
+                                          VK_FORMAT_D16_UNORM, imageExtent, 1, VK_SAMPLE_COUNT_1_BIT,
+                                          VK_IMAGE_LAYOUT_UNDEFINED, VK_SHARING_MODE_EXCLUSIVE,
+                                          1, false);
+
+    VkImageViewCreateInfo depthImageViewInfo =
+        VulkanStructures::imageViewCreateInfo(depthImageObject.image, VK_FORMAT_D16_UNORM,
+                                              VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_VIEW_TYPE_2D);
+
+    if(!createImageWithImageView(logicalDevice, memoryProperties, depthImageInfo, depthImageViewInfo,
+                                 depthImageObject, depthImageMemory))
+    {
+        return false;
+    }
+
+    //Create the render pass. I copied this part from VulkanCookbook because I
+    //didn't want to make any uneccessary mistakes.
+    std::vector<VkAttachmentDescription> attachmentDescriptions =
+    {
+      {
+        0,                                                // VkAttachmentDescriptionFlags     flags
+        VK_FORMAT_R8G8B8A8_UNORM,                         // VkFormat                         format
+        VK_SAMPLE_COUNT_1_BIT,                            // VkSampleCountFlagBits            samples
+        VK_ATTACHMENT_LOAD_OP_CLEAR,                      // VkAttachmentLoadOp               loadOp
+        VK_ATTACHMENT_STORE_OP_STORE,                     // VkAttachmentStoreOp              storeOp
+        VK_ATTACHMENT_LOAD_OP_DONT_CARE,                  // VkAttachmentLoadOp               stencilLoadOp
+        VK_ATTACHMENT_STORE_OP_DONT_CARE,                 // VkAttachmentStoreOp              stencilStoreOp
+        VK_IMAGE_LAYOUT_UNDEFINED,                        // VkImageLayout                    initialLayout
+        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,         // VkImageLayout                    finalLayout
+      },
+      {
+        0,                                                // VkAttachmentDescriptionFlags     flags
+        VK_FORMAT_D16_UNORM,                              // VkFormat                         format
+        VK_SAMPLE_COUNT_1_BIT,                            // VkSampleCountFlagBits            samples
+        VK_ATTACHMENT_LOAD_OP_CLEAR,                      // VkAttachmentLoadOp               loadOp
+        VK_ATTACHMENT_STORE_OP_STORE,                     // VkAttachmentStoreOp              storeOp
+        VK_ATTACHMENT_LOAD_OP_DONT_CARE,                  // VkAttachmentLoadOp               stencilLoadOp
+        VK_ATTACHMENT_STORE_OP_DONT_CARE,                 // VkAttachmentStoreOp              stencilStoreOp
+        VK_IMAGE_LAYOUT_UNDEFINED,                        // VkImageLayout                    initialLayout
+        VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL,  // VkImageLayout                    finalLayout
+      }
+    };
+
+    VkAttachmentReference depthStencilAttachment = {
+      1,                                                  // uint32_t                             attachment
+      VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,   // VkImageLayout                        layout
+    };
+
+    std::vector<SubpassParameters> subpassParameters = {
+      {
+        VK_PIPELINE_BIND_POINT_GRAPHICS,                  // VkPipelineBindPoint                  PipelineType
+        {},                                               // std::vector<VkAttachmentReference>   InputAttachments
+        {                                                 // std::vector<VkAttachmentReference>   ColorAttachments
+          {
+            0,                                              // uint32_t                             attachment
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL        // VkImageLayout                        layout
+          }
+        },
+        {},                                               // std::vector<VkAttachmentReference>   ResolveAttachments
+        &depthStencilAttachment,                        // const VkAttachmentReference        * DepthStencilAttachment
+        {}                                                // std::vector<uint32_t>                PreserveAttachments
+      }
+    };
+
+    std::vector<VkSubpassDependency> subpassDependencies = {
+      {
+        0,                                                // uint32_t                 srcSubpass
+        VK_SUBPASS_EXTERNAL,                              // uint32_t                 dstSubpass
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,    // VkPipelineStageFlags     srcStageMask
+        VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,            // VkPipelineStageFlags     dstStageMask
+        VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,             // VkAccessFlags            srcAccessMask
+        VK_ACCESS_SHADER_READ_BIT,                        // VkAccessFlags            dstAccessMask
+        0                                                 // VkDependencyFlags        dependencyFlags
+      }
+    };
+
+    //Create the render pass.
+    if(!createRenderPass(logicalDevice, attachmentDescriptions, subpassParameters,
+                         subpassDependencies, renderPass))
+    {
+        return false;
+    }
+
+    //Lastly create the framebuffer.
+    std::vector<VkImageView> attachments = {colorImageObject.imageView, depthImageObject.imageView};
+    if(!createFramebuffer(logicalDevice, renderPass, attachments, width, height, 1, framebuffer))
+        return false;
+
     return true;
 }
