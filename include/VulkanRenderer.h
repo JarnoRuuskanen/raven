@@ -66,13 +66,25 @@ class VulkanRenderer
                                                        VkRenderPass &renderPass,
                                                        VkFramebuffer &framebuffer);
 
-        //Begins a render pass.
+        //Begins a render pass recording.
         void beginRenderPass(VkCommandBuffer cmdBuffer,
                              VkRenderPass renderPass,
                              VkFramebuffer framebuffer,
                              VkRect2D renderArea,
                              std::vector<VkClearValue> const &clearValues,
                              VkSubpassContents subpassContents);
+
+        //Starts the next subpass.
+        void startNextSubpass(VkCommandBuffer cmdBuffer, VkSubpassContents subpassContents);
+
+        //Ends the render pass recording.
+        void endRenderPass(VkCommandBuffer cmdBuffer);
+
+        //Destroys a framebuffer.
+        void destroyFramebuffer(VkDevice logicalDevice, VkFramebuffer &framebuffer);
+
+        //Destroys a render pass.
+        void destroyRenderPass(VkDevice logicalDevice, VkRenderPass &renderPass);
 
     private:
         std::vector<VkRenderPass> renderPasses;

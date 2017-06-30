@@ -387,3 +387,54 @@ void VulkanRenderer::beginRenderPass(VkCommandBuffer cmdBuffer,
 
     vkCmdBeginRenderPass(cmdBuffer, &beginInfo, subpassContents);
 }
+
+/**
+ * @brief Switches from the current subpass to the next one. Appropriate layout transitions
+ *        are performed and memory and execution depedencies are introduced similar to
+ *        those in memory barriers.
+ * @param cmdBuffer
+ * @param subpassContents
+ */
+void VulkanRenderer::startNextSubpass(VkCommandBuffer cmdBuffer, VkSubpassContents subpassContents)
+{
+    vkCmdNextSubpass(cmdBuffer, subpassContents);
+}
+
+/**
+ * @brief Ends the render pass recording.
+ * @param cmdBuffer
+ */
+void VulkanRenderer::endRenderPass(VkCommandBuffer cmdBuffer)
+{
+    vkCmdEndRenderPass(cmdBuffer);
+}
+
+/**
+ * @brief Destroys a framebuffer. Make sure that there are no more commands executing that
+ *        reference this framebuffer!
+ * @param logicalDevice
+ * @param framebuffer
+ */
+void VulkanRenderer::destroyFramebuffer(VkDevice logicalDevice, VkFramebuffer &framebuffer)
+{
+    if(framebuffer != VK_NULL_HANDLE)
+    {
+        vkDestroyFramebuffer(logicalDevice, framebuffer, nullptr);
+        framebuffer = VK_NULL_HANDLE;
+    }
+}
+
+/**
+ * @brief Destroys a render pass. Make sure the render pass is not being used anymore before
+ *        destroying it!
+ * @param logicalDevice
+ * @param renderPass
+ */
+void VulkanRenderer::destroyRenderPass(VkDevice logicalDevice, VkRenderPass &renderPass)
+{
+    if(renderPass != VK_NULL_HANDLE)
+    {
+        vkDestroyRenderPass(logicalDevice, renderPass, nullptr);
+        renderPass = VK_NULL_HANDLE;
+    }
+}
