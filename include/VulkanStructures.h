@@ -477,4 +477,14 @@ namespace VulkanStructures
         createInfo.primitiveRestartEnable = restartEnabled;
         return createInfo;
     }
+
+    inline VkPipelineTessellationStateCreateInfo pipelineTessellationStateCreateInfo(uint32_t controlPoints)
+    {
+        VkPipelineTessellationStateCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
+        createInfo.pNext = nullptr;
+        createInfo.flags = 0;
+        createInfo.patchControlPoints = controlPoints;
+        return createInfo;
+    }
 }

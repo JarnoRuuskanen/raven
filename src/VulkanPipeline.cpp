@@ -35,9 +35,17 @@ namespace Raven
         VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo =
                 VulkanStructures::pipelineVertexInputStateCreateInfo(bindings, attributes);
 
-        //Describe pipeline input assembly state.
+        //Describe pipeline input assembly state (what sort of polygons are we building).
         VkPipelineInputAssemblyStateCreateInfo inputAssemblyStateCreateInfo =
                 VulkanStructures::pipelineInputAssemblyStateCreateInfo(topology, restartEnabled);
+
+        //If tessellation is enabled, define the number of vertices(control points) in patches.
+        bool tessellationEnabled = false;
+        if(tessellationEnabled)
+        {
+            VkPipelineTessellationStateCreateInfo tessellationInfo =
+                    VulkanStructures::pipelineTessellationStateCreateInfo(8);
+        }
 
         return true;
     }
