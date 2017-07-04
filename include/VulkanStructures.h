@@ -432,4 +432,21 @@ namespace VulkanStructures
         createInfo.pCode = reinterpret_cast<uint32_t const*>(sourceCode.data());
         return createInfo;
     }
+
+    inline VkPipelineShaderStageCreateInfo
+        pipelineShaderStageCreateInfo(VkShaderStageFlagBits stage,
+                                      VkShaderModule module,
+                                      const char *entryPointName,
+                                      const VkSpecializationInfo *specializationInfo)
+    {
+        VkPipelineShaderStageCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        createInfo.pNext = nullptr;
+        createInfo.flags = 0;
+        createInfo.stage = stage;
+        createInfo.module = module;
+        createInfo.pName = entryPointName;
+        createInfo.pSpecializationInfo = specializationInfo;
+        return createInfo;
+    }
 }
