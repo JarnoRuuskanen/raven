@@ -29,5 +29,7 @@
 #include "VulkanWindow.cpp"
 #include "VulkanRenderer.h"
 #include "VulkanRenderer.cpp"
+#include "VulkanPipeline.h"
+#include "VulkanPipeline.cpp"
 #include "RavenEngine.h"
 #include "RavenEngine.cpp"

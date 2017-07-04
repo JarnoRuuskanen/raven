@@ -84,36 +84,21 @@ bool GraphicsObject::addTexture(const VkDevice logicalDevice,
     extent.height = static_cast<uint32_t>(imageHeight);
     extent.depth = 1;
 
-    //Next create an image of type VK_IMAGE_TYPE_2D and allocate memory for it.
-    VkImageCreateInfo imageInfo =
-            VulkanStructures::imageCreateInfo(usage, VK_IMAGE_TYPE_2D,
-                                              format, extent,
-                                              layerCount,samples, VK_IMAGE_LAYOUT_UNDEFINED,
-                                              VK_SHARING_MODE_EXCLUSIVE, mipLevelCount, false);
-
     //Make sure that the image is possible to work as the destination of data.
-    if(!(imageInfo.usage & VK_IMAGE_USAGE_TRANSFER_DST_BIT))
+    if(!(usage & VK_IMAGE_USAGE_TRANSFER_DST_BIT))
     {
-        imageInfo.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+        usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
     }
 
-    //Create the image.
-    if(!createImage(logicalDevice, imageInfo, textureObject.image))
-        return false;
-
-    //Allocate memory for the image. Using the old memReq- and memoryTypeIndex variables.
-    vkGetImageMemoryRequirements(logicalDevice, textureObject.image, &memReq);
-
-    if(!allocateMemory(logicalDevice, memoryProperties, memReq,
-                       VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureObject.imageMemory))
+    //Create the image and the image view.
+    if(!createImageWithImageView(logicalDevice, memoryProperties, usage,
+                                 VK_IMAGE_TYPE_2D, VK_IMAGE_VIEW_TYPE_2D, format, extent, layerCount,
+                                 samples, VK_IMAGE_LAYOUT_UNDEFINED, VK_SHARING_MODE_EXCLUSIVE,
+                                 mipLevelCount, false, VK_IMAGE_ASPECT_COLOR_BIT, textureObject,
+                                 textureObject.imageMemory))
     {
         return false;
     }
-
-    //Bind the image to use.
-    if(!textureObject.bindMemoryObject(logicalDevice, textureObject.imageMemory))
-        return false;
-
-    //Create an image view for the image.
+    return true;
 }
 

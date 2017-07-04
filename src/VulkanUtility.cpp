@@ -1389,4 +1389,28 @@ namespace Raven
 
         return true;
     }
+
+    /**
+     * @brief Creates a new shader module.
+     * @param logicalDevice
+     * @param sourceCode
+     * @param module
+     * @return False if the module could not be created.
+     */
+    bool createShaderModule(const VkDevice logicalDevice,
+                            std::vector<char> sourceCode,
+                            VkShaderModule &module) noexcept
+    {
+        VkShaderModuleCreateInfo createInfo =
+                VulkanStructures::shaderModuleCreateInfo(sourceCode);
+
+        VkResult result = vkCreateShaderModule(logicalDevice, &createInfo, nullptr, &module);
+
+        if(result != VK_SUCCESS)
+        {
+            std::cerr << "Failed to create a shader module!" << std::endl;
+            return false;
+        }
+        return true;
+    }
 }

@@ -421,4 +421,15 @@ namespace VulkanStructures
         createInfo.layers = layers;
         return createInfo;
     }
+
+    inline VkShaderModuleCreateInfo shaderModuleCreateInfo (std::vector<char> sourceCode)
+    {
+        VkShaderModuleCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        createInfo.pNext = nullptr;
+        createInfo.flags = 0;
+        createInfo.codeSize = sourceCode.size();
+        createInfo.pCode = reinterpret_cast<uint32_t const*>(sourceCode.data());
+        return createInfo;
+    }
 }

@@ -154,7 +154,8 @@ namespace Raven
                               VkDeviceMemory &stagingMemory);
 
     //Creates a buffer view.
-    bool createBufferView(const VkDevice logicalDevice, const VkBufferViewCreateInfo createInfo,
+    bool createBufferView(const VkDevice logicalDevice,
+                          const VkBufferViewCreateInfo createInfo,
                           VkBufferView &bufferView);
 
     //Destroys a buffer view.
@@ -269,4 +270,9 @@ namespace Raven
                                   VkImageLayout initialLayout, VkSharingMode sharingMode,
                                   uint32_t mipLevels, VkBool32 cubemap, VkImageAspectFlags aspect,
                                   VulkanImage &imageObject, VkDeviceMemory &imageMemoryObject);
+
+    //Creates a new shader module.
+    bool createShaderModule(const VkDevice logicalDevice,
+                            std::vector<char> sourceCode,
+                            VkShaderModule &module) noexcept;
 }
