@@ -14,12 +14,41 @@ namespace Raven
     }
 
     /**
+     * @brief Builds the pipeline.
+     * @param stages
+     * @param bindings
+     * @param attributes
+     * @param topology
+     * @param restartEnabled
+     */
+    bool VulkanPipeline::buildPipeline(const std::vector<ShaderStageParameters> &stages,
+                                       const std::vector<VkVertexInputBindingDescription> &bindings,
+                                       const std::vector<VkVertexInputAttributeDescription> &attributes,
+                                       const VkPrimitiveTopology &topology,
+                                       const VkBool32 restartEnabled) noexcept
+    {
+        //First describe the shader stages.
+        std::vector<VkPipelineShaderStageCreateInfo> stageCreateInfos;
+        describePipelineShaderStages(stages, stageCreateInfos);
+
+        //Describe pipeline vertex input state.
+        VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo =
+                VulkanStructures::pipelineVertexInputStateCreateInfo(bindings, attributes);
+
+        //Describe pipeline input assembly state.
+        VkPipelineInputAssemblyStateCreateInfo inputAssemblyStateCreateInfo =
+                VulkanStructures::pipelineInputAssemblyStateCreateInfo(topology, restartEnabled);
+
+        return true;
+    }
+
+    /**
      * @brief Creates shader stage create infos from the stages-parameter.
      * @param stages
      * @param createInfos
      */
     void VulkanPipeline::
-        describeShaderStages(const std::vector<ShaderStageParameters> &stages,
+        describePipelineShaderStages(const std::vector<ShaderStageParameters> &stages,
                              std::vector<VkPipelineShaderStageCreateInfo> &createInfos) noexcept
     {
         createInfos.clear();

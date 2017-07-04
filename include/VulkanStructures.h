@@ -449,4 +449,32 @@ namespace VulkanStructures
         createInfo.pSpecializationInfo = specializationInfo;
         return createInfo;
     }
+
+    inline VkPipelineVertexInputStateCreateInfo
+        pipelineVertexInputStateCreateInfo (const std::vector<VkVertexInputBindingDescription> bindings,
+                                            const std::vector<VkVertexInputAttributeDescription> attributes)
+    {
+        VkPipelineVertexInputStateCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+        createInfo.pNext = nullptr;
+        createInfo.flags = 0;
+        createInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(bindings.size());
+        createInfo.pVertexBindingDescriptions = bindings.data();
+        createInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributes.size());
+        createInfo.pVertexAttributeDescriptions = attributes.data();
+        return createInfo;
+    }
+
+    inline VkPipelineInputAssemblyStateCreateInfo
+        pipelineInputAssemblyStateCreateInfo(const VkPrimitiveTopology &topology,
+                                             const VkBool32 restartEnabled)
+    {
+        VkPipelineInputAssemblyStateCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+        createInfo.pNext = nullptr;
+        createInfo.flags = 0;
+        createInfo.topology = topology;
+        createInfo.primitiveRestartEnable = restartEnabled;
+        return createInfo;
+    }
 }

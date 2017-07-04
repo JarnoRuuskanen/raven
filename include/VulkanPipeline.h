@@ -23,8 +23,16 @@ namespace Raven
         public:
             VulkanPipeline();
             ~VulkanPipeline();
-            void describeShaderStages(std::vector<ShaderStageParameters> const &stages,
-                                      std::vector<VkPipelineShaderStageCreateInfo> &createInfos) noexcept;
+            //Builds the pipeline.
+            bool buildPipeline(const std::vector<ShaderStageParameters> &stages,
+                               const std::vector<VkVertexInputBindingDescription> &bindings,
+                               const std::vector<VkVertexInputAttributeDescription> &attributes,
+                               const VkPrimitiveTopology &topology,
+                               const VkBool32 restartEnabled) noexcept;
         private:
+            //Describes shader stages.
+            void describePipelineShaderStages(std::vector<ShaderStageParameters> const &stages,
+                                              std::vector<VkPipelineShaderStageCreateInfo> &stageInfos) noexcept;
+
     };
 }
