@@ -301,6 +301,13 @@ TEST_F(PhysicalDeviceTest, createCommandPoolTest)
 }
 
 /**PHYSICAL DEVICE TESTS END**/
+TEST(FileIOTests, shaderTest)
+{
+    std::vector<char> testShader =
+            FileIO::readShaderFile("../../Resources/Shaders/shader-vert.spv");
+
+    EXPECT_FALSE(testShader.empty());
+}
 
 int main(int argc, char *argv[])
 {

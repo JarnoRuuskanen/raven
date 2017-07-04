@@ -9,6 +9,8 @@
 #include "Settings.h"
 #include "ListOfVulkanFunctions.inl"
 #include "Headers.h"
+#include "FileIO.h"
+#include "FileIO.cpp"
 #include "CommandBufferManager.h"
 #include "CommandBufferManager.cpp"
 #include "VulkanInitializer.h"
