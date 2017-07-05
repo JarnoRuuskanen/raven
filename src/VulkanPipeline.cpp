@@ -54,6 +54,14 @@ namespace Raven
                 VulkanStructures::pipelineViewportStateCreateInfo(viewportInfo.viewports,
                                                                   viewportInfo.scissors);
 
+        //Rasterization.
+        VkPipelineRasterizationStateCreateInfo rasterizationInfo =
+                VulkanStructures::pipelineRasterizationStateCreateInfo(VK_FALSE, VK_FALSE,
+                                                                       VK_POLYGON_MODE_FILL,
+                                                                       VK_CULL_MODE_FRONT_BIT,
+                                                                       VK_FRONT_FACE_COUNTER_CLOCKWISE,
+                                                                       VK_FALSE,0, 0, 0, 1.0);
+
         return true;
     }
 

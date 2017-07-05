@@ -503,4 +503,34 @@ namespace VulkanStructures
         createInfo.pScissors = scissors.data();
         return createInfo;
     }
+
+    inline VkPipelineRasterizationStateCreateInfo
+        pipelineRasterizationStateCreateInfo(VkBool32 depthClampEnable,
+                                             VkBool32 rasterizerDiscardEnable,
+                                             VkPolygonMode polygonMode,
+                                             VkCullModeFlags cullingMode,
+                                             VkFrontFace frontFace,
+                                             VkBool32 depthBiasEnable,
+                                             float depthBiasConstantFactor,
+                                             float depthBiasClamp,
+                                             float depthBiasSlopeFactor,
+                                             float lineWidth)
+    {
+        VkPipelineRasterizationStateCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+        createInfo.pNext = nullptr;
+        createInfo.flags = 0;
+        //Should fragments outside of the min/max range be clamped withing this range?
+        createInfo.depthClampEnable = depthClampEnable;
+        createInfo.rasterizerDiscardEnable = rasterizerDiscardEnable;
+        createInfo.polygonMode = polygonMode;
+        createInfo.cullMode = cullingMode;
+        createInfo.frontFace = frontFace;
+        createInfo.depthBiasEnable = depthBiasEnable;
+        createInfo.depthBiasConstantFactor = depthBiasConstantFactor;
+        createInfo.depthBiasClamp = depthBiasClamp;
+        createInfo.depthBiasSlopeFactor = depthBiasSlopeFactor;
+        createInfo.lineWidth = lineWidth;
+        return createInfo;
+    }
 }
