@@ -17,6 +17,15 @@ namespace Raven
         VkSpecializationInfo const *specializationInfo;
     };
 
+    //A struct for holding viewport information.
+    struct ViewportInfo
+    {
+        //Parameters for a set of viewports.
+        std::vector<VkViewport> viewports;
+        //Scissor tests corresponding to each viewport.
+        std::vector<VkRect2D> scissors;
+    };
+
     //A class for both compute and graphics pipelines in Vulkan.
     class VulkanPipeline
     {
@@ -28,7 +37,8 @@ namespace Raven
                                const std::vector<VkVertexInputBindingDescription> &bindings,
                                const std::vector<VkVertexInputAttributeDescription> &attributes,
                                const VkPrimitiveTopology &topology,
-                               const VkBool32 restartEnabled) noexcept;
+                               const VkBool32 restartEnabled,
+                               ViewportInfo viewportInfo) noexcept;
         private:
             //Describes shader stages.
             void describePipelineShaderStages(std::vector<ShaderStageParameters> const &stages,

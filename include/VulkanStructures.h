@@ -478,13 +478,29 @@ namespace VulkanStructures
         return createInfo;
     }
 
-    inline VkPipelineTessellationStateCreateInfo pipelineTessellationStateCreateInfo(uint32_t controlPoints)
+    inline VkPipelineTessellationStateCreateInfo
+        pipelineTessellationStateCreateInfo(uint32_t controlPoints)
     {
         VkPipelineTessellationStateCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
         createInfo.pNext = nullptr;
         createInfo.flags = 0;
         createInfo.patchControlPoints = controlPoints;
+        return createInfo;
+    }
+
+    inline VkPipelineViewportStateCreateInfo
+        pipelineViewportStateCreateInfo(const std::vector<VkViewport> viewports,
+                                        const std::vector<VkRect2D> scissors)
+    {
+        VkPipelineViewportStateCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+        createInfo.pNext = nullptr;
+        createInfo.flags = 0;
+        createInfo.viewportCount = static_cast<uint32_t>(viewports.size());
+        createInfo.pViewports = viewports.data();
+        createInfo.scissorCount = static_cast<uint32_t>(scissors.size());
+        createInfo.pScissors = scissors.data();
         return createInfo;
     }
 }

@@ -20,12 +20,14 @@ namespace Raven
      * @param attributes
      * @param topology
      * @param restartEnabled
+     * @param viewportInfo
      */
     bool VulkanPipeline::buildPipeline(const std::vector<ShaderStageParameters> &stages,
                                        const std::vector<VkVertexInputBindingDescription> &bindings,
                                        const std::vector<VkVertexInputAttributeDescription> &attributes,
                                        const VkPrimitiveTopology &topology,
-                                       const VkBool32 restartEnabled) noexcept
+                                       const VkBool32 restartEnabled,
+                                       ViewportInfo viewportInfo) noexcept
     {
         //First describe the shader stages.
         std::vector<VkPipelineShaderStageCreateInfo> stageCreateInfos;
@@ -46,6 +48,11 @@ namespace Raven
             VkPipelineTessellationStateCreateInfo tessellationInfo =
                     VulkanStructures::pipelineTessellationStateCreateInfo(8);
         }
+
+        //Specify viewports and scissor tests.
+        VkPipelineViewportStateCreateInfo viewportStateInfo =
+                VulkanStructures::pipelineViewportStateCreateInfo(viewportInfo.viewports,
+                                                                  viewportInfo.scissors);
 
         return true;
     }
