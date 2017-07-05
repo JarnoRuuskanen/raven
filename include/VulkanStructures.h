@@ -533,4 +533,25 @@ namespace VulkanStructures
         createInfo.lineWidth = lineWidth;
         return createInfo;
     }
+
+    inline VkPipelineMultisampleStateCreateInfo
+        pipelineMultisampleStateCreateInfo(VkSampleCountFlagBits rasterizationSamples,
+                                           VkBool32 sampleShadingEnable,
+                                           float minSampleShading,
+                                           const VkSampleMask *sampleMask,
+                                           VkBool32 alphaToCoverageEnable,
+                                           VkBool32 alphaToOneEnable)
+    {
+        VkPipelineMultisampleStateCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+        createInfo.pNext = nullptr;
+        createInfo.flags = 0;
+        createInfo.rasterizationSamples = rasterizationSamples;
+        createInfo.sampleShadingEnable = sampleShadingEnable;
+        createInfo.minSampleShading = minSampleShading;
+        createInfo.pSampleMask = sampleMask;
+        createInfo.alphaToCoverageEnable = alphaToCoverageEnable;
+        createInfo.alphaToOneEnable = alphaToOneEnable;
+        return createInfo;
+    }
 }

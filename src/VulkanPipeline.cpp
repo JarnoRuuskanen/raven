@@ -27,7 +27,9 @@ namespace Raven
                                        const std::vector<VkVertexInputAttributeDescription> &attributes,
                                        const VkPrimitiveTopology &topology,
                                        const VkBool32 restartEnabled,
-                                       ViewportInfo viewportInfo) noexcept
+                                       ViewportInfo viewportInfo,
+                                       RasterizationInfo rasterizationInfo,
+                                       MultisamplingInfo multisamplingInfo) noexcept
     {
         //First describe the shader stages.
         std::vector<VkPipelineShaderStageCreateInfo> stageCreateInfos;
@@ -55,12 +57,26 @@ namespace Raven
                                                                   viewportInfo.scissors);
 
         //Rasterization.
-        VkPipelineRasterizationStateCreateInfo rasterizationInfo =
-                VulkanStructures::pipelineRasterizationStateCreateInfo(VK_FALSE, VK_FALSE,
-                                                                       VK_POLYGON_MODE_FILL,
-                                                                       VK_CULL_MODE_FRONT_BIT,
-                                                                       VK_FRONT_FACE_COUNTER_CLOCKWISE,
-                                                                       VK_FALSE,0, 0, 0, 1.0);
+        VkPipelineRasterizationStateCreateInfo rasterizationStateInfo =
+                VulkanStructures::pipelineRasterizationStateCreateInfo(rasterizationInfo.depthClampEnable,
+                                                                       rasterizationInfo.rasterizerDiscardEnable,
+                                                                       rasterizationInfo.polygonMode,
+                                                                       rasterizationInfo.cullingMode,
+                                                                       rasterizationInfo.frontFace,
+                                                                       rasterizationInfo.depthBiasEnable,
+                                                                       rasterizationInfo.depthBiasConstantFactor,
+                                                                       rasterizationInfo.depthBiasClamp,
+                                                                       rasterizationInfo.depthBiasSlopeFactor,
+                                                                       rasterizationInfo.lineWidth);
+
+        //Define multisampling (anti-aliasing).
+        VkPipelineMultisampleStateCreateInfo multisamplingStateInfo =
+                VulkanStructures::pipelineMultisampleStateCreateInfo(multisamplingInfo.rasterizationSamples,
+                                                                     multisamplingInfo.sampleShadingEnable,
+                                                                     multisamplingInfo.minSampleShading,
+                                                                     multisamplingInfo.sampleMask,
+                                                                     multisamplingInfo.alphaToCoverageEnable,
+                                                                     multisamplingInfo.alphaToOneEnable);
 
         return true;
     }

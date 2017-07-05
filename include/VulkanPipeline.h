@@ -26,6 +26,31 @@ namespace Raven
         std::vector<VkRect2D> scissors;
     };
 
+    //A struct for holding rasterization information.
+    struct RasterizationInfo
+    {
+        VkBool32 depthClampEnable;
+        VkBool32 rasterizerDiscardEnable;
+        VkPolygonMode polygonMode;
+        VkCullModeFlags cullingMode;
+        VkFrontFace frontFace;
+        VkBool32 depthBiasEnable;
+        float depthBiasConstantFactor;
+        float depthBiasClamp;
+        float depthBiasSlopeFactor;
+        float lineWidth;
+    };
+
+    struct MultisamplingInfo
+    {
+        VkSampleCountFlagBits rasterizationSamples;
+        VkBool32 sampleShadingEnable;
+        float minSampleShading;
+        const VkSampleMask *sampleMask;
+        VkBool32 alphaToCoverageEnable;
+        VkBool32 alphaToOneEnable;
+    };
+
     //A class for both compute and graphics pipelines in Vulkan.
     class VulkanPipeline
     {
@@ -38,7 +63,9 @@ namespace Raven
                                const std::vector<VkVertexInputAttributeDescription> &attributes,
                                const VkPrimitiveTopology &topology,
                                const VkBool32 restartEnabled,
-                               ViewportInfo viewportInfo) noexcept;
+                               ViewportInfo viewportInfo,
+                               RasterizationInfo rasterizerInfo,
+                               MultisamplingInfo multisamplingInfo) noexcept;
         private:
             //Describes shader stages.
             void describePipelineShaderStages(std::vector<ShaderStageParameters> const &stages,
