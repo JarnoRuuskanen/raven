@@ -29,7 +29,8 @@ namespace Raven
                                        const VkBool32 restartEnabled,
                                        ViewportInfo viewportInfo,
                                        RasterizationInfo rasterizationInfo,
-                                       MultisamplingInfo multisamplingInfo) noexcept
+                                       MultisamplingInfo multisamplingInfo,
+                                       DepthStencilInfo depthStencilInfo) noexcept
     {
         //First describe the shader stages.
         std::vector<VkPipelineShaderStageCreateInfo> stageCreateInfos;
@@ -47,7 +48,7 @@ namespace Raven
         bool tessellationEnabled = false;
         if(tessellationEnabled)
         {
-            VkPipelineTessellationStateCreateInfo tessellationInfo =
+            VkPipelineTessellationStateCreateInfo tessellationStateInfo =
                     VulkanStructures::pipelineTessellationStateCreateInfo(8);
         }
 
@@ -77,6 +78,18 @@ namespace Raven
                                                                      multisamplingInfo.sampleMask,
                                                                      multisamplingInfo.alphaToCoverageEnable,
                                                                      multisamplingInfo.alphaToOneEnable);
+
+        //Depth stencil definition.
+        VkPipelineDepthStencilStateCreateInfo depthStencilStateInfo =
+                VulkanStructures::pipelineDepthStencilStateCreateInfo(depthStencilInfo.depthTestEnable,
+                                                                      depthStencilInfo.depthWriteEnable,
+                                                                      depthStencilInfo.depthCompareOp,
+                                                                      depthStencilInfo.depthBoundsTestEnable,
+                                                                      depthStencilInfo.stencilTestEnable,
+                                                                      depthStencilInfo.front,
+                                                                      depthStencilInfo.back,
+                                                                      depthStencilInfo.minDepthBounds,
+                                                                      depthStencilInfo.maxDepthBounds);
 
         return true;
     }

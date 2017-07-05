@@ -554,4 +554,31 @@ namespace VulkanStructures
         createInfo.alphaToOneEnable = alphaToOneEnable;
         return createInfo;
     }
+
+    inline VkPipelineDepthStencilStateCreateInfo
+        pipelineDepthStencilStateCreateInfo(VkBool32 depthTestEnable,
+                                            VkBool32 depthWriteEnable,
+                                            VkCompareOp depthCompareOp,
+                                            VkBool32 depthBoundsTestEnable,
+                                            VkBool32 stencilTestEnable,
+                                            VkStencilOpState front,
+                                            VkStencilOpState back,
+                                            float minDepthBounds,
+                                            float maxDepthBounds)
+    {
+        VkPipelineDepthStencilStateCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+        createInfo.pNext = nullptr;
+        createInfo.flags = 0;
+        createInfo.depthTestEnable = depthTestEnable;
+        createInfo.depthWriteEnable = depthWriteEnable;
+        createInfo.depthCompareOp = depthCompareOp;
+        createInfo.depthBoundsTestEnable = depthBoundsTestEnable;
+        createInfo.stencilTestEnable = stencilTestEnable;
+        createInfo.front = front;
+        createInfo.back = back;
+        createInfo.minDepthBounds = minDepthBounds;
+        createInfo.maxDepthBounds = maxDepthBounds;
+        return createInfo;
+    }
 }

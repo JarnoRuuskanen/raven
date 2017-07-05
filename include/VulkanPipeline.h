@@ -51,6 +51,19 @@ namespace Raven
         VkBool32 alphaToOneEnable;
     };
 
+    struct DepthStencilInfo
+    {
+        VkBool32 depthTestEnable;
+        VkBool32 depthWriteEnable;
+        VkCompareOp depthCompareOp;
+        VkBool32 depthBoundsTestEnable;
+        VkBool32 stencilTestEnable;
+        VkStencilOpState front;
+        VkStencilOpState back;
+        float minDepthBounds;
+        float maxDepthBounds;
+    };
+
     //A class for both compute and graphics pipelines in Vulkan.
     class VulkanPipeline
     {
@@ -65,7 +78,8 @@ namespace Raven
                                const VkBool32 restartEnabled,
                                ViewportInfo viewportInfo,
                                RasterizationInfo rasterizerInfo,
-                               MultisamplingInfo multisamplingInfo) noexcept;
+                               MultisamplingInfo multisamplingInfo,
+                               DepthStencilInfo depthStencilInfo) noexcept;
         private:
             //Describes shader stages.
             void describePipelineShaderStages(std::vector<ShaderStageParameters> const &stages,
