@@ -281,4 +281,9 @@ namespace Raven
                               std::vector<VkDescriptorSetLayout> descriptorSetLayouts,
                               std::vector<VkPushConstantRange> pushConstantRanges,
                               VkPipelineLayout &layout) noexcept;
+
+    //Creates a pipeline cache.
+    bool createPipelineCache(const VkDevice logicalDevice,
+                             std::vector<unsigned char> cacheData,
+                             VkPipelineCache &cache);
 }

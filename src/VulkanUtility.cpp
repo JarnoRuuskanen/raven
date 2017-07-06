@@ -1439,4 +1439,28 @@ namespace Raven
         }
         return true;
     }
+
+    /**
+     * @brief Creates a pipeline cache.
+     * @param logicalDevice
+     * @param cacheData
+     * @param cache
+     * @return
+     */
+    bool createPipelineCache(const VkDevice logicalDevice,
+                             std::vector<unsigned char> cacheData,
+                             VkPipelineCache &cache)
+    {
+        VkPipelineCacheCreateInfo createInfo =
+                VulkanStructures::pipelineCacheCreateInfo(cacheData);
+
+        VkResult result = vkCreatePipelineCache(logicalDevice, &createInfo, nullptr, &cache);
+
+        if(result != VK_SUCCESS)
+        {
+            std::cerr << "Failed to create a pipeline cache!" << std::endl;
+            return false;
+        }
+        return true;
+    }
 }
