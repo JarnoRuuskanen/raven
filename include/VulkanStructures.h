@@ -629,4 +629,45 @@ namespace VulkanStructures
         createInfo.pPushConstantRanges = pushConstantRanges.data();
         return createInfo;
     }
+
+    inline VkGraphicsPipelineCreateInfo
+        graphicsPipelineCreateInfo(const VkFlags additionalOptions,
+                                   const std::vector<VkPipelineShaderStageCreateInfo> shaderStageInfos,
+                                   const VkPipelineVertexInputStateCreateInfo vertexInputStateInfo,
+                                   const VkPipelineInputAssemblyStateCreateInfo inputAssemblyStateInfo,
+                                   const VkPipelineTessellationStateCreateInfo tessellationStateInfo,
+                                   const VkPipelineViewportStateCreateInfo viewportStateInfo,
+                                   const VkPipelineRasterizationStateCreateInfo rasterizationStateInfo,
+                                   const VkPipelineMultisampleStateCreateInfo multisampleStateInfo,
+                                   const VkPipelineDepthStencilStateCreateInfo depthStencilStateInfo,
+                                   const VkPipelineColorBlendStateCreateInfo colorBlendStateInfo,
+                                   const VkPipelineDynamicStateCreateInfo dynamicStateInfo,
+                                   const VkPipelineLayout layout,
+                                   const VkRenderPass renderPass,
+                                   const uint32_t subpass,
+                                   const VkPipeline parentPipeline,
+                                   const int basePipelineIndex)
+    {
+        VkGraphicsPipelineCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+        createInfo.pNext = nullptr;
+        createInfo.flags = additionalOptions;
+        createInfo.stageCount = static_cast<uint32_t>(shaderStageInfos.size());
+        createInfo.pStages = shaderStageInfos.data();
+        createInfo.pVertexInputState = &vertexInputStateInfo;
+        createInfo.pInputAssemblyState = &inputAssemblyStateInfo;
+        createInfo.pTessellationState = &tessellationStateInfo;
+        createInfo.pViewportState = &viewportStateInfo;
+        createInfo.pRasterizationState = &rasterizationStateInfo;
+        createInfo.pMultisampleState = &multisampleStateInfo;
+        createInfo.pDepthStencilState = &depthStencilStateInfo;
+        createInfo.pColorBlendState = &colorBlendStateInfo;
+        createInfo.pDynamicState = &dynamicStateInfo;
+        createInfo.layout = layout;
+        createInfo.renderPass = renderPass;
+        createInfo.subpass = subpass;
+        createInfo.basePipelineHandle = parentPipeline;
+        createInfo.basePipelineIndex = basePipelineIndex;
+        return createInfo;
+    }
 }

@@ -22,15 +22,16 @@ namespace Raven
      * @param restartEnabled
      * @param viewportInfo
      */
-    bool VulkanPipeline::buildPipeline(const std::vector<ShaderStageParameters> &stages,
-                                       const std::vector<VkVertexInputBindingDescription> &bindings,
-                                       const std::vector<VkVertexInputAttributeDescription> &attributes,
-                                       const VkPrimitiveTopology &topology,
-                                       const VkBool32 restartEnabled,
-                                       ViewportInfo viewportInfo,
-                                       RasterizationInfo rasterizationInfo,
-                                       MultisamplingInfo multisamplingInfo,
-                                       DepthStencilInfo depthStencilInfo) noexcept
+    bool VulkanPipeline::
+        buildGraphicsPipeline(const std::vector<ShaderStageParameters> &stages,
+                              const std::vector<VkVertexInputBindingDescription> &bindings,
+                              const std::vector<VkVertexInputAttributeDescription> &attributes,
+                              const VkPrimitiveTopology &topology,
+                              const VkBool32 restartEnabled,
+                              ViewportInfo viewportInfo,
+                              RasterizationInfo rasterizationInfo,
+                              MultisamplingInfo multisamplingInfo,
+                              DepthStencilInfo depthStencilInfo) noexcept
     {
         //First describe the shader stages.
         std::vector<VkPipelineShaderStageCreateInfo> stageCreateInfos;
@@ -120,8 +121,11 @@ namespace Raven
                 VK_DYNAMIC_STATE_VIEWPORT,
                 VK_DYNAMIC_STATE_SCISSOR
         };
+
         VkPipelineDynamicStateCreateInfo dynamicStateInfo =
                 VulkanStructures::pipelineDynamicStateCreateInfo(dynamicStates);
+
+        //Create the pipeline layout and specify the graphics pipeline creation parameters.
 
         return true;
     }

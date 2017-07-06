@@ -71,15 +71,15 @@ namespace Raven
             VulkanPipeline();
             ~VulkanPipeline();
             //Builds the pipeline.
-            bool buildPipeline(const std::vector<ShaderStageParameters> &stages,
-                               const std::vector<VkVertexInputBindingDescription> &bindings,
-                               const std::vector<VkVertexInputAttributeDescription> &attributes,
-                               const VkPrimitiveTopology &topology,
-                               const VkBool32 restartEnabled,
-                               ViewportInfo viewportInfo,
-                               RasterizationInfo rasterizerInfo,
-                               MultisamplingInfo multisamplingInfo,
-                               DepthStencilInfo depthStencilInfo) noexcept;
+            bool buildGraphicsPipeline(const std::vector<ShaderStageParameters> &stages,
+                                       const std::vector<VkVertexInputBindingDescription> &bindings,
+                                       const std::vector<VkVertexInputAttributeDescription> &attributes,
+                                       const VkPrimitiveTopology &topology,
+                                       const VkBool32 restartEnabled,
+                                       ViewportInfo viewportInfo,
+                                       RasterizationInfo rasterizerInfo,
+                                       MultisamplingInfo multisamplingInfo,
+                                       DepthStencilInfo depthStencilInfo) noexcept;
         private:
             //Describes shader stages.
             void describePipelineShaderStages(std::vector<ShaderStageParameters> const &stages,
