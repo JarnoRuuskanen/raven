@@ -1413,4 +1413,30 @@ namespace Raven
         }
         return true;
     }
+
+    /**
+     * @brief Creates a pipeline layout.
+     * @param logicalDevice
+     * @param layoutInfo
+     * @param layout
+     * @return False if pipeline layout creation fails.
+     */
+    bool createPipelineLayout(const VkDevice logicalDevice,
+                              std::vector<VkDescriptorSetLayout> descriptorSetLayouts,
+                              std::vector<VkPushConstantRange> pushConstantRanges,
+                              VkPipelineLayout &layout) noexcept
+    {
+        VkPipelineLayoutCreateInfo layoutInfo =
+                VulkanStructures::pipelineLayoutCreateInfo(descriptorSetLayouts,
+                                                           pushConstantRanges);
+
+        VkResult result = vkCreatePipelineLayout(logicalDevice, &layoutInfo, nullptr, &layout);
+
+        if(result != VK_SUCCESS)
+        {
+            std::cerr << "Failed to create a pipeline layout!" << std::endl;
+            return false;
+        }
+        return true;
+    }
 }

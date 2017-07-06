@@ -114,6 +114,15 @@ namespace Raven
                                                                     attachmentBlendStates,
                                                                     {1.0f,1.0f,1.0f,1.0f});
 
+        //Define dynamic states;
+        std::vector<VkDynamicState> dynamicStates =
+        {
+                VK_DYNAMIC_STATE_VIEWPORT,
+                VK_DYNAMIC_STATE_SCISSOR
+        };
+        VkPipelineDynamicStateCreateInfo dynamicStateInfo =
+                VulkanStructures::pipelineDynamicStateCreateInfo(dynamicStates);
+
         return true;
     }
 

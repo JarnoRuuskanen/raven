@@ -586,20 +586,47 @@ namespace VulkanStructures
         pipelineColorBlendStateCreateInfo(VkBool32 logicOpEnable,
                                           VkLogicOp logicOp,
                                           std::vector<VkPipelineColorBlendAttachmentState> attachments,
-                                          std::array<float,4> const constants)
-        {
-            VkPipelineColorBlendStateCreateInfo createInfo = {};
-            createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-            createInfo.pNext = nullptr;
-            createInfo.flags = 0;
-            createInfo.logicOpEnable = logicOpEnable;
-            createInfo.logicOp = logicOp;
-            createInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-            createInfo.pAttachments = attachments.data();
-            createInfo.blendConstants[0] = constants[0];
-            createInfo.blendConstants[1] = constants[1];
-            createInfo.blendConstants[2] = constants[2];
-            createInfo.blendConstants[3] = constants[3];
-            return createInfo;
-        }
+                                          std::array<float,4> const blendConstants)
+    {
+        VkPipelineColorBlendStateCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+        createInfo.pNext = nullptr;
+        createInfo.flags = 0;
+        createInfo.logicOpEnable = logicOpEnable;
+        createInfo.logicOp = logicOp;
+        createInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+        createInfo.pAttachments = attachments.data();
+        createInfo.blendConstants[0] = blendConstants[0];
+        createInfo.blendConstants[1] = blendConstants[1];
+        createInfo.blendConstants[2] = blendConstants[2];
+        createInfo.blendConstants[3] = blendConstants[3];
+        return createInfo;
+    }
+
+    inline VkPipelineDynamicStateCreateInfo
+        pipelineDynamicStateCreateInfo(std::vector<VkDynamicState> const dynamicStates)
+    {
+        VkPipelineDynamicStateCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+        createInfo.pNext = nullptr;
+        createInfo.flags = 0;
+        createInfo.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
+        createInfo.pDynamicStates = dynamicStates.data();
+        return createInfo;
+    }
+
+    inline VkPipelineLayoutCreateInfo
+        pipelineLayoutCreateInfo(std::vector<VkDescriptorSetLayout> descriptorSetLayouts,
+                                 std::vector<VkPushConstantRange> pushConstantRanges)
+    {
+        VkPipelineLayoutCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        createInfo.pNext = nullptr;
+        createInfo.flags = 0;
+        createInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
+        createInfo.pSetLayouts = descriptorSetLayouts.data();
+        createInfo.pushConstantRangeCount = static_cast<uint32_t>(pushConstantRanges.size());
+        createInfo.pPushConstantRanges = pushConstantRanges.data();
+        return createInfo;
+    }
 }

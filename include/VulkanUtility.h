@@ -275,4 +275,10 @@ namespace Raven
     bool createShaderModule(const VkDevice logicalDevice,
                             std::vector<char> sourceCode,
                             VkShaderModule &module) noexcept;
+
+    //Creates a pipeline layout.
+    bool createPipelineLayout(const VkDevice logicalDevice,
+                              std::vector<VkDescriptorSetLayout> descriptorSetLayouts,
+                              std::vector<VkPushConstantRange> pushConstantRanges,
+                              VkPipelineLayout &layout) noexcept;
 }
