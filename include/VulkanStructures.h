@@ -581,4 +581,25 @@ namespace VulkanStructures
         createInfo.maxDepthBounds = maxDepthBounds;
         return createInfo;
     }
+
+    inline VkPipelineColorBlendStateCreateInfo
+        pipelineColorBlendStateCreateInfo(VkBool32 logicOpEnable,
+                                          VkLogicOp logicOp,
+                                          std::vector<VkPipelineColorBlendAttachmentState> attachments,
+                                          std::array<float,4> const constants)
+        {
+            VkPipelineColorBlendStateCreateInfo createInfo = {};
+            createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+            createInfo.pNext = nullptr;
+            createInfo.flags = 0;
+            createInfo.logicOpEnable = logicOpEnable;
+            createInfo.logicOp = logicOp;
+            createInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+            createInfo.pAttachments = attachments.data();
+            createInfo.blendConstants[0] = constants[0];
+            createInfo.blendConstants[1] = constants[1];
+            createInfo.blendConstants[2] = constants[2];
+            createInfo.blendConstants[3] = constants[3];
+            return createInfo;
+        }
 }

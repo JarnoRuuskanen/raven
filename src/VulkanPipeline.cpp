@@ -91,6 +91,29 @@ namespace Raven
                                                                       depthStencilInfo.minDepthBounds,
                                                                       depthStencilInfo.maxDepthBounds);
 
+        //Specify the pipeline color blend state.
+        std::vector<VkPipelineColorBlendAttachmentState> attachmentBlendStates =
+        {
+            {
+                false,
+                VK_BLEND_FACTOR_ONE,
+                VK_BLEND_FACTOR_ONE,
+                VK_BLEND_OP_ADD,
+                VK_BLEND_FACTOR_ONE,
+                VK_BLEND_FACTOR_ONE,
+                VK_BLEND_OP_ADD,
+                VK_COLOR_COMPONENT_R_BIT |
+                VK_COLOR_COMPONENT_G_BIT |
+                VK_COLOR_COMPONENT_B_BIT |
+                VK_COLOR_COMPONENT_A_BIT
+            }
+        };
+
+        VkPipelineColorBlendStateCreateInfo colorBlendStateInfo =
+                VulkanStructures::pipelineColorBlendStateCreateInfo(false, VK_LOGIC_OP_COPY,
+                                                                    attachmentBlendStates,
+                                                                    {1.0f,1.0f,1.0f,1.0f});
+
         return true;
     }
 
