@@ -1463,4 +1463,41 @@ namespace Raven
         }
         return true;
     }
+
+    /**
+     * @brief Gets pipeline cache data. Creating pipelines from cache data greatly
+     *        increases application performance.
+     * @param logicalDevice
+     * @param cache
+     * @param cacheData
+     * @return False if pipeline cache data could not be fetched.
+     */
+    bool getPipelineCacheData(const VkDevice logicalDevice,
+                              VkPipelineCache cache,
+                              std::vector<unsigned char> &cacheData)
+    {
+        size_t dataSize = 0;
+        //First get the size of the data by leaving the last parameter as a nullptr.
+        VkResult result = vkGetPipelineCacheData(logicalDevice, cache, &dataSize, nullptr);
+
+        //Make sure that the operation was a success and that the cache had contents.
+        if((result != VK_SUCCESS) || (dataSize == 0))
+        {
+            std::cerr << "Failed to acquire cache size!" << std::endl;
+            return false;
+        }
+
+        //After success, resize the data container and query for the cache data by
+        //calling the same function again.
+        cacheData.resize(dataSize);
+
+        result = vkGetPipelineCacheData(logicalDevice, cache, &dataSize, cacheData.data());
+
+        if((result != VK_SUCCESS) || (dataSize == 0))
+        {
+            std::cerr << "Failed to acquire cache data!" << std::endl;
+            return false;
+        }
+        return true;
+    }
 }

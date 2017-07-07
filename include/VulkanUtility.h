@@ -286,4 +286,9 @@ namespace Raven
     bool createPipelineCache(const VkDevice logicalDevice,
                              std::vector<unsigned char> cacheData,
                              VkPipelineCache &cache);
+
+    //Gets pipeline cache data.
+    bool getPipelineCacheData(const VkDevice logicalDevice,
+                              VkPipelineCache cache,
+                              std::vector<unsigned char> &cacheData);
 }
