@@ -297,4 +297,16 @@ namespace Raven
     bool mergePipelineCaches(const VkDevice logicalDevice,
                              VkPipelineCache &combinedCaches,
                              std::vector<VkPipelineCache> sourceCaches);
+
+    //Creates graphics pipelines.
+    bool createGraphicsPipelines(const VkDevice logicalDevice,
+                                 VkPipelineCache cache,
+                                 const std::vector<VkGraphicsPipelineCreateInfo> &createInfos,
+                                 std::vector<VkPipeline> &graphicsPipelines) noexcept;
+
+    //Creates compute pipelines.
+    bool createComputePipelines(const VkDevice logicalDevice,
+                                VkPipelineCache cache,
+                                const std::vector<VkComputePipelineCreateInfo> &createInfos,
+                                std::vector<VkPipeline> &computePipelines) noexcept;
 }

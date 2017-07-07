@@ -1526,4 +1526,75 @@ namespace Raven
         }
         return true;
     }
+
+    /**
+     * @brief Creates graphics pipelines.
+     * @param logicalDevice
+     * @param cache
+     * @param createInfos
+     * @param graphicsPipelines
+     * @return False if graphics pipelines could not be created or if there were no
+     *         create infos presented.
+     */
+    bool createGraphicsPipelines(const VkDevice logicalDevice,
+                                 VkPipelineCache cache,
+                                 const std::vector<VkGraphicsPipelineCreateInfo> &createInfos,
+                                 std::vector<VkPipeline> &graphicsPipelines) noexcept
+    {
+        //Make sure that there are create infos to be used with the pipeline creation.
+        if(createInfos.size() > 0)
+        {
+            graphicsPipelines.resize(createInfos.size());
+
+            VkResult result = vkCreateGraphicsPipelines(logicalDevice,
+                                                        cache,
+                                                        static_cast<uint32_t>(createInfos.size()),
+                                                        createInfos.data(), nullptr,
+                                                        graphicsPipelines.data());
+
+            if(result != VK_SUCCESS)
+            {
+                std::cerr << "Failed to create graphics pipelines!" << std::endl;
+                return false;
+            }
+            return true;
+        }
+        std::cerr << "Failed to create graphics pipelines due to missing create infos!" << std::endl;
+        return false;
+    }
+
+    /**
+     * @brief createComputePipelines
+     * @param logicalDevice
+     * @param cache
+     * @param createInfos
+     * @param computePipelines
+     * @return
+     */
+    bool createComputePipelines(const VkDevice logicalDevice,
+                                VkPipelineCache cache,
+                                const std::vector<VkComputePipelineCreateInfo> &createInfos,
+                                std::vector<VkPipeline> &computePipelines) noexcept
+    {
+        //Make sure that there are create infos to be used with the pipeline creation.
+        if(createInfos.size() > 0)
+        {
+            computePipelines.resize(createInfos.size());
+
+            VkResult result  = vkCreateComputePipelines(logicalDevice,
+                                                        cache,
+                                                        static_cast<uint32_t>(createInfos.size()),
+                                                        createInfos.data(), nullptr,
+                                                        computePipelines.data());
+
+            if(result != VK_SUCCESS)
+            {
+                std::cerr << "Failed to create compute pipelines!" << std::endl;
+                return false;
+            }
+            return true;
+        }
+        std::cerr << "Failed to create compute pipelines due to missing create infos!" << std::endl;
+        return false;
+    }
 }
