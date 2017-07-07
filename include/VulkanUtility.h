@@ -291,4 +291,10 @@ namespace Raven
     bool getPipelineCacheData(const VkDevice logicalDevice,
                               VkPipelineCache cache,
                               std::vector<unsigned char> &cacheData);
+
+    //Merges multiple pipeline caches. This could be used after, for an example, multiple
+    //pipelines (with each owning their own cache object) have been created with threads.
+    bool mergePipelineCaches(const VkDevice logicalDevice,
+                             VkPipelineCache &combinedCaches,
+                             std::vector<VkPipelineCache> sourceCaches);
 }

@@ -1500,4 +1500,30 @@ namespace Raven
         }
         return true;
     }
+
+    /**
+     * @brief Merges multiple pipeline caches. This could be used after, for an example, multiple
+     *        pipelines (with each owning their own cache object) have been created with threads.
+     *        Remember that the destination cache cannot be one of the source caches!
+     * @param logicalDevice
+     * @param combinedCaches
+     * @param sourceCaches
+     * @return False if caches could not be combined.
+     */
+    bool mergePipelineCaches(const VkDevice logicalDevice,
+                             VkPipelineCache &combinedCaches,
+                             std::vector<VkPipelineCache> sourceCaches)
+    {
+        VkResult result = vkMergePipelineCaches(logicalDevice,
+                                                combinedCaches,
+                                                static_cast<uint32_t>(sourceCaches.size()),
+                                                sourceCaches.data());
+
+        if(result != VK_SUCCESS)
+        {
+            std::cerr << "Failed to merge pipeline caches!" << std::endl;
+            return false;
+        }
+        return true;
+    }
 }
