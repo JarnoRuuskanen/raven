@@ -1415,6 +1415,21 @@ namespace Raven
     }
 
     /**
+     * @brief Destroys a shader module. Shader modules can be destroyed after a pipeline has been
+     *        created. They are not required during pipeline execution.
+     * @param logicalDevice
+     * @param shaderModule
+     */
+    void destroyShaderModule(const VkDevice logicalDevice, VkShaderModule &shaderModule) noexcept
+    {
+        if(shaderModule != VK_NULL_HANDLE)
+        {
+            vkDestroyShaderModule(logicalDevice, shaderModule, nullptr);
+            shaderModule = VK_NULL_HANDLE;
+        }
+    }
+
+    /**
      * @brief Creates a pipeline layout.
      * @param logicalDevice
      * @param layoutInfo
@@ -1441,6 +1456,20 @@ namespace Raven
     }
 
     /**
+     * @brief Destroys a pipeline layout.
+     * @param logicalDevice
+     * @param layout
+     */
+    void destroyPipelineLayout(const VkDevice logicalDevice, VkPipelineLayout &layout) noexcept
+    {
+        if(layout != VK_NULL_HANDLE)
+        {
+            vkDestroyPipelineLayout(logicalDevice, layout, nullptr);
+            layout = VK_NULL_HANDLE;
+        }
+    }
+
+    /**
      * @brief Creates a pipeline cache.
      * @param logicalDevice
      * @param cacheData
@@ -1449,7 +1478,7 @@ namespace Raven
      */
     bool createPipelineCache(const VkDevice logicalDevice,
                              std::vector<unsigned char> cacheData,
-                             VkPipelineCache &cache)
+                             VkPipelineCache &cache) noexcept
     {
         VkPipelineCacheCreateInfo createInfo =
                 VulkanStructures::pipelineCacheCreateInfo(cacheData);
@@ -1465,6 +1494,22 @@ namespace Raven
     }
 
     /**
+     * @brief Destroys a pipeline cache. Pipeline caches are not used in any commands recorded
+     *        in a command buffer, so they can be destroyed after all the required
+     *        pipelines have been created.
+     * @param logicalDevice
+     * @param cache
+     */
+    void destroyPipelineCache(const VkDevice logicalDevice, VkPipelineCache &cache) noexcept
+    {
+        if(cache != VK_NULL_HANDLE)
+        {
+            vkDestroyPipelineCache(logicalDevice, cache, nullptr);
+            cache = VK_NULL_HANDLE;
+        }
+    }
+
+    /**
      * @brief Gets pipeline cache data. Creating pipelines from cache data greatly
      *        increases application performance.
      * @param logicalDevice
@@ -1474,7 +1519,7 @@ namespace Raven
      */
     bool getPipelineCacheData(const VkDevice logicalDevice,
                               VkPipelineCache cache,
-                              std::vector<unsigned char> &cacheData)
+                              std::vector<unsigned char> &cacheData) noexcept
     {
         size_t dataSize = 0;
         //First get the size of the data by leaving the last parameter as a nullptr.
@@ -1512,7 +1557,7 @@ namespace Raven
      */
     bool mergePipelineCaches(const VkDevice logicalDevice,
                              VkPipelineCache &combinedCaches,
-                             std::vector<VkPipelineCache> sourceCaches)
+                             std::vector<VkPipelineCache> sourceCaches) noexcept
     {
         VkResult result = vkMergePipelineCaches(logicalDevice,
                                                 combinedCaches,
@@ -1596,5 +1641,19 @@ namespace Raven
         }
         std::cerr << "Failed to create compute pipelines due to missing create infos!" << std::endl;
         return false;
+    }
+
+    /**
+     * @brief Destroys both graphics and compute pipelines.
+     * @param logicalDevice
+     * @param pipeline
+     */
+    void destroyPipeline(const VkDevice logicalDevice, VkPipeline &pipeline) noexcept
+    {
+        if(pipeline != VK_NULL_HANDLE)
+        {
+            vkDestroyPipeline(logicalDevice, pipeline, nullptr);
+            pipeline = VK_NULL_HANDLE;
+        }
     }
 }

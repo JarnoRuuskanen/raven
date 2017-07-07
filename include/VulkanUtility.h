@@ -276,27 +276,36 @@ namespace Raven
                             std::vector<char> sourceCode,
                             VkShaderModule &module) noexcept;
 
+    //Destroys a shader module
+    void destroyShaderModule(const VkDevice logicalDevice, VkShaderModule &shaderModule) noexcept;
+
     //Creates a pipeline layout.
     bool createPipelineLayout(const VkDevice logicalDevice,
                               std::vector<VkDescriptorSetLayout> descriptorSetLayouts,
                               std::vector<VkPushConstantRange> pushConstantRanges,
                               VkPipelineLayout &layout) noexcept;
 
+    //Destroys a pipeline layout.
+    void destroyPipelineLayout(const VkDevice logicalDevice, VkPipelineLayout &layout) noexcept;
+
     //Creates a pipeline cache.
     bool createPipelineCache(const VkDevice logicalDevice,
                              std::vector<unsigned char> cacheData,
-                             VkPipelineCache &cache);
+                             VkPipelineCache &cache) noexcept;
+
+    //Destroys a pipeline cache.
+    void destroyPipelineCache(const VkDevice logicalDevice, VkPipelineCache &cache) noexcept;
 
     //Gets pipeline cache data.
     bool getPipelineCacheData(const VkDevice logicalDevice,
                               VkPipelineCache cache,
-                              std::vector<unsigned char> &cacheData);
+                              std::vector<unsigned char> &cacheData) noexcept;
 
     //Merges multiple pipeline caches. This could be used after, for an example, multiple
     //pipelines (with each owning their own cache object) have been created with threads.
     bool mergePipelineCaches(const VkDevice logicalDevice,
                              VkPipelineCache &combinedCaches,
-                             std::vector<VkPipelineCache> sourceCaches);
+                             std::vector<VkPipelineCache> sourceCaches) noexcept;
 
     //Creates graphics pipelines.
     bool createGraphicsPipelines(const VkDevice logicalDevice,
@@ -309,4 +318,8 @@ namespace Raven
                                 VkPipelineCache cache,
                                 const std::vector<VkComputePipelineCreateInfo> &createInfos,
                                 std::vector<VkPipeline> &computePipelines) noexcept;
+
+    //Destroys a pipeline.
+    void destroyPipeline(const VkDevice logicalDevice, VkPipeline &pipeline) noexcept;
+
 }
