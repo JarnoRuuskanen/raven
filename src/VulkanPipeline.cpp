@@ -1,5 +1,7 @@
 #include "VulkanPipeline.h"
 #include "VulkanStructures.h"
+#include "FileIO.h"
+#include "VulkanUtility.h"
 
 namespace Raven
 {
@@ -14,120 +16,190 @@ namespace Raven
     }
 
     /**
-     * @brief Builds the pipeline.
-     * @param stages
-     * @param bindings
-     * @param attributes
-     * @param topology
-     * @param restartEnabled
-     * @param viewportInfo
+     * @brief Builds the pipeline information required for the actual pipeline creation.
+     *        This function is mostly a copy from VulkanCookbook 08 - 21.
+     * @param logicalDevice
+     * @param additionalOptions
+     * @param vertexShaderFilename
+     * @param fragmentShaderFilename
+     * @param vertexInputBindings
+     * @param vertexAttributes
+     * @param primitiveTopology
+     * @param primitiveRestartEnabled
+     * @param polygonMode
+     * @param cullMode
+     * @param frontFace
+     * @param logicOpEnable
+     * @param logicOp
+     * @param attachments
+     * @param blendConstants
+     * @param layout
+     * @param renderPass
+     * @param subpass
+     * @param parentPipeline
+     * @param pipelineCache
+     * @param graphicsPipelines
+     * @return False if any of the operations fails.
      */
     bool VulkanPipeline::
-        buildGraphicsPipeline(const std::vector<ShaderStageParameters> &stages,
-                              const std::vector<VkVertexInputBindingDescription> &bindings,
-                              const std::vector<VkVertexInputAttributeDescription> &attributes,
-                              const VkPrimitiveTopology &topology,
-                              const VkBool32 restartEnabled,
-                              ViewportInfo viewportInfo,
-                              RasterizationInfo rasterizationInfo,
-                              MultisamplingInfo multisamplingInfo,
-                              DepthStencilInfo depthStencilInfo) noexcept
+        buildBasicGraphicsPipelines(const VkDevice logicalDevice,
+                                    VkPipelineCreateFlags additionalOptions,
+                                    const std::string  &vertexShaderFilename,
+                                    const std::string &fragmentShaderFilename,
+                                    const std::vector<VkVertexInputBindingDescription> &vertexInputBindings,
+                                    const std::vector<VkVertexInputAttributeDescription> &vertexAttributes,
+                                    VkPrimitiveTopology primitiveTopology,
+                                    VkBool32 primitiveRestartEnabled,
+                                    VkPolygonMode polygonMode,
+                                    VkCullModeFlags cullMode,
+                                    VkFrontFace frontFace,
+                                    VkBool32 logicOpEnable,
+                                    VkLogicOp logicOp,
+                                    const std::vector<VkPipelineColorBlendAttachmentState> &blendAttachments,
+                                    const std::array<float,4> &blendConstants,
+                                    VkPipelineLayout layout,
+                                    VkRenderPass renderPass,
+                                    uint32_t subpass,
+                                    VkPipeline parentPipeline,
+                                    VkPipelineCache pipelineCache,
+                                    std::vector<VkPipeline> &graphicsPipelines) noexcept
     {
-        //First describe the shader stages.
-        std::vector<VkPipelineShaderStageCreateInfo> stageCreateInfos;
-        describePipelineShaderStages(stages, stageCreateInfos);
+        //Read the vertex shader info.
+        std::vector<char> vertexShaderSourceCode =
+                FileIO::readShaderFile(vertexShaderFilename);
 
-        //Describe pipeline vertex input state.
-        VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo =
-                VulkanStructures::pipelineVertexInputStateCreateInfo(bindings, attributes);
+        if(vertexShaderSourceCode.empty())
+            return false;
 
-        //Describe pipeline input assembly state (what sort of polygons are we building).
-        VkPipelineInputAssemblyStateCreateInfo inputAssemblyStateCreateInfo =
-                VulkanStructures::pipelineInputAssemblyStateCreateInfo(topology, restartEnabled);
+        //Create a vertex shader module.
+        VkShaderModule vertexShaderModule;
+        if(!createShaderModule(logicalDevice, vertexShaderSourceCode, vertexShaderModule))
+            return false;
 
-        //If tessellation is enabled, define the number of vertices(control points) in patches.
-        bool tessellationEnabled = false;
-        if(tessellationEnabled)
+        //Read the fragment shader information and create a shader module as well.
+        std::vector<char> fragmentShaderSourceCode =
+                FileIO::readShaderFile(fragmentShaderFilename);
+
+        if(fragmentShaderSourceCode.empty())
+            return false;
+
+        VkShaderModule fragmentShaderModule;
+        if(!createShaderModule(logicalDevice, fragmentShaderSourceCode, fragmentShaderModule))
+            return false;
+
+
+
+        //Create all the important information for the pipelineCreateInfo:
+
+        //Describe the shader stages.
+        //Vertex shader stage.
+        VkPipelineShaderStageCreateInfo vertexStage =
+                VulkanStructures::pipelineShaderStageCreateInfo(VK_SHADER_STAGE_VERTEX_BIT,
+                                                                vertexShaderModule,
+                                                                "main",
+                                                                nullptr);
+
+        //Fragment shader stage.
+        VkPipelineShaderStageCreateInfo fragmentStage =
+                VulkanStructures::pipelineShaderStageCreateInfo(VK_SHADER_STAGE_FRAGMENT_BIT,
+                                                                fragmentShaderModule,
+                                                                "main",
+                                                                nullptr);
+
+        std::vector<VkPipelineShaderStageCreateInfo> shaderStageInfos = {vertexStage, fragmentStage};
+
+        //Describe the pipeline vertex input state.
+        VkPipelineVertexInputStateCreateInfo vertexStateInfo =
+                VulkanStructures::pipelineVertexInputStateCreateInfo(vertexInputBindings,
+                                                                     vertexAttributes);
+
+        //Describe the pipeline input assembly information.
+        VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo =
+                VulkanStructures::pipelineInputAssemblyStateCreateInfo(primitiveTopology,
+                                                                       primitiveRestartEnabled);
+
+        //Describe the viewport information.
+        VkViewport viewport =
         {
-            VkPipelineTessellationStateCreateInfo tessellationStateInfo =
-                    VulkanStructures::pipelineTessellationStateCreateInfo(8);
-        }
-
-        //Specify viewports and scissor tests.
-        VkPipelineViewportStateCreateInfo viewportStateInfo =
-                VulkanStructures::pipelineViewportStateCreateInfo(viewportInfo.viewports,
-                                                                  viewportInfo.scissors);
-
-        //Rasterization.
-        VkPipelineRasterizationStateCreateInfo rasterizationStateInfo =
-                VulkanStructures::pipelineRasterizationStateCreateInfo(rasterizationInfo.depthClampEnable,
-                                                                       rasterizationInfo.rasterizerDiscardEnable,
-                                                                       rasterizationInfo.polygonMode,
-                                                                       rasterizationInfo.cullingMode,
-                                                                       rasterizationInfo.frontFace,
-                                                                       rasterizationInfo.depthBiasEnable,
-                                                                       rasterizationInfo.depthBiasConstantFactor,
-                                                                       rasterizationInfo.depthBiasClamp,
-                                                                       rasterizationInfo.depthBiasSlopeFactor,
-                                                                       rasterizationInfo.lineWidth);
-
-        //Define multisampling (anti-aliasing).
-        VkPipelineMultisampleStateCreateInfo multisamplingStateInfo =
-                VulkanStructures::pipelineMultisampleStateCreateInfo(multisamplingInfo.rasterizationSamples,
-                                                                     multisamplingInfo.sampleShadingEnable,
-                                                                     multisamplingInfo.minSampleShading,
-                                                                     multisamplingInfo.sampleMask,
-                                                                     multisamplingInfo.alphaToCoverageEnable,
-                                                                     multisamplingInfo.alphaToOneEnable);
-
-        //Depth stencil definition.
-        VkPipelineDepthStencilStateCreateInfo depthStencilStateInfo =
-                VulkanStructures::pipelineDepthStencilStateCreateInfo(depthStencilInfo.depthTestEnable,
-                                                                      depthStencilInfo.depthWriteEnable,
-                                                                      depthStencilInfo.depthCompareOp,
-                                                                      depthStencilInfo.depthBoundsTestEnable,
-                                                                      depthStencilInfo.stencilTestEnable,
-                                                                      depthStencilInfo.front,
-                                                                      depthStencilInfo.back,
-                                                                      depthStencilInfo.minDepthBounds,
-                                                                      depthStencilInfo.maxDepthBounds);
-
-        //Specify the pipeline color blend state.
-        std::vector<VkPipelineColorBlendAttachmentState> attachmentBlendStates =
-        {
-            {
-                false,
-                VK_BLEND_FACTOR_ONE,
-                VK_BLEND_FACTOR_ONE,
-                VK_BLEND_OP_ADD,
-                VK_BLEND_FACTOR_ONE,
-                VK_BLEND_FACTOR_ONE,
-                VK_BLEND_OP_ADD,
-                VK_COLOR_COMPONENT_R_BIT |
-                VK_COLOR_COMPONENT_G_BIT |
-                VK_COLOR_COMPONENT_B_BIT |
-                VK_COLOR_COMPONENT_A_BIT
-            }
+            0.0f,
+            0.0f,
+            800.0f,
+            800.0f,
+            0.0f,
+            1.0f
         };
 
-        VkPipelineColorBlendStateCreateInfo colorBlendStateInfo =
-                VulkanStructures::pipelineColorBlendStateCreateInfo(false, VK_LOGIC_OP_COPY,
-                                                                    attachmentBlendStates,
-                                                                    {1.0f,1.0f,1.0f,1.0f});
+        VkRect2D scissorOffset = { 0, 0};
+        VkRect2D scissorExtent = {800,800};
 
-        //Define dynamic states;
+        VkPipelineViewportStateCreateInfo viewportStateInfo =
+                VulkanStructures::pipelineViewportStateCreateInfo({viewport},
+                                                                  {scissorOffset, scissorExtent});
+
+        //Describe the rasterization state information.
+        VkPipelineRasterizationStateCreateInfo rasterizationStateInfo =
+                VulkanStructures::pipelineRasterizationStateCreateInfo(VK_FALSE, VK_FALSE, polygonMode,
+                                                                       cullMode, frontFace, VK_FALSE,
+                                                                       0.0f, 1.0f, 0.0f, 1.0f);
+
+        //Describe the multisampling state information.
+        VkPipelineMultisampleStateCreateInfo multisampleStateInfo =
+                VulkanStructures::pipelineMultisampleStateCreateInfo(VK_SAMPLE_COUNT_1_BIT, VK_FALSE,
+                                                                     0.0f, nullptr, VK_FALSE, VK_FALSE);
+
+        //Describe the depth stencil state information.
+        VkStencilOpState stencilTestParameters =
+        {
+            VK_STENCIL_OP_KEEP,
+            VK_STENCIL_OP_KEEP,
+            VK_STENCIL_OP_KEEP,
+            VK_COMPARE_OP_ALWAYS,
+            0,0,0
+        };
+
+        VkPipelineDepthStencilStateCreateInfo depthStencilInfo =
+                VulkanStructures::pipelineDepthStencilStateCreateInfo(VK_TRUE, VK_TRUE,
+                                                                      VK_COMPARE_OP_LESS_OR_EQUAL,
+                                                                      VK_FALSE, VK_FALSE,
+                                                                      stencilTestParameters,
+                                                                      stencilTestParameters,
+                                                                      0.0f,
+                                                                      1.0f);
+
+        //Describe the color blending state information.
+        VkPipelineColorBlendStateCreateInfo colorBlendStateInfo =
+                VulkanStructures::pipelineColorBlendStateCreateInfo(logicOpEnable, logicOp,
+                                                                    blendAttachments, blendConstants);
+
+        //Describe the dynamic states.
+
         std::vector<VkDynamicState> dynamicStates =
         {
-                VK_DYNAMIC_STATE_VIEWPORT,
-                VK_DYNAMIC_STATE_SCISSOR
+            VK_DYNAMIC_STATE_VIEWPORT,
+            VK_DYNAMIC_STATE_SCISSOR
         };
 
         VkPipelineDynamicStateCreateInfo dynamicStateInfo =
                 VulkanStructures::pipelineDynamicStateCreateInfo(dynamicStates);
 
-        //Create the pipeline layout and specify the graphics pipeline creation parameters.
+        //Create the pipeline create information.
+        VkGraphicsPipelineCreateInfo createInfo =
+                VulkanStructures::graphicsPipelineCreateInfo(additionalOptions, shaderStageInfos,
+                                                             vertexStateInfo, inputAssemblyInfo,
+                                                             nullptr, viewportStateInfo,
+                                                             rasterizationStateInfo, multisampleStateInfo,
+                                                             depthStencilInfo, colorBlendStateInfo,
+                                                             dynamicStateInfo, layout, renderPass,
+                                                             subpass, parentPipeline, -1);
 
-        return true;
+        //Create the pipeline.
+        if(!createGraphicsPipelines(logicalDevice, pipelineCache, {createInfo}, graphicsPipelines))
+            return false;
+
+        //Destroy the shader modules as they are no longer needed.
+        destroyShaderModule(logicalDevice, vertexShaderModule);
+        destroyShaderModule(logicalDevice, fragmentShaderModule);
+
     }
 
     /**

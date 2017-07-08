@@ -26,64 +26,40 @@ namespace Raven
         std::vector<VkRect2D> scissors;
     };
 
-    //A struct for holding rasterization information.
-    struct RasterizationInfo
-    {
-        VkBool32 depthClampEnable;
-        VkBool32 rasterizerDiscardEnable;
-        VkPolygonMode polygonMode;
-        VkCullModeFlags cullingMode;
-        VkFrontFace frontFace;
-        VkBool32 depthBiasEnable;
-        float depthBiasConstantFactor;
-        float depthBiasClamp;
-        float depthBiasSlopeFactor;
-        float lineWidth;
-    };
-
-    struct MultisamplingInfo
-    {
-        VkSampleCountFlagBits rasterizationSamples;
-        VkBool32 sampleShadingEnable;
-        float minSampleShading;
-        const VkSampleMask *sampleMask;
-        VkBool32 alphaToCoverageEnable;
-        VkBool32 alphaToOneEnable;
-    };
-
-    struct DepthStencilInfo
-    {
-        VkBool32 depthTestEnable;
-        VkBool32 depthWriteEnable;
-        VkCompareOp depthCompareOp;
-        VkBool32 depthBoundsTestEnable;
-        VkBool32 stencilTestEnable;
-        VkStencilOpState front;
-        VkStencilOpState back;
-        float minDepthBounds;
-        float maxDepthBounds;
-    };
-
     //A class for both compute and graphics pipelines in Vulkan.
     class VulkanPipeline
     {
         public:
             VulkanPipeline();
             ~VulkanPipeline();
-            //Builds the pipeline.
-            bool buildGraphicsPipeline(const std::vector<ShaderStageParameters> &stages,
-                                       const std::vector<VkVertexInputBindingDescription> &bindings,
-                                       const std::vector<VkVertexInputAttributeDescription> &attributes,
-                                       const VkPrimitiveTopology &topology,
-                                       const VkBool32 restartEnabled,
-                                       ViewportInfo viewportInfo,
-                                       RasterizationInfo rasterizerInfo,
-                                       MultisamplingInfo multisamplingInfo,
-                                       DepthStencilInfo depthStencilInfo) noexcept;
+            //Creates basic vertex/fragment -stage graphics pipelines with the given information.
+            bool buildBasicGraphicsPipelines(const VkDevice logicalDevice,
+                                             VkPipelineCreateFlags additionalOptions,
+                                             const std::string  &vertexShaderFilename,
+                                             const std::string &fragmentShaderFilename,
+                                             const std::vector<VkVertexInputBindingDescription> &vertexInputBindings,
+                                             const std::vector<VkVertexInputAttributeDescription> &vertexAttributes,
+                                             VkPrimitiveTopology primitiveTopology,
+                                             VkBool32 primitiveRestartEnabled,
+                                             VkPolygonMode polygonMode,
+                                             VkCullModeFlags cullMode,
+                                             VkFrontFace frontFace,
+                                             VkBool32 logicOpEnable,
+                                             VkLogicOp logicOp,
+                                             const std::vector<VkPipelineColorBlendAttachmentState> &attachments,
+                                             const std::array<float,4> &blendConstants,
+                                             VkPipelineLayout layout,
+                                             VkRenderPass renderPass,
+                                             uint32_t subpass,
+                                             VkPipeline parentPipeline,
+                                             VkPipelineCache pipelineCache,
+                                             std::vector<VkPipeline> &graphicsPipelines) noexcept;
         private:
             //Describes shader stages.
             void describePipelineShaderStages(std::vector<ShaderStageParameters> const &stages,
                                               std::vector<VkPipelineShaderStageCreateInfo> &stageInfos) noexcept;
+
+
 
     };
 }

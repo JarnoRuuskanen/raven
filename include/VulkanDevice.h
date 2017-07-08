@@ -121,6 +121,8 @@ namespace Raven
                                                               VkDescriptorPool &descriptorPool,
                                                               std::vector<VkDescriptorSet> &descriptorSets);
 
+
+
             //Returns a queue family reference by index
             inline VkQueueFamilyProperties& getQueueFamily(int index){return queueFamilies[index];}
             //Returns the queueFamilyIndex for the family that is currently used.

@@ -635,7 +635,7 @@ namespace VulkanStructures
                                    const std::vector<VkPipelineShaderStageCreateInfo> shaderStageInfos,
                                    const VkPipelineVertexInputStateCreateInfo vertexInputStateInfo,
                                    const VkPipelineInputAssemblyStateCreateInfo inputAssemblyStateInfo,
-                                   const VkPipelineTessellationStateCreateInfo tessellationStateInfo,
+                                   const VkPipelineTessellationStateCreateInfo *tessellationStateInfo,
                                    const VkPipelineViewportStateCreateInfo viewportStateInfo,
                                    const VkPipelineRasterizationStateCreateInfo rasterizationStateInfo,
                                    const VkPipelineMultisampleStateCreateInfo multisampleStateInfo,
@@ -656,7 +656,7 @@ namespace VulkanStructures
         createInfo.pStages = shaderStageInfos.data();
         createInfo.pVertexInputState = &vertexInputStateInfo;
         createInfo.pInputAssemblyState = &inputAssemblyStateInfo;
-        createInfo.pTessellationState = &tessellationStateInfo;
+        createInfo.pTessellationState = tessellationStateInfo;
         createInfo.pViewportState = &viewportStateInfo;
         createInfo.pRasterizationState = &rasterizationStateInfo;
         createInfo.pMultisampleState = &multisampleStateInfo;
