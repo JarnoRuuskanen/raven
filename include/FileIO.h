@@ -11,6 +11,9 @@ namespace Raven
                            int &width, int &height, int &layerCount) noexcept;
 
         //Reads the contents of a SPIR-V file.
-        std::vector<char> readShaderFile(std::string filename);
+        std::vector<char> readBinaryFile(std::string filename);
+
+        //Writes data into a file.
+        bool writeBinaryFile(std::string destinationFilename);
     }
 }

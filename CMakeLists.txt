@@ -65,5 +65,5 @@ add_subdirectory(UnitTests)
 
 add_executable(${PROJECT_NAME} ${CPP_FILES} ${HPP_FILES})
 
-target_link_libraries(${PROJECT_NAME} ${CMAKE_DL_LIBS} ${PLATFORM_LIBRARY} xcb)
+target_link_libraries(${PROJECT_NAME} ${CMAKE_DL_LIBS} ${PLATFORM_LIBRARY} xcb pthread)
 

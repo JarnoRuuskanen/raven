@@ -36,7 +36,7 @@ namespace Raven
          * @param filename
          * @return The contents of the file inside a vector.
          */
-        std::vector<char> readShaderFile(std::string filename)
+        std::vector<char> readBinaryFile(std::string filename)
         {
             //Open the file.
             std::ifstream file(filename, std::ios::ate | std::ios::binary);
@@ -57,5 +57,17 @@ namespace Raven
             file.close();
             return fileContents;
         }
+
+        /**
+         * @brief Writes data into a file. Empties the file if it already exists.
+         * @param destinationFilename
+         * @return False if the writing operation fails.
+         */
+        bool writeBinaryFile(std::string destinationFilename)
+        {
+            //Implementation required.
+            return false;
+        }
+
     }
 }

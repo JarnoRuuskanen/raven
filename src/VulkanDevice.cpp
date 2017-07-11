@@ -4,6 +4,7 @@
 #include "VulkanUtility.h"
 #include "CommandBufferManager.h"
 #include "VulkanDescriptorManager.h"
+#include "FileIO.h"
 
 namespace Raven
 {
@@ -737,6 +738,79 @@ namespace Raven
         VulkanDescriptorManager::updateDescriptorSets(logicalDevice, imageDescriptorInfos,
                                                       bufferDescriptorInfos, {}, {});
 
+        return true;
+    }
+
+    /**
+     * @brief Creates graphics pipelines from cache data with threads. Each thread can create multiple
+              pipelines.
+     * @param cacheFilePath
+     * @param pipelineInfos
+     * @param graphicsPipelines
+     * @return False if any of the operations fails.
+     */
+    bool VulkanDevice::createGraphicsPipelinesFromCacheData(const std::string cacheFilePath,
+                                                            std::vector<std::vector<VkGraphicsPipelineCreateInfo>> pipelineInfos,
+                                                            std::vector<std::vector<VkPipeline>> &graphicsPipelines)
+    {
+        //Read the cache data from file.
+        std::vector<char> cacheData;
+        FileIO::readBinaryFile(cacheFilePath);
+
+        if(cacheData.size() <= 0)
+        {
+            std::cerr << "Cache file had no data in it!" << std::endl;
+            return false;
+        }
+
+        //Create a cache for each thread. Remember to destroy caches after pipeline creation.
+        std::vector<VkPipelineCache> pipelineCaches(pipelineInfos.size());
+        for(size_t i = 0; i < pipelineInfos.size(); ++i)
+        {
+            if(!createPipelineCache(logicalDevice, cacheData, pipelineCaches[i]))
+                return false;
+        }
+
+        //Next create multiple threads,
+        //each thread creating multiple pipelines using its own cache.
+        std::vector<std::future<bool>> tasks(pipelineInfos.size());
+        for(size_t i = 0; i < pipelineInfos.size(); ++i)
+        {
+            //Resize the pipeline vector for given thread to hold enough pipelines
+            //for the creation process to work correctly.
+            graphicsPipelines[i].resize(pipelineInfos[i].size());
+            tasks[i] = std::async(std::launch::async,
+                                  createGraphicsPipelines,
+                                  logicalDevice,
+                                  pipelineCaches[i],
+                                  ref(pipelineInfos[i]),            //You need to add the std::ref
+                                  ref(graphicsPipelines[i]));       //to send as a reference to threads.
+
+            //Check that the operation was successful.
+            {
+                std::cerr << "Failed to create graphics pipelines from caches with tasks." << std::endl;
+                return false;
+            }
+        }
+
+        //Next merge all the caches into one, retrieve the contents and store them in a file.
+        VkPipelineCache combinedCaches = pipelineCaches.back();
+        std::vector<VkPipelineCache> sourceCaches(pipelineCaches.size() - 1);
+        for(size_t i = 0; i < pipelineCaches.size() - 1; ++i)
+        {
+            sourceCaches[i] = pipelineCaches[i];
+        }
+
+        //Merge.
+        if(!mergePipelineCaches(logicalDevice, combinedCaches, sourceCaches))
+            return false;
+
+        //Retrieve.
+        if(!getPipelineCacheData(logicalDevice, combinedCaches, cacheData))
+            return false;
+
+        //Save cache data into a file.
+        //FileIO::writeBinaryFile(cacheFilePath);
         return true;
     }
 

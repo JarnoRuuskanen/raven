@@ -66,7 +66,7 @@ namespace Raven
     {
         //Read the vertex shader info.
         std::vector<char> vertexShaderSourceCode =
-                FileIO::readShaderFile(vertexShaderFilename);
+                FileIO::readBinaryFile(vertexShaderFilename);
 
         if(vertexShaderSourceCode.empty())
             return false;
@@ -78,7 +78,7 @@ namespace Raven
 
         //Read the fragment shader information and create a shader module as well.
         std::vector<char> fragmentShaderSourceCode =
-                FileIO::readShaderFile(fragmentShaderFilename);
+                FileIO::readBinaryFile(fragmentShaderFilename);
 
         if(fragmentShaderSourceCode.empty())
             return false;

@@ -290,7 +290,7 @@ namespace Raven
 
     //Creates a pipeline cache.
     bool createPipelineCache(const VkDevice logicalDevice,
-                             std::vector<unsigned char> cacheData,
+                             std::vector<char> cacheData,
                              VkPipelineCache &cache) noexcept;
 
     //Destroys a pipeline cache.
@@ -299,7 +299,7 @@ namespace Raven
     //Gets pipeline cache data.
     bool getPipelineCacheData(const VkDevice logicalDevice,
                               VkPipelineCache cache,
-                              std::vector<unsigned char> &cacheData) noexcept;
+                              std::vector<char> &cacheData) noexcept;
 
     //Merges multiple pipeline caches. This could be used after, for an example, multiple
     //pipelines (with each owning their own cache object) have been created with threads.

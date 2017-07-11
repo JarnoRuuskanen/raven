@@ -304,7 +304,7 @@ TEST_F(PhysicalDeviceTest, createCommandPoolTest)
 TEST(FileIOTests, shaderTest)
 {
     std::vector<char> testShader =
-            FileIO::readShaderFile("../../Resources/Shaders/shader-vert.spv");
+            FileIO::readBinaryFile("../../Resources/Shaders/shader-vert.spv");
 
     EXPECT_FALSE(testShader.empty());
 }

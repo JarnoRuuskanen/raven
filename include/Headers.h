@@ -9,6 +9,7 @@
 #include <cstring>
 #include <thread>
 #include <functional>
+#include <future>
 
 //Platform specific variables will be define here
 namespace Raven

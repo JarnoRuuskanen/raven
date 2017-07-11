@@ -1477,7 +1477,7 @@ namespace Raven
      * @return
      */
     bool createPipelineCache(const VkDevice logicalDevice,
-                             std::vector<unsigned char> cacheData,
+                             std::vector<char> cacheData,
                              VkPipelineCache &cache) noexcept
     {
         VkPipelineCacheCreateInfo createInfo =
@@ -1519,7 +1519,7 @@ namespace Raven
      */
     bool getPipelineCacheData(const VkDevice logicalDevice,
                               VkPipelineCache cache,
-                              std::vector<unsigned char> &cacheData) noexcept
+                              std::vector<char> &cacheData) noexcept
     {
         size_t dataSize = 0;
         //First get the size of the data by leaving the last parameter as a nullptr.

@@ -122,6 +122,11 @@ namespace Raven
                                                               std::vector<VkDescriptorSet> &descriptorSets);
 
 
+            //Creates graphics pipelines from cache data with threads. Each thread can create multiple
+            //pipelines.
+            bool createGraphicsPipelinesFromCacheData(const std::string cacheFilePath,
+                                                      std::vector<std::vector<VkGraphicsPipelineCreateInfo>> pipelineInfos,
+                                                      std::vector<std::vector<VkPipeline>> &graphicsPipelines);
 
             //Returns a queue family reference by index
             inline VkQueueFamilyProperties& getQueueFamily(int index){return queueFamilies[index];}

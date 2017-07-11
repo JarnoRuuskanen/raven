@@ -671,7 +671,7 @@ namespace VulkanStructures
         return createInfo;
     }
 
-    inline VkPipelineCacheCreateInfo pipelineCacheCreateInfo(std::vector<unsigned char> cacheData)
+    inline VkPipelineCacheCreateInfo pipelineCacheCreateInfo(std::vector<char> cacheData)
     {
         VkPipelineCacheCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
