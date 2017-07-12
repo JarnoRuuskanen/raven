@@ -18,6 +18,13 @@ namespace Raven
         uint32_t newQueueFamily;
     };
 
+    //Data for graphics pipelines.
+    struct VertexBufferParameters
+    {
+        VkBuffer buffer;
+        VkDeviceSize memoryOffset;
+    };
+
     //A struct for holding all the buffer information.
     //This is different from a command buffer and they
     //should not be mixed.

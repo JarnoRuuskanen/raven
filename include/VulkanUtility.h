@@ -322,4 +322,8 @@ namespace Raven
     //Destroys a pipeline.
     void destroyPipeline(const VkDevice logicalDevice, VkPipeline &pipeline) noexcept;
 
+    //Binds vertex buffers for geometry drawing.
+    void bindVertexBuffers(VkCommandBuffer cmdBuffer,
+                           uint32_t binding,
+                           const std::vector<VertexBufferParameters> &bufferParams);
 }

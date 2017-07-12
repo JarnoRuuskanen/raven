@@ -811,6 +811,12 @@ namespace Raven
 
         //Save cache data into a file.
         //FileIO::writeBinaryFile(cacheFilePath);
+
+        //Destroy the pipeline caches that are no longer needed.
+        for(auto& cache : pipelineCaches)
+        {
+            destroyPipelineCache(logicalDevice, cache);
+        }
         return true;
     }
 

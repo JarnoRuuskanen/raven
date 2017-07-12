@@ -1656,4 +1656,34 @@ namespace Raven
             pipeline = VK_NULL_HANDLE;
         }
     }
+
+    /**
+     * @brief Binds vertex buffers for geometry drawing using a custom struct.
+     * @param cmdBuffer
+     * @param binding
+     * @param bufferParams
+     */
+    void bindVertexBuffers(VkCommandBuffer cmdBuffer,
+                           uint32_t binding,
+                           const std::vector<VertexBufferParameters> &bufferParams)
+    {
+        if(bufferParams.size() > 0)
+        {
+            std::vector<VkBuffer> buffers;
+            std::vector<VkDeviceSize> memoryOffsets;
+
+            //Read all the buffers and buffer offsets into vectors and bind them to the command buffer.
+            for(auto &parameter : bufferParams)
+            {
+                buffers.push_back(parameter.buffer);
+                memoryOffsets.push_back(parameter.memoryOffset);
+            }
+
+            vkCmdBindVertexBuffers(cmdBuffer,
+                                  binding,
+                                  static_cast<uint32_t>(bufferParams.size()),
+                                  buffers.data(),
+                                  memoryOffsets.data());
+        }
+    }
 }
