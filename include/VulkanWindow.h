@@ -22,39 +22,38 @@ namespace Raven
             Window   window;
         #endif
     };
+
+    //This class is for creating a vulkan window which a renderer
+    //can then render content into. This class handless surface creation
+    //etc.
+    class VulkanWindow
+    {
+        public:
+            VulkanWindow();
+            ~VulkanWindow();
+            //Creates a presentation surface for a VulkanWindow.
+            bool createWindowSurface(VkInstance instance);
+            //Creates the window frame
+            bool createWindowFrame(uint16_t width, uint16_t height);
+            //Returns a reference to the window surface.
+            inline VkSurfaceKHR& getPresentationSurface(){ return presentationSurface; }
+            //Returns a reference to the window swapchain object.
+            inline VkSwapchainKHR& getSwapchain(){ return swapchain; }
+            //Returns a reference to the window parameters.
+            inline WindowParameters& getWindowParameters(){ return windowParameters; }
+            //Returns the swapchain image vector.
+            inline std::vector<VkImage>& getImages(){ return swapchainImages; }
+        private:
+            //The window surface
+            VkSurfaceKHR presentationSurface;
+            //The swapchain of this window. Swapchain describes image formats, number
+            //of images used for rendering (image buffering), presentation mode etc.
+            //Each window can only have one swapchain at a time.
+            VkSwapchainKHR swapchain;
+            WindowParameters windowParameters;
+            std::vector<VkImage> swapchainImages;
+            bool connectionEstablished = false;
+
+
+    };
 }
-
-//This class is for creating a vulkan window which a renderer
-//can then render content into. This class handless surface creation
-//etc.
-using namespace Raven;
-class VulkanWindow
-{
-    public:
-        VulkanWindow();
-        ~VulkanWindow();
-        //Creates a presentation surface for a VulkanWindow.
-        bool createWindowSurface(VkInstance instance);
-        //Creates the window frame
-        bool createWindowFrame(uint16_t width, uint16_t height);
-        //Returns a reference to the window surface.
-        inline VkSurfaceKHR& getPresentationSurface(){return presentationSurface;}
-        //Returns a reference to the window swapchain object.
-        inline VkSwapchainKHR& getSwapchain(){return swapchain;}
-        //Returns a reference to the window parameters.
-        inline WindowParameters& getWindowParameters(){return windowParameters;}
-        //Returns the swapchain image vector.
-        inline std::vector<VkImage>& getImages(){return swapchainImages;}
-    private:
-        //The window surface
-        VkSurfaceKHR presentationSurface;
-        //The swapchain of this window. Swapchain describes image formats, number
-        //of images used for rendering (image buffering), presentation mode etc.
-        //Each window can only have one swapchain at a time.
-        VkSwapchainKHR swapchain;
-        WindowParameters windowParameters;
-        std::vector<VkImage> swapchainImages;
-        bool connectionEstablished = false;
-
-
-};

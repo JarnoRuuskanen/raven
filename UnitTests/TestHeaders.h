@@ -8,6 +8,8 @@
    OR THE PROJECT WON'T COMPILE!*/
 #include "Settings.h"
 #include "ListOfVulkanFunctions.inl"
+#include "VulkanDestroyer.h"
+#include "VulkanDestroyer.cpp"
 #include "Headers.h"
 #include "FileIO.h"
 #include "FileIO.cpp"

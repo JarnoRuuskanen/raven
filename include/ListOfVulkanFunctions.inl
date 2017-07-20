@@ -130,6 +130,7 @@ DEVICE_LEVEL_VULKAN_FUNCTION(vkCreateComputePipelines)
 DEVICE_LEVEL_VULKAN_FUNCTION(vkDestroyPipeline)
 DEVICE_LEVEL_VULKAN_FUNCTION(vkGetPipelineCacheData)
 DEVICE_LEVEL_VULKAN_FUNCTION(vkMergePipelineCaches)
+DEVICE_LEVEL_VULKAN_FUNCTION(vkDestroyQueryPool)
 
 //Command buffer commands.
 DEVICE_LEVEL_VULKAN_FUNCTION(vkCmdPipelineBarrier)
