@@ -182,5 +182,57 @@ namespace Raven
                 cmdPool = VK_NULL_HANDLE;
             }
         }
+
+        /**
+         * @brief recordCommandBuffersOnMultipleThreads
+         * @param threadParams
+         * @param queue
+         * @param waitSemaphoreInfos
+         * @param signaledSemaphores
+         * @param fence
+         * @return
+         */
+        bool recordCommandBuffersOnMultipleThreads(const std::vector<CommandBufferRecordingThreadParameters> &threadParams,
+                                                   VkQueue queue,
+                                                   std::vector<WaitSemaphoreInfo> waitSemaphoreInfos,
+                                                   std::vector<VkSemaphore> signaledSemaphores,
+                                                   VkFence fence)
+        {
+            std::vector<std::thread> threads(threadParams.size());
+            for(size_t i = 0; i < threadParams.size(); ++i)
+            {
+                threads[i] = std::thread(threadParams[i].recordingFunction, threadParams[i].cmdBuffer);
+            }
+
+            std::vector<VkCommandBuffer> cmdBuffers(threadParams.size());
+            for(size_t i = 0; i < threadParams.size(); ++i)
+            {
+                threads[i].join();
+                cmdBuffers[i] = threadParams[i].cmdBuffer;
+            }
+
+            //Create the submit information.
+            std::vector<VkSemaphore> waitingSemaphores;
+            std::vector<VkPipelineStageFlags> waitingStages;
+            for(auto &info : waitSemaphoreInfos)
+            {
+                waitingSemaphores.push_back(info.semaphore);
+                waitingStages.push_back(info.waitingStage);
+            }
+
+            VkSubmitInfo submitInfo = VulkanStructures::submitInfo();
+            submitInfo.commandBufferCount = static_cast<uint32_t>(cmdBuffers.size());
+            submitInfo.pCommandBuffers = cmdBuffers.data();
+            submitInfo.signalSemaphoreCount = static_cast<uint32_t>(signaledSemaphores.size());
+            submitInfo.pSignalSemaphores = signaledSemaphores.data();
+            submitInfo.waitSemaphoreCount = static_cast<uint32_t>(waitingSemaphores.size());
+            submitInfo.pWaitSemaphores = waitingSemaphores.data();
+            submitInfo.pWaitDstStageMask = waitingStages.data();
+
+            if(!submitCommandBuffers(queue, 1, submitInfo, fence))
+                return false;
+
+            return true;
+        }
     }
 }

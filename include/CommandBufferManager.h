@@ -1,5 +1,6 @@
 #pragma once
 #include "Headers.h"
+#include <functional>
 
 namespace Raven
 {
@@ -11,6 +12,13 @@ namespace Raven
         VkSemaphore semaphore;
         //At which stage should the hardware wait?
         VkPipelineStageFlags waitingStage;
+    };
+
+    //A struct for recording command buffers on multiple threads.
+    struct CommandBufferRecordingThreadParameters
+    {
+        VkCommandBuffer cmdBuffer;
+        std::function<bool(VkCommandBuffer)> recordingFunction;
     };
 
     namespace CommandBufferManager
@@ -40,5 +48,13 @@ namespace Raven
                                 std::vector<VkCommandBuffer> &cmdBuffers);
         //Destroys a command pool and all the command buffers allocated from it.
         void destroyCommandPool(const VkDevice logicalDevice, VkCommandPool &cmdPool);
+
+        //Records command buffers on multiple threads and submits them to a queue.
+        //The actual recording function is provided as a parameter.
+        bool recordCommandBuffersOnMultipleThreads(const std::vector<CommandBufferRecordingThreadParameters> &threadParams,
+                                                   VkQueue queue,
+                                                   std::vector<WaitSemaphoreInfo> waitSemaphoreInfos,
+                                                   std::vector<VkSemaphore> signaledSemaphores,
+                                                   VkFence fence);
     }
 }
