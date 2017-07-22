@@ -3,6 +3,7 @@
 
 namespace Raven
 {
+    //A struct to be used with image memory barriers.
     struct ImageTransition
     {
         VkImage image;

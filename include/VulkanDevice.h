@@ -2,6 +2,8 @@
 #include "Headers.h"
 #include "VulkanImage.h"
 #include "VulkanBuffer.h"
+#include "VulkanRenderer.h"
+#include "GraphicsObject.h"
 
 namespace Raven
 {
@@ -127,6 +129,26 @@ namespace Raven
             bool createGraphicsPipelinesFromCacheData(const std::string cacheFilePath,
                                                       std::vector<std::vector<VkGraphicsPipelineCreateInfo>> pipelineInfos,
                                                       std::vector<std::vector<VkPipeline>> &graphicsPipelines);
+
+            //Records a command buffer for drawign geometry with dynamic viewport and scissor test.
+            bool recordCommandBufferForDrawingGeometry(VkCommandBuffer cmdBuffer,
+                                                       VkImage swapchainImage,
+                                                       uint32_t presentQueueFamilyIndex,
+                                                       uint32_t graphicsQueueFamilyIndex,
+                                                       VulkanRenderer vulkanRenderer,
+                                                       VkRenderPass renderPass,
+                                                       VkFramebuffer framebuffer,
+                                                       VkExtent2D framebufferSize,
+                                                       const std::vector<VkClearValue> &clearValues,
+                                                       VkPipeline graphicsPipeline,
+                                                       uint32_t firstVertexBufferBinding,
+                                                       const std::vector<VertexBufferParameters> &bufferParams,
+                                                       VkPipelineLayout pipelineLayout,
+                                                       const std::vector<VkDescriptorSet> &descriptorSets,
+                                                       uint32_t firstDescritorSetIndex,
+                                                       GraphicsObject drawable,
+                                                       uint32_t instances,
+                                                       uint32_t firstInstance);
 
             //Returns a queue family reference by index
             inline VkQueueFamilyProperties& getQueueFamily(int index){return queueFamilies[index];}

@@ -821,6 +821,158 @@ namespace Raven
     }
 
     /**
+     * @brief Records a command buffer for drawign geometry with dynamic viewport and scissor test.
+     *        VulkanCookbook recipe with some changes of my own.
+     * @param cmdBuffer
+     * @param swapchainImage
+     * @param presentQueueFamilyIndex
+     * @param graphicsQueueFamilyIndex
+     * @param renderPass
+     * @param framebuffer
+     * @param framebufferSize
+     * @param clearValues
+     * @param graphicsPipeline
+     * @param firstVertexBufferBinding
+     * @param bufferParams
+     * @param pipelineLayout
+     * @param descriptorSets
+     * @param firstDescritorSetIndex
+     * @param drawable
+     * @param instances
+     * @param firstInstance
+     * @return False if any of the operations fails.
+     */
+    bool recordCommandBufferForDrawingGeometry(VkCommandBuffer cmdBuffer,
+                                               VkImage swapchainImage,
+                                               uint32_t presentQueueFamilyIndex,
+                                               uint32_t graphicsQueueFamilyIndex,
+                                               VulkanRenderer vulkanRenderer,
+                                               VkRenderPass renderPass,
+                                               VkFramebuffer framebuffer,
+                                               VkExtent2D framebufferSize,
+                                               const std::vector<VkClearValue> &clearValues,
+                                               VkPipeline graphicsPipeline,
+                                               uint32_t firstVertexBufferBinding,
+                                               const std::vector<VertexBufferParameters> &bufferParams,
+                                               VkPipelineLayout pipelineLayout,
+                                               const std::vector<VkDescriptorSet> &descriptorSets,
+                                               uint32_t firstDescritorSetIndex,
+                                               GraphicsObject drawable,
+                                               uint32_t instances,
+                                               uint32_t firstInstance)
+    {
+
+        //First begin the command buffer.
+        if(!CommandBufferManager::beginCommandBuffer(cmdBuffer,
+                                                     VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT))
+        {
+            return false;
+        }
+
+        //Set image memory barrier if needed.
+        if(presentQueueFamilyIndex != graphicsQueueFamilyIndex)
+        {
+            ImageTransition imageTransitionBeforeDrawing =
+            {
+                swapchainImage,
+                VK_ACCESS_MEMORY_READ_BIT,
+                VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+                VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                presentQueueFamilyIndex,
+                graphicsQueueFamilyIndex,
+                VK_IMAGE_ASPECT_COLOR_BIT
+            };
+            setImageMemoryBarriers(cmdBuffer,
+                                   VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+                                   VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                                   {imageTransitionBeforeDrawing});
+        }
+
+        VkRect2D drawingArea =
+        {
+            0,                      //offset x
+            0,                      //offset y
+            framebufferSize.width,  //extent x
+            framebufferSize.height  //extent y
+        };
+
+        //Begin the render pass.
+        vulkanRenderer.beginRenderPass(cmdBuffer, renderPass, framebuffer, drawingArea, clearValues,
+                                       VK_SUBPASS_CONTENTS_INLINE);
+
+        //Bind the graphics pipeline.
+        vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+
+        //Define the dynamic states.
+        VkViewport viewport =
+        {
+            0.0f,
+            0.0f,
+            static_cast<float>(framebufferSize.width),
+            static_cast<float>(framebufferSize.height),
+            0.0f,
+            1.0f
+        };
+        setViewportState(cmdBuffer, 0, {viewport});
+
+        VkRect2D scissor =
+        {
+            {
+                0,
+                0
+            },
+            {
+                framebufferSize.width,
+                framebufferSize.height
+            }
+        };
+        setScissorState(cmdBuffer, 0, {scissor});
+
+        //Bind the vertex buffer.
+        bindVertexBuffers(cmdBuffer, firstVertexBufferBinding, bufferParams);
+
+        //Bind descriptor sets so that the data can be used in the shaders.
+        if(descriptorSets.size() > 0)
+        {
+            VulkanDescriptorManager::bindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                                        pipelineLayout, firstDescritorSetIndex,
+                                                        descriptorSets, {});
+        }
+
+        //Draw.
+        vkCmdDraw(cmdBuffer, drawable.getMesh()->vertexCount, instances,
+                  drawable.getMesh()->vertexOffset, firstInstance);
+
+
+        //End the render pass.
+        vulkanRenderer.endRenderPass(cmdBuffer);
+
+        //Change image usage with a barrier.
+        if(presentQueueFamilyIndex != graphicsQueueFamilyIndex)
+        {
+            ImageTransition imageTransitionBeforePresent =
+            {
+                swapchainImage,
+                VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+                VK_ACCESS_MEMORY_READ_BIT,
+                VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                graphicsQueueFamilyIndex,
+                presentQueueFamilyIndex,
+                VK_IMAGE_ASPECT_COLOR_BIT
+            };
+            setImageMemoryBarriers(cmdBuffer, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                                   VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, {imageTransitionBeforePresent});
+        }
+
+        if(!CommandBufferManager::endCommandBuffer(cmdBuffer))
+            return false;
+
+        return true;
+    }
+
+    /**
      * @brief Initializes the queues this logical vulkan device will be using.
      * @param familyInfo
      * @return

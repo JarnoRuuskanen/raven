@@ -58,8 +58,5 @@ namespace Raven
             //Describes shader stages.
             void describePipelineShaderStages(std::vector<ShaderStageParameters> const &stages,
                                               std::vector<VkPipelineShaderStageCreateInfo> &stageInfos) noexcept;
-
-
-
     };
 }

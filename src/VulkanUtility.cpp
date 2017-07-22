@@ -1686,4 +1686,21 @@ namespace Raven
                                   memoryOffsets.data());
         }
     }
+
+    /**
+     * @brief Sets dynamic viewports.
+     * @param cmdBuffer
+     * @param firstViewport
+     * @param viewports
+     */
+    void setViewportState(VkCommandBuffer cmdBuffer, uint32_t firstViewport, const std::vector<VkViewport> &viewports)
+    {
+        vkCmdSetViewport(cmdBuffer, firstViewport, static_cast<uint32_t>(viewports.size()), viewports.data());
+    }
+
+    //Sets dynamic scissors.
+    void setScissorState(VkCommandBuffer cmdBuffer, uint32_t firstScissor, const std::vector<VkRect2D> &scissors)
+    {
+        vkCmdSetScissor(cmdBuffer, firstScissor, static_cast<uint32_t>(scissors.size()), scissors.data());
+    }
 }

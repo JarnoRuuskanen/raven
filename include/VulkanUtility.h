@@ -326,4 +326,10 @@ namespace Raven
     void bindVertexBuffers(VkCommandBuffer cmdBuffer,
                            uint32_t binding,
                            const std::vector<VertexBufferParameters> &bufferParams);
+
+    //Sets dynamic viewports.
+    void setViewportState(VkCommandBuffer cmdBuffer, uint32_t firstViewport, const std::vector<VkViewport> &viewports);
+
+    //Sets dynamic scissors.
+    void setScissorState(VkCommandBuffer cmdBuffer, uint32_t firstScissor, const std::vector<VkRect2D> &scissors);
 }

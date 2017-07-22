@@ -9,6 +9,13 @@
     vertex data, have their own materials, textures, positions etc etc. **/
 namespace Raven
 {
+    struct Mesh
+    {
+        std::vector<float> data;
+        uint32_t vertexOffset;
+        uint32_t vertexCount;
+    };
+
     class GraphicsObject
     {
         public:
@@ -24,14 +31,10 @@ namespace Raven
                             VkFormat format,
                             VkSampleCountFlagBits samples,
                             uint32_t mipLevelCount);
+
+            Mesh *getMesh(){return &mesh;}
         private:
             VulkanImage textureObject;
-
-            struct Mesh
-            {
-                std::vector<float> data;
-                std::vector<uint32_t> vertexOffset;
-                std::vector<uint32_t> vertexCount;
-            } mesh;
+            Mesh mesh;
     };
 }

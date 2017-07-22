@@ -1,4 +1,5 @@
 #include "CommandBufferManager.h"
+#include "VulkanStructures.h"
 
 namespace Raven
 {
@@ -51,8 +52,12 @@ namespace Raven
          * @param cmdBuffer
          * @param beginInfo
          */
-        bool beginCommandBuffer(VkCommandBuffer &cmdBuffer, const VkCommandBufferBeginInfo beginInfo)
+        bool beginCommandBuffer(VkCommandBuffer &cmdBuffer,
+                                const VkCommandBufferUsageFlags usage)
         {
+            VkCommandBufferBeginInfo beginInfo =
+                    VulkanStructures::commandBufferBeginInfo(usage);
+
             VkResult result = vkBeginCommandBuffer(cmdBuffer, &beginInfo);
             if(result != VK_SUCCESS)
             {

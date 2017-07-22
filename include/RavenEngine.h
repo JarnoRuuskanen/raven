@@ -42,7 +42,7 @@ namespace Raven
             bool createVertexBuffers();
 
             //Allocates the application command pools, buffers and records the actions.
-            bool buildCommandBuffers();
+            bool buildCommandBuffersForDrawingGeometry();
 
             //Private objects:
 

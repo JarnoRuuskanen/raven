@@ -133,7 +133,7 @@ namespace Raven
         createVertexBuffers();
 
         //Build the command buffers.
-        buildCommandBuffers();
+        buildCommandBuffersForDrawingGeometry();
         //Start rendering.
         render();
 
@@ -449,7 +449,7 @@ namespace Raven
      * @brief Allocates the application command pools, buffers and records the actions.
      * @return False if something went wrong.
      */
-    bool RavenEngine::buildCommandBuffers()
+    bool RavenEngine::buildCommandBuffersForDrawingGeometry()
     {
         /**
          * Create a new command buffer for each framebuffer object. This could
@@ -464,10 +464,7 @@ namespace Raven
                 VulkanStructures::commandPoolCreateInfo(vulkanDevice->getPrimaryQueueFamilyIndex());
         //Create a command pool.
         if(!CommandBufferManager::createCommandPool(vulkanDevice->getLogicalDevice(), poolInfo, cmdPool))
-        {
-            std::cerr << "Failed to create a command pool!" << std::endl;
             return false;
-        }
 
         VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         uint32_t bufferCount = 3;
@@ -483,12 +480,11 @@ namespace Raven
             return false;
         }
 
-        VkCommandBufferUsageFlags flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-        VkCommandBufferBeginInfo beginInfo = VulkanStructures::commandBufferBeginInfo(flags);
         //Record actions to each individual buffer:
         for(int i = 0; i < commandBuffers.size(); i++)
         {
-            if(!CommandBufferManager::beginCommandBuffer(commandBuffers[i], beginInfo))
+            if(!CommandBufferManager::beginCommandBuffer(commandBuffers[i],
+                                                         VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT))
             {
                 std::cerr << "Failed to start command buffer recording for buffer number: " <<i <<std::endl;
                 return false;

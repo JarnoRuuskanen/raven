@@ -24,7 +24,8 @@ namespace Raven
                                    const VkCommandBufferAllocateInfo allocInfo,
                                    std::vector<VkCommandBuffer> &commandBuffers);
         //Opens a command buffer for recording.
-        bool beginCommandBuffer(VkCommandBuffer &cmdBuffer, const VkCommandBufferBeginInfo beginInfo);
+        bool beginCommandBuffer(VkCommandBuffer &cmdBuffer,
+                                const VkCommandBufferUsageFlags usage);
         //Ends command buffer recording.
         bool endCommandBuffer(VkCommandBuffer &cmdBuffer);
         //Resets a command buffer. This is far less expensive than creating a new cmd buffer.
