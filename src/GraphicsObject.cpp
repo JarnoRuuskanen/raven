@@ -44,13 +44,13 @@ namespace Raven
     {
         //First load the image data. Note that the data is not being
         //uploaded to the image yet.
-        unsigned char* pixels;
-        int imageHeight, imageWidth, layerCount;
-        FileIO::readImageFile(filename, pixels, imageWidth, imageHeight, layerCount);
+        std::vector<unsigned char> pixels;
+        int imageHeight, imageWidth, imageComponentCount, dataSize;
+        FileIO::readImageFile(filename, pixels, &imageWidth, &imageHeight, &imageComponentCount, 4, &dataSize);
 
         //Create a staging buffer for the image data with host-visible memory.
         VulkanBuffer stagingBuffer;
-        stagingBuffer.size = imageWidth * imageHeight * 4;
+        stagingBuffer.size = dataSize; //imageWidth * imageHeight * 4;
 
         VkBufferCreateInfo stagingBufferCreateInfo =
                 VulkanStructures::bufferCreateInfo(stagingBuffer.size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
@@ -77,7 +77,7 @@ namespace Raven
         //Flush the data to the memory object.
         void* dataPointer;
         flushDataToHostLocalMemory(logicalDevice, stagingMemory, 0, stagingBuffer.size,
-                          pixels, &dataPointer, true);
+                          pixels.data(), &dataPointer, true);
 
         //Add image extent information.
         VkExtent3D extent;
@@ -93,7 +93,7 @@ namespace Raven
 
         //Create the image and the image view.
         if(!createImageWithImageView(logicalDevice, memoryProperties, usage,
-                                     VK_IMAGE_TYPE_2D, VK_IMAGE_VIEW_TYPE_2D, format, extent, layerCount,
+                                     VK_IMAGE_TYPE_2D, VK_IMAGE_VIEW_TYPE_2D, format, extent, imageComponentCount,
                                      samples, VK_IMAGE_LAYOUT_UNDEFINED, VK_SHARING_MODE_EXCLUSIVE,
                                      mipLevelCount, false, VK_IMAGE_ASPECT_COLOR_BIT, textureObject,
                                      textureObject.imageMemory))

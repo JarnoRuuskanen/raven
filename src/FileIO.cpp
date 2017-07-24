@@ -9,25 +9,56 @@ namespace Raven
 {
     namespace FileIO
     {
-        /**
-         * @brief Reads an image file and returns the data.
+    /**
+         * @brief Reads an image file and loads the texture data.
          * @param filename
-         * @param data
-         * @param width
-         * @param height
-         * @param layerCount
+         * @param imageData
+         * @param imageWidth
+         * @param imageHeight
+         * @param imageComponentCount
+         * @param requestedComponentCount (4 for rgba)
+         * @param imageDataSize
          * @return False if something went wrong.
          */
-        bool readImageFile(std::string filename, unsigned char *data,
-                           int &width, int &height, int &layerCount) noexcept
+        bool readImageFile(std::string filename, std::vector<unsigned char> &imageData,
+                           int *imageWidth, int *imageHeight, int *imageComponentCount,
+                           int requestedComponentCount, int *imageDataSize) noexcept
         {
-            data = stbi_load(filename.c_str(), &width,
-                             &height, &layerCount, STBI_rgb_alpha);
-            if(!data)
+            int width = 0;
+            int height = 0;
+            int components = 0;
+
+            std::unique_ptr<unsigned char, void(*)(void*)> stbiData(stbi_load(filename.c_str(),
+                                                                              &width,
+                                                                              &height,
+                                                                              &components,
+                                                                              requestedComponentCount),
+                                                                    stbi_image_free);
+
+            if((!stbiData)  ||
+               (width <= 0) ||
+               (height <= 0)||
+               (components <= 0))
             {
                 std::cerr << "Failed to load image file!" << std::endl;
                 return false;
             }
+
+            int dataSize =
+                    width*height*(0 < requestedComponentCount ? requestedComponentCount : components);
+
+            if(imageDataSize)
+                *imageDataSize = dataSize;
+            if(imageWidth)
+                *imageWidth = width;
+            if(imageHeight)
+                *imageHeight = height;
+            if(imageComponentCount)
+                *imageComponentCount = components;
+
+            imageData.resize(dataSize);
+            std::memcpy(imageData.data(), stbiData.get(), dataSize);
+
             return true;
         }
 
