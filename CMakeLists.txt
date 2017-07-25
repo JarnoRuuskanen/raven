@@ -50,6 +50,15 @@ if(NOT EXISTS ${STBINC_PREFIX})
 endif()
 include_directories( ${STBINC_PREFIX} )
 
+# Tiny object loader for loading .obj files.
+set(EXTDIR "${CMAKE_SOURCE_DIR}/Resources/Libraries/tinyobjloader-master")
+set(OBJINCLUDES "${EXTDIR}")
+get_filename_component(OBJINC_PREFIX "${OBJINCLUDES}" ABSOLUTE)
+if(NOT EXISTS ${OBJINC_PREFIX})
+    message(FATAL_ERROR "Necessary tinyobjloader header does not exist: " ${OBJINC_PREFIX})
+endif()
+include_directories(${OBJINC_PREFIX})
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # Gather list of header and source files for compilation.

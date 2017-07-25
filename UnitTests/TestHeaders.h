@@ -35,3 +35,5 @@
 #include "VulkanPipeline.cpp"
 #include "RavenEngine.h"
 #include "RavenEngine.cpp"
+#include "GraphicsObject.h"
+#include "GraphicsObject.cpp"

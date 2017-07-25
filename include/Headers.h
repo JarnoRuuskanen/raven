@@ -10,6 +10,7 @@
 #include <thread>
 #include <functional>
 #include <future>
+#include "glm/glm.hpp"
 
 //Platform specific variables will be define here
 namespace Raven

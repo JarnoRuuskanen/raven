@@ -941,9 +941,11 @@ namespace Raven
         }
 
         //Draw.
-        vkCmdDraw(cmdBuffer, drawable.getMesh()->vertexCount, instances,
-                  drawable.getMesh()->vertexOffset, firstInstance);
-
+        for(size_t i = 0; i < drawable.getMesh()->parts.size(); ++i)
+        {
+            vkCmdDraw(cmdBuffer, drawable.getMesh()->parts[i].vertexCount, instances,
+                      drawable.getMesh()->parts[i].vertexOffset, firstInstance);
+        }
 
         //End the render pass.
         vulkanRenderer.endRenderPass(cmdBuffer);

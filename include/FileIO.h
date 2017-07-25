@@ -17,5 +17,6 @@ namespace Raven
 
         //Writes data into a file.
         bool writeBinaryFile(std::string destinationFilename);
+
     }
 }

@@ -12,8 +12,12 @@ namespace Raven
     struct Mesh
     {
         std::vector<float> data;
-        uint32_t vertexOffset;
-        uint32_t vertexCount;
+        struct Part
+        {
+            uint32_t vertexOffset;
+            uint32_t vertexCount;
+        };
+        std::vector<Part> parts;
     };
 
     class GraphicsObject
@@ -21,8 +25,10 @@ namespace Raven
         public:
             GraphicsObject();
             virtual ~GraphicsObject();
-            //Loads the vertices of the object.
-            bool loadFrame(const VkDevice logicalDevice, const std::string filename);
+            //Loads the model data of a file.
+            bool loadModel(const VkDevice logicalDevice, const std::string filename,
+                           bool loadNormals, bool loadTextureCoordinates, bool generateTangentSpaceVectors,
+                           bool normalize, uint32_t *vertexStride);
             //Adds a texture to the object.
             bool addTexture(const VkDevice logicalDevice,
                             VkPhysicalDeviceMemoryProperties memoryProperties,
@@ -34,6 +40,12 @@ namespace Raven
 
             Mesh *getMesh(){return &mesh;}
         private:
+            void generateTangentSpaceVectors(Mesh &mesh);
+            void calculateTangentAndBitangent(float const *normalData,
+                                              const glm::vec3 &faceTangent,
+                                              const glm::vec3 &faceBitangent,
+                                              float *tangentData,
+                                              float *bitangentData);
             VulkanImage textureObject;
             Mesh mesh;
     };
