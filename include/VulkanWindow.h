@@ -35,6 +35,13 @@ namespace Raven
             bool createWindowSurface(VkInstance instance);
             //Creates the window frame
             bool createWindowFrame(uint16_t width, uint16_t height);
+            //Creates a swapchain for the window.
+            bool createWindowSwapchain(VkDevice &logicalDevice,
+                                       uint32_t queueFamilyIndex,
+                                       VkPhysicalDevice &physicalDevice,
+                                       VkImageUsageFlags desiredImageUsage,
+                                       VkPresentModeKHR &presentationMode,
+                                       VkSwapchainKHR &oldSwapchain);
             //Returns a reference to the window surface.
             inline VkSurfaceKHR& getPresentationSurface(){ return presentationSurface; }
             //Returns a reference to the window swapchain object.

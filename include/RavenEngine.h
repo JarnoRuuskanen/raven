@@ -30,13 +30,12 @@ namespace Raven
 
             //Creates a new VulkanWindow. VulkanWindow will hold swapchain and all closely
             //to a presentation window related objects.
-            bool openNewWindow(uint16_t windowWidth, uint16_t windowHeight, VulkanWindow *window);
-
-            //Creates a new swapchain to be used for rendering.
-            bool buildSwapchain(VkImageUsageFlags desiredImageUsage,
-                                VkPresentModeKHR &presentationMode,
-                                VkSwapchainKHR &oldSwapchain,
-                                VulkanWindow *window);
+            bool openNewWindow(uint16_t windowWidth,
+                               uint16_t windowHeight,
+                               VkImageUsageFlags desiredImageUsage,
+                               VkPresentModeKHR &presentationMode,
+                               VkSwapchainKHR &oldSwapchain,
+                               VulkanWindow *window);
 
             //Creates the vertex buffers.
             bool createVertexBuffers();
