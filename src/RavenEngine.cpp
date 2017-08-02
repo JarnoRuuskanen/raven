@@ -126,8 +126,19 @@ namespace Raven
                                appWindow->getSwapchain(), appWindow->getImages()))
             return false;
 
-        //Create vertex buffers.
-        createVertexBuffers();
+        //Create a renderer.
+        vulkanRenderer = new VulkanRenderer();
+
+        //Create an object which we want to render.
+        std::string objectSource = "../Resources/Models/torus.obj";
+        uint32_t stride;
+
+        GraphicsObject graphicsObject;
+        if(!graphicsObject.loadModel(vulkanDevice->getLogicalDevice(), objectSource, true, false, false, true, &stride))
+            return false;
+
+        //Create vertex buffer from the object data.
+        createVertexBuffers(graphicsObject);
 
         //Build the command buffers.
         buildCommandBuffersForDrawingGeometry();
@@ -292,23 +303,21 @@ namespace Raven
      * @brief Creates the vertex buffers.
      * @return False if vertex buffers could not be created.
      */
-    bool RavenEngine::createVertexBuffers()
+    bool RavenEngine::createVertexBuffers(GraphicsObject &graphicsObject)
     {
         /** This function describes parts of the process of creating a vertex buffer.
             However, it is not yet fully implemented due to the lack of data. */
 
-        /*
         //Creating a buffer:
         //After that create the buffer info. Buffer size should be the size of the data that it will hold.
-        VulkanBuffer vertexBuffer;
-
-        //Load the data from a file etc. and add it into vertexBuffer.data.
+        /*VulkanBuffer vertexBuffer;
 
         //vertexBuffer.size should be the size of the data.
-        vertexBuffer.size = 8;
+        vertexBuffer.size = sizeof(graphicsObject.getMesh()->data[0])*graphicsObject.getMesh()->data.size();
         VkBufferCreateInfo bufferInfo =
             VulkanStructures::bufferCreateInfo(vertexBuffer.size,
-                                               VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                                               VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
+                                               VK_BUFFER_USAGE_TRANSFER_DST_BIT,
                                                VK_SHARING_MODE_EXCLUSIVE);
 
         //Create the actual buffer.
@@ -323,18 +332,13 @@ namespace Raven
         VkPhysicalDeviceMemoryProperties memoryProperties;
         vkGetPhysicalDeviceMemoryProperties(selectedPhysicalDevice, &memoryProperties);
 
-        uint32_t memoryTypeIndex;
-        if(!getMemoryType(memoryProperties, memReq, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                      VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, memoryTypeIndex))
-            return false;
-
-        //Create the allocation info:
-        VkMemoryAllocateInfo allocationInfo =
-            VulkanStructures::memoryAllocateInfo(memReq.size, memoryTypeIndex);
         //Allocate the memory:
         VkDeviceMemory vertexMemory = VK_NULL_HANDLE;
-        if(!allocateMemory(vulkanDevice->getLogicalDevice(), allocationInfo, vertexMemory))
+        if(!allocateMemory(vulkanDevice->getLogicalDevice(), memoryProperties,memReq,
+                           VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexMemory))
+        {
             return false;
+        }
 
         if(!vertexBuffer.bindBufferMemory(vulkanDevice->getLogicalDevice(), vertexMemory))
             return false;

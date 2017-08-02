@@ -38,7 +38,7 @@ namespace Raven
                                VulkanWindow *window);
 
             //Creates the vertex buffers.
-            bool createVertexBuffers();
+            bool createVertexBuffers(GraphicsObject &graphicsObject);
 
             //Allocates the application command pools, buffers and records the actions.
             bool buildCommandBuffersForDrawingGeometry();
@@ -68,5 +68,9 @@ namespace Raven
             //Application window/windows.
             VulkanWindow* appWindow = nullptr;
             uint16_t windowHeight = 500, windowWidth = 500;
+
+            //A renderer for RavenEngine.
+            VulkanRenderer* vulkanRenderer = nullptr;
+
     };
 }

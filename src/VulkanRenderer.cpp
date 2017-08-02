@@ -1,12 +1,12 @@
 #include "VulkanRenderer.h"
 #include "VulkanStructures.h"
 #include "VulkanUtility.h"
+#include "VulkanDevice.h"
 /**
  * @brief VulkanRenderer::VulkanRenderer
  */
 VulkanRenderer::VulkanRenderer()
 {
-
 }
 
 /**
@@ -14,7 +14,6 @@ VulkanRenderer::VulkanRenderer()
  */
 VulkanRenderer::~VulkanRenderer()
 {
-
 }
 
 /**
@@ -252,15 +251,15 @@ bool VulkanRenderer::buildGeometryAndPostProcessingRenderPass(const VkDevice log
  */
 bool VulkanRenderer::
     buildRendererWithColorAndDepthAttachments(VkPhysicalDeviceMemoryProperties memoryProperties,
-                                               const VkDevice logicalDevice,
-                                               uint32_t width,
-                                               uint32_t height,
-                                               VulkanImage &colorImageObject,
-                                               VkDeviceMemory &colorImageMemory,
-                                               VulkanImage &depthImageObject,
-                                               VkDeviceMemory &depthImageMemory,
-                                               VkRenderPass &renderPass,
-                                               VkFramebuffer &framebuffer)
+                                              const VkDevice logicalDevice,
+                                              uint32_t width,
+                                              uint32_t height,
+                                              VulkanImage &colorImageObject,
+                                              VkDeviceMemory &colorImageMemory,
+                                              VulkanImage &depthImageObject,
+                                              VkDeviceMemory &depthImageMemory,
+                                              VkRenderPass &renderPass,
+                                              VkFramebuffer &framebuffer)
 {
     //First create the color image + image view.
     VkExtent3D imageExtent = {width, height, 1};

@@ -25,6 +25,7 @@ namespace Raven
     };
 }
 using namespace Raven;
+class VulkanDevice;
 //A class in charge of rendering content into window/windows provided by the application.
 class VulkanRenderer
 {
@@ -86,8 +87,11 @@ class VulkanRenderer
         //Destroys a render pass.
         void destroyRenderPass(VkDevice logicalDevice, VkRenderPass &renderPass);
 
+        //Renders content to the window owned by VulkanRenderer.
+        void render();
+
     private:
         std::vector<VkRenderPass> renderPasses;
         //Pointers to the windows into which the renderer should render the contents.
-        std::vector<VulkanWindow*> windows;
+        VulkanWindow *window;
 };
