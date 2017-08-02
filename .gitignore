@@ -4,4 +4,6 @@ build
 CMakeLists.txt.user
 Doxyfile
 doc
-Resources
+Resources/Libraries
+Resources/Textures
+Resources/Shaders/general
