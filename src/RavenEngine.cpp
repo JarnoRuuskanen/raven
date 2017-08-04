@@ -47,7 +47,8 @@ namespace Raven
         {
             //Wait until the device/devices are idle before proceeding to deletion.
             waitUntilDeviceIdle(vulkanDevice->getLogicalDevice());
-            vulkanDevice.reset();
+            //vulkanDevice.reset();
+            delete vulkanDevice;
         }
 
         //Destroy the vulkan instance
@@ -106,7 +107,7 @@ namespace Raven
         //Create a logical device out of the selected physical device.
         //Raven will be built to support multiple queues, that will all be used simultaneously
         //with added synchronization. This is to not tax one queue unecessarily.
-        vulkanDevice = std::unique_ptr<VulkanDevice>(new VulkanDevice());
+        vulkanDevice = new VulkanDevice();
 
         if(!createVulkanDevice(selectedPhysicalDevice, desiredDeviceExtensions))
             return false;
@@ -118,13 +119,9 @@ namespace Raven
         VkImageUsageFlags desiredImageUsages = SETTINGS_IMAGE_USAGE_FLAGS;
         VkSwapchainKHR oldSwapchain = VK_NULL_HANDLE;
 
+        //Open a new window.
         appWindow = new VulkanWindow();
         if(!openNewWindow(windowWidth, windowHeight, desiredImageUsages, presentationMode, oldSwapchain, appWindow))
-            return false;
-
-        //Acquire the swapchain images.
-        if(!getSwapchainImages(vulkanDevice->getLogicalDevice(),
-                               appWindow->getSwapchain(), appWindow->getImages()))
             return false;
 
         //Create a renderer.
@@ -147,8 +144,8 @@ namespace Raven
             return false;
 
         //Start rendering.
-        //vulkanRenderer->render();
-        render();
+        vulkanRenderer->render(appWindow);
+
         return true;
     }
 
@@ -267,8 +264,9 @@ namespace Raven
     }
 
     /**
-     * @brief Creates a new VulkanWindow. VulkanWindow will hold swapchain and all closely
-     *        to a presentation window related objects.
+     * @brief Creates a new VulkanWindow with a swapchain.
+     *        VulkanWindow will hold swapchain and all
+     *        presentation related objects.
      * @param windowWidth
      * @param windowHeight
      * @param window Handle to the VulkanWindow.
@@ -301,7 +299,9 @@ namespace Raven
             }
 
             //Get the swapchain images and create image views.
-
+            if(!getSwapchainImages(vulkanDevice->getLogicalDevice(),
+                                   window->getSwapchain(), window->getImages()))
+                return false;
 
             return true;
     }
@@ -328,7 +328,8 @@ namespace Raven
                                                VK_SHARING_MODE_EXCLUSIVE);
 
         //Create the actual buffer.
-        createBuffer(vulkanDevice->getLogicalDevice(), bufferInfo, vertexBuffer.buffer);
+        if(!createBuffer(vulkanDevice->getLogicalDevice(), bufferInfo, vertexBuffer.buffer))
+            return false;
 
         //Buffers and images don't have a memory backing so we need to allocate the memory for them.
         //Get buffer memory requirements and allocate the memory.
@@ -351,6 +352,8 @@ namespace Raven
             return false;
         
         //Update the object data to the vertex buffer using a staging buffer.
+        //Copy the data into the staging buffer and map it to the vertex buffer.
+
 
 
         return true;

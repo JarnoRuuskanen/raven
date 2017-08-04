@@ -63,7 +63,8 @@ namespace Raven
 
             //A pointer to a VulkanDevice class object. Naming this a pointer
             //quarantees correct order of object destruction.
-            std::unique_ptr<VulkanDevice> vulkanDevice = nullptr;
+            //std::unique_ptr<VulkanDevice> vulkanDevice = nullptr;
+            VulkanDevice* vulkanDevice = nullptr;
 
             //Application window/windows.
             VulkanWindow* appWindow = nullptr;
