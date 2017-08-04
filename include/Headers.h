@@ -9,6 +9,7 @@
 #include <cstring>
 #include <thread>
 #include <functional>
+#include <memory>
 #include <future>
 #include "glm/glm.hpp"
 

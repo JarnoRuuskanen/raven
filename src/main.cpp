@@ -1,6 +1,7 @@
 #include <iostream>
 #include "RavenEngine.h"
 
+using namespace Raven;
 /**
  * @brief Starts the Raven.
  * @return Returns 0 when application exits.

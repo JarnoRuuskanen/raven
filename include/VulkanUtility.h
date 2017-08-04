@@ -199,8 +199,8 @@ namespace Raven
     //This function takes data and pushes it into a staging resource and then
     //gives a pointer to that data.
     bool flushDataToHostLocalMemory(const VkDevice logicalDevice, VkDeviceMemory deviceMemory,
-                           VkDeviceSize offset, VkDeviceSize dataSize, void* data,
-                           void **pointer, bool unmap);
+                                    VkDeviceSize offset, VkDeviceSize dataSize, void* data,
+                                    void **pointer, bool unmap);
 
     //Copies data between two buffers.
     bool copyDataBetweenBuffers(VkCommandBuffer cmdBuffer, VkBuffer sourceBuffer,

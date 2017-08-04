@@ -47,7 +47,7 @@ namespace Raven
         {
             //Wait until the device/devices are idle before proceeding to deletion.
             waitUntilDeviceIdle(vulkanDevice->getLogicalDevice());
-            delete vulkanDevice;
+            vulkanDevice.reset();
         }
 
         //Destroy the vulkan instance
@@ -106,7 +106,8 @@ namespace Raven
         //Create a logical device out of the selected physical device.
         //Raven will be built to support multiple queues, that will all be used simultaneously
         //with added synchronization. This is to not tax one queue unecessarily.
-        vulkanDevice = new VulkanDevice();
+        vulkanDevice = std::unique_ptr<VulkanDevice>(new VulkanDevice());
+
         if(!createVulkanDevice(selectedPhysicalDevice, desiredDeviceExtensions))
             return false;
 
@@ -138,13 +139,16 @@ namespace Raven
             return false;
 
         //Create vertex buffer from the object data.
-        createVertexBuffers(graphicsObject);
+        if(!createDataForShaders(graphicsObject))
+            return false;
 
         //Build the command buffers.
-        buildCommandBuffersForDrawingGeometry();
-        //Start rendering.
-        render();
+        if(!buildCommandBuffersForDrawingGeometry())
+            return false;
 
+        //Start rendering.
+        //vulkanRenderer->render();
+        render();
         return true;
     }
 
@@ -296,21 +300,24 @@ namespace Raven
                 return false;
             }
 
+            //Get the swapchain images and create image views.
+
+
             return true;
     }
 
     /**
-     * @brief Creates the vertex buffers.
+     * @brief Creates objects required by shaders to draw geometry.
      * @return False if vertex buffers could not be created.
      */
-    bool RavenEngine::createVertexBuffers(GraphicsObject &graphicsObject)
+    bool RavenEngine::createDataForShaders(GraphicsObject &graphicsObject)
     {
         /** This function describes parts of the process of creating a vertex buffer.
             However, it is not yet fully implemented due to the lack of data. */
 
         //Creating a buffer:
         //After that create the buffer info. Buffer size should be the size of the data that it will hold.
-        /*VulkanBuffer vertexBuffer;
+        VulkanBuffer vertexBuffer;
 
         //vertexBuffer.size should be the size of the data.
         vertexBuffer.size = sizeof(graphicsObject.getMesh()->data[0])*graphicsObject.getMesh()->data.size();
@@ -340,9 +347,12 @@ namespace Raven
             return false;
         }
 
-        if(!vertexBuffer.bindBufferMemory(vulkanDevice->getLogicalDevice(), vertexMemory))
+        if(!vertexBuffer.bindMemoryObject(vulkanDevice->getLogicalDevice(), vertexMemory))
             return false;
-        */
+        
+        //Update the object data to the vertex buffer using a staging buffer.
+
+
         return true;
     }
 

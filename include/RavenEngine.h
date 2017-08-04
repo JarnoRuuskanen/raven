@@ -38,7 +38,7 @@ namespace Raven
                                VulkanWindow *window);
 
             //Creates the vertex buffers.
-            bool createVertexBuffers(GraphicsObject &graphicsObject);
+            bool createDataForShaders(GraphicsObject &graphicsObject);
 
             //Allocates the application command pools, buffers and records the actions.
             bool buildCommandBuffersForDrawingGeometry();
@@ -63,7 +63,7 @@ namespace Raven
 
             //A pointer to a VulkanDevice class object. Naming this a pointer
             //quarantees correct order of object destruction.
-            VulkanDevice* vulkanDevice = nullptr;
+            std::unique_ptr<VulkanDevice> vulkanDevice = nullptr;
 
             //Application window/windows.
             VulkanWindow* appWindow = nullptr;
