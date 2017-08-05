@@ -78,7 +78,11 @@ namespace Raven
             xcb_screen_iterator_t iterator = xcb_setup_roots_iterator(setup);
             xcb_screen_t *screen = iterator.data;
 
-            // Create the window.
+            // Create the window. Also describe the masks for event handling.
+            uint32_t mask = XCB_CW_EVENT_MASK;
+            uint32_t events [1];
+            events[0] = XCB_EVENT_MASK_BUTTON_PRESS | XCB_EVENT_MASK_EXPOSURE;
+
             windowParameters.window = xcb_generate_id(windowParameters.connection);
             xcb_create_window(windowParameters.connection,
                               XCB_COPY_FROM_PARENT,
@@ -89,7 +93,7 @@ namespace Raven
                               10,
                               XCB_WINDOW_CLASS_INPUT_OUTPUT,
                               screen->root_visual,
-                              0, NULL);
+                              mask, events);
 
             // Map the window on the screen.
             xcb_map_window(windowParameters.connection, windowParameters.window);
@@ -218,6 +222,39 @@ namespace Raven
         }
 
         return true;
+    }
+
+    /**
+     * @brief Displays the rendered content.
+     */
+    void VulkanWindow::play()
+    {
+        xcb_generic_event_t *event;
+        while((event = xcb_wait_for_event(windowParameters.connection)))
+        {
+            switch(event->response_type & ~0x80)
+            {
+                case XCB_EXPOSE:
+                {
+                    std::cout << "Window exposed!" << std::endl;
+                    break;
+                }
+
+                case XCB_BUTTON_PRESS:
+                {
+                    std::cout << "Button pressed!" << std::endl;
+                    break;
+                }
+
+                default:
+                {
+                    //By default, render content.
+                    break;
+                }
+            }
+
+            free(event);
+        }
     }
 
 }

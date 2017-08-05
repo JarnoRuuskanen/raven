@@ -443,7 +443,7 @@ namespace Raven
 
     void VulkanRenderer::render(VulkanWindow* renderTarget)
     {
-
+        renderTarget->play();
     }
 
 }

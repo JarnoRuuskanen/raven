@@ -42,6 +42,9 @@ namespace Raven
                                        VkImageUsageFlags desiredImageUsage,
                                        VkPresentModeKHR &presentationMode,
                                        VkSwapchainKHR &oldSwapchain);
+            //Displays the rendered content.
+            void play();
+
             //Returns a reference to the window surface.
             inline VkSurfaceKHR& getPresentationSurface(){ return presentationSurface; }
             //Returns a reference to the window swapchain object.
