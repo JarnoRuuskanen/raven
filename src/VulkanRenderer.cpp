@@ -441,6 +441,104 @@ namespace Raven
         }
     }
 
+    /**
+     * @brief A function from VulkanCookbook for preparing a single frame of animation.
+     * @param logicalDevice
+     * @param graphicsQueue
+     * @param presentQueue
+     * @param swapchain
+     * @param swapchainSize
+     * @param swapchainImageViews
+     * @param depthAttachment
+     * @param waitInfos
+     * @param imageAcquiredSemaphore
+     * @param readyToPresentSemaphore
+     * @param finishedDrawingFence
+     * @param recordCommandBuffer
+     * @param cmdBuffer
+     * @param renderPass
+     * @param framebuffer
+     * @return
+     */
+    bool VulkanRenderer::prepareSingleFrameOfAnimation(VkDevice logicalDevice,
+                                                       VkQueue graphicsQueue,
+                                                       VkQueue presentQueue,
+                                                       VkSwapchainKHR swapchain,
+                                                       VkExtent2D swapchainSize,
+                                                       const std::vector<VkImageView> &swapchainImageViews,
+                                                       VkImageView depthAttachment,
+                                                       const std::vector<WaitSemaphoreInfo> &waitInfos,
+                                                       VkSemaphore imageAcquiredSemaphore,
+                                                       VkSemaphore readyToPresentSemaphore,
+                                                       VkFence finishedDrawingFence,
+                                                       std::function<bool(VkCommandBuffer, uint32_t, VkFramebuffer)>
+                                                                          recordCommandBuffer,
+                                                       VkCommandBuffer cmdBuffer,
+                                                       VkRenderPass renderPass,
+                                                       VkFramebuffer &framebuffer)
+    {
+        //Get the index of a free image, which can be rendered on to.
+        uint32_t imageIndex;
+        if(!acquireSwapchainImage(logicalDevice, swapchain, imageAcquiredSemaphore, VK_NULL_HANDLE, imageIndex))
+            return false;
+
+        //Select the correct image view.
+        std::vector<VkImageView> attachments = {swapchainImageViews[imageIndex]};
+        if(depthAttachment != VK_NULL_HANDLE)
+        {
+            attachments.push_back(depthAttachment);
+        }
+
+        //Create a framebuffer.
+        if(!createFramebuffer(logicalDevice, renderPass, attachments, swapchainSize.width, swapchainSize.height,
+                              1, framebuffer))
+        {
+            return false;
+        }
+
+        //Record to the command buffer.
+        if(!recordCommandBuffer(cmdBuffer, imageIndex, framebuffer))
+        {
+            return false;
+        }
+
+        std::vector<WaitSemaphoreInfo> waitSemaphoreInfos = waitInfos;
+        waitSemaphoreInfos.push_back({ imageAcquiredSemaphore, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT });
+        std::vector<VkSemaphore> waitSemaphores;
+        std::vector<VkPipelineStageFlags> waitSemaphoreStages;
+        for(auto& waitSemaphoreInfo : waitSemaphoreInfos)
+        {
+            waitSemaphores.emplace_back(waitSemaphoreInfo.semaphore);
+            waitSemaphoreStages.emplace_back(waitSemaphoreInfo.waitingStage);
+        }
+
+        VkSubmitInfo submitInfo = VulkanStructures::submitInfo();
+        submitInfo.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphoreInfos.size());
+        submitInfo.pWaitSemaphores = waitSemaphores.data();
+        submitInfo.pWaitDstStageMask = waitSemaphoreStages.data();
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &cmdBuffer;
+        submitInfo.signalSemaphoreCount = 1;
+        submitInfo.pSignalSemaphores = &readyToPresentSemaphore;
+
+        //Submit the task for the graphics device.
+        if(!CommandBufferManager::submitCommandBuffers(graphicsQueue, 1, submitInfo, finishedDrawingFence))
+            return false;
+
+        VkPresentInfoKHR presentInfo = VulkanStructures::presentInfoKHR();
+        presentInfo.waitSemaphoreCount = 1;
+        presentInfo.pWaitSemaphores = &readyToPresentSemaphore;
+        presentInfo.swapchainCount = 1;
+        presentInfo.pSwapchains = &swapchain;
+        presentInfo.pImageIndices = &imageIndex;
+
+        //Create the presentation info.
+        if(!presentImage(presentQueue, presentInfo))
+            return false;
+
+        return true;
+    }
+
     void VulkanRenderer::render(VulkanWindow* renderTarget)
     {
         renderTarget->play();

@@ -85,12 +85,11 @@ namespace Raven
                             std::vector<VkImage> &swapchainImages);
 
     //Gets a swapchain image for drawing from a given swapchain.
-    bool getSwapchainImageForDrawing(const VkDevice logicalDevice, const VkSwapchainKHR swapchain,
-                                     VkSemaphore semaphore, uint32_t &imageIndex);
+    bool acquireSwapchainImage(const VkDevice logicalDevice, const VkSwapchainKHR swapchain,
+                               VkSemaphore semaphore, VkFence fence, uint32_t &imageIndex);
 
     //Presents an image to the screen.
-    bool presentImage(const VkQueue queue, const VkSwapchainKHR swapchain,
-                      const VkPresentInfoKHR presentInfo, VkSemaphore &presentationSemaphores);
+    bool presentImage(const VkQueue queue, const VkPresentInfoKHR presentInfo);
 
     //Destroys a presentation surface.
     void destroyPresentationSurface(const VkInstance instance, VkSurfaceKHR &surface);

@@ -2,6 +2,7 @@
 
 //***************COMMON HEADERS*****************//
 #include "VulkanDestroyer.h"
+#include "Settings.h"
 #include <iostream>
 #include <vector>
 #include <array>

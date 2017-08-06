@@ -549,36 +549,38 @@ namespace Raven
      * @param logicalDevice
      * @param swapchain The swapchain where images are being queried from.
      * @param semaphore A synchronization object.
+     * @param fence A synchronization object.
      * @param imageIndex The index of the image in the swapchain that was returned.
      * @return False if something went wrong.
      */
-    bool getSwapchainImageForDrawing(const VkDevice logicalDevice,
-                                     const VkSwapchainKHR swapchain,
-                                     VkSemaphore semaphore,
-                                     uint32_t &imageIndex)
+    bool acquireSwapchainImage(const VkDevice logicalDevice,
+                               const VkSwapchainKHR swapchain,
+                               VkSemaphore semaphore,
+                               VkFence fence,
+                               uint32_t &imageIndex)
     {
-        VkResult result = vkAcquireNextImageKHR(logicalDevice, swapchain, 3000000000,
-                                                semaphore, nullptr, &imageIndex);
-        if(result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR)
-            return true;
-        else
-            return false;
+        VkResult result = vkAcquireNextImageKHR(logicalDevice, swapchain, 2000000000,
+                                                semaphore, fence, &imageIndex);
+        switch(result)
+        {
+            case VK_SUCCESS:
+                return true;
+            case VK_SUBOPTIMAL_KHR:
+                return true;
+            default:
+                return false;
+        }
     }
 
     /**
      * @brief Presents an image to the screen.
      * @param queue
-     * @param swapchain
-     * @param presentationSemaphore
      * @return False if something went wrong.
      */
     bool presentImage(const VkQueue queue,
-                      const VkSwapchainKHR swapchain,
-                      const VkPresentInfoKHR presentInfo,
-                      VkSemaphore &presentationSemaphore)
+                      const VkPresentInfoKHR presentInfo)
     {
-        VkResult result;
-        result = vkQueuePresentKHR(queue, &presentInfo);
+        VkResult result = vkQueuePresentKHR(queue, &presentInfo);
         //Switch case is faster than if else so:
         switch(result)
         {

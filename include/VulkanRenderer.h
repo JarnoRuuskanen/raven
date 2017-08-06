@@ -2,6 +2,7 @@
 #include "Headers.h"
 #include "VulkanWindow.h"
 #include "VulkanImage.h"
+#include "CommandBufferManager.h"
 
 namespace Raven
 {
@@ -22,6 +23,11 @@ namespace Raven
         //Attachments that are not used in the subpass but whose contents must be preserved
         //during the whole subpass.
         std::vector<uint32_t> preserveAttachments;
+    };
+
+    struct FrameResources
+    {
+        VkCommandBuffer cmdBuffer;
     };
 
     class VulkanDevice;
@@ -86,6 +92,23 @@ namespace Raven
 
             //Destroys a render pass.
             void destroyRenderPass(VkDevice logicalDevice, VkRenderPass &renderPass);
+
+            //A function from VulkanCookbook for preparing a single frame of animation.
+            bool prepareSingleFrameOfAnimation(VkDevice logicalDevice,
+                                               VkQueue graphicsQueue,
+                                               VkQueue presentQueue,
+                                               VkSwapchainKHR swapchain,
+                                               VkExtent2D swapchainSize,
+                                               const std::vector<VkImageView> &swapchainImageViews,
+                                               VkImageView depthAttachment,
+                                               const std::vector<WaitSemaphoreInfo> &waitInfos,
+                                               VkSemaphore imageAcquiredSemaphore,
+                                               VkSemaphore readyToPresentSemaphore,
+                                               VkFence finishedDrawingFence,
+                                               std::function<bool(VkCommandBuffer, uint32_t, VkFramebuffer)> recordCommandBuffer,
+                                               VkCommandBuffer cmdBuffer,
+                                               VkRenderPass renderPass,
+                                               VkFramebuffer &framebuffer);
 
             //Renders content to the window owned by VulkanRenderer.
             void render(VulkanWindow* renderTarget);
