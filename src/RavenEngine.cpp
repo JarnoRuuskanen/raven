@@ -269,7 +269,8 @@ namespace Raven
      *        presentation related objects.
      * @param windowWidth
      * @param windowHeight
-     * @param window Handle to the VulkanWindow.
+     * @param window Handle to the VulkanWindow holding all the window information
+     *        including swapchains and surfaces.
      * @return Returns false if something went wrong.
      */
     bool RavenEngine::openNewWindow(uint16_t windowWidth,
@@ -297,11 +298,6 @@ namespace Raven
             {
                 return false;
             }
-
-            //Get the swapchain images and create image views.
-            if(!getSwapchainImages(vulkanDevice->getLogicalDevice(),
-                                   window->getSwapchain(), window->getImages()))
-                return false;
 
             return true;
     }

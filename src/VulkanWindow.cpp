@@ -108,7 +108,8 @@ namespace Raven
     }
 
     /**
-     * @brief Creates a swapchain for the VulkanWindow for rendering.
+     * @brief Creates a swapchain and generates images and image views
+     *        for the VulkanWindow for rendering.
      * @param logicalDevice
      * @param queueFamilyIndex
      * @param physicalDevice
@@ -219,6 +220,41 @@ namespace Raven
         if(!createSwapchain(logicalDevice, swapchainInfo, swapchain))
         {
             return false;
+        }
+
+        //Get the swapchain images.
+        if(!getSwapchainImages(logicalDevice, swapchain, swapchainImages))
+            return false;
+
+        //Lastly create the color image views for the swapchain images.
+        if(!createSwapchainColorImageViews(logicalDevice, imageFormat))
+            return false;
+
+        return true;
+    }
+
+    /**
+     * @brief Creates the image views for swapchain images.
+     * @return False if the color image views could not be created.
+     */
+    bool VulkanWindow::createSwapchainColorImageViews(const VkDevice &logicalDevice, VkFormat imageFormat)
+    {
+        //Clear old image views if any exist and resize the vector.
+        swapchainImageViews.clear();
+        swapchainImageViews.resize(swapchainImages.size());
+
+        //For each swapchain image, create a new image view.
+        for(size_t i = 0; i < swapchainImages.size(); ++i)
+        {
+            VkImageViewCreateInfo createInfo =
+                    VulkanStructures::imageViewCreateInfo(swapchainImages[i],
+                                                          imageFormat,
+                                                          VK_IMAGE_ASPECT_COLOR_BIT,
+                                                          VK_IMAGE_VIEW_TYPE_2D);
+
+            //Create the actual image view.
+            if(!createImageView(logicalDevice, createInfo, swapchainImageViews[i]))
+                return false;
         }
 
         return true;

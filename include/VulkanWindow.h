@@ -53,7 +53,12 @@ namespace Raven
             inline WindowParameters& getWindowParameters(){ return windowParameters; }
             //Returns the swapchain image vector.
             inline std::vector<VkImage>& getImages(){ return swapchainImages; }
+            //Returns a handle for swapchain image views.
+            inline std::vector<VkImageView>& getImageViews(){ return swapchainImageViews;}
         private:
+
+            //Creates the image views for swapchain images.
+            bool createSwapchainColorImageViews(const VkDevice &logicalDevice, VkFormat imageFormat);
             //The window surface
             VkSurfaceKHR presentationSurface;
             //The swapchain of this window. Swapchain describes image formats, number
@@ -62,6 +67,7 @@ namespace Raven
             VkSwapchainKHR swapchain;
             WindowParameters windowParameters;
             std::vector<VkImage> swapchainImages;
+            std::vector<VkImageView> swapchainImageViews;
             bool connectionEstablished = false;
 
 
