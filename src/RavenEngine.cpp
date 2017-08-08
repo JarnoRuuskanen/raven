@@ -163,14 +163,7 @@ namespace Raven
         VkSemaphore signaledSemaphore;
         createSemaphore(vulkanDevice->getLogicalDevice(), signaledSemaphore);
 
-        VkSubmitInfo submitInfo = VulkanStructures::submitInfo();
-        submitInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
-        submitInfo.pCommandBuffers = commandBuffers.data();
-        submitInfo.pSignalSemaphores = &signaledSemaphore;
-        submitInfo.signalSemaphoreCount = 1;
-        submitInfo.pWaitDstStageMask = nullptr;
-        submitInfo.waitSemaphoreCount = 0;
-        submitInfo.pWaitSemaphores = nullptr;
+        VkSubmitInfo submitInfo = VulkanStructures::submitInfo(commandBuffers, {},{},{signaledSemaphore});
 
         //Submit commands to the vulkan device for execution:
         if(!vulkanDevice->executeCommands(submitInfo, submitFence))

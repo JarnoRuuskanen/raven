@@ -149,7 +149,7 @@ namespace Raven
     bool prepareStagingBuffer(const VkDevice logicalDevice,
                               VkPhysicalDeviceMemoryProperties memoryProperties,
                               VkDeviceSize allocationSize,
-                              VkBuffer &stagingBuffer,
+                              VulkanBuffer &stagingBuffer,
                               VkDeviceMemory &stagingMemory);
 
     //Creates a buffer view.
@@ -218,8 +218,8 @@ namespace Raven
     //Updates a buffer which uses device-local memory.
     bool updateDeviceLocalMemoryBuffer(VkDevice logicalDevice,
                                        void *data,
-                                       VulkanBuffer stagingBufferObject,
-                                       VkDeviceMemory stagingMemory,
+                                       VkDeviceSize dataSize,
+                                       VkPhysicalDeviceMemoryProperties memoryProperties,
                                        VkBuffer destinationBuffer,
                                        VkDeviceSize destinationOffset,
                                        VkAccessFlags destinationBufferCurrentAccess,

@@ -512,14 +512,8 @@ namespace Raven
             waitSemaphoreStages.emplace_back(waitSemaphoreInfo.waitingStage);
         }
 
-        VkSubmitInfo submitInfo = VulkanStructures::submitInfo();
-        submitInfo.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphoreInfos.size());
-        submitInfo.pWaitSemaphores = waitSemaphores.data();
-        submitInfo.pWaitDstStageMask = waitSemaphoreStages.data();
-        submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &cmdBuffer;
-        submitInfo.signalSemaphoreCount = 1;
-        submitInfo.pSignalSemaphores = &readyToPresentSemaphore;
+        VkSubmitInfo submitInfo = VulkanStructures::submitInfo({cmdBuffer}, waitSemaphores, waitSemaphoreStages,
+                                                               {readyToPresentSemaphore});
 
         //Submit the task for the graphics device.
         if(!CommandBufferManager::submitCommandBuffers(graphicsQueue, 1, submitInfo, finishedDrawingFence))

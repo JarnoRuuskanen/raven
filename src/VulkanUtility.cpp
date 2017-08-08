@@ -899,40 +899,6 @@ namespace Raven
     }
 
     /**
-     * @brief Creates a buffer view.
-     * @param logicalDevice
-     * @param createInfo
-     * @param bufferView
-     * @return False if the buffer cretion fails.
-     */
-    bool createBufferView(const VkDevice logicalDevice,
-                          const VkBufferViewCreateInfo createInfo,
-                          VkBufferView &bufferView)
-    {
-        VkResult result = vkCreateBufferView(logicalDevice, &createInfo, nullptr, &bufferView);
-        if(result != VK_SUCCESS)
-        {
-            std::cerr << "Failed to create a buffer view!" << std::endl;
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * @brief destroyBufferView
-     * @param logicalDevice
-     * @param bufferView
-     */
-    void destroyBufferView(const VkDevice logicalDevice, VkBufferView &bufferView) noexcept
-    {
-        if(bufferView != VK_NULL_HANDLE)
-        {
-            vkDestroyBufferView(logicalDevice, bufferView, nullptr);
-            bufferView = VK_NULL_HANDLE;
-        }
-    }
-
-    /**
      * @brief Creates and prepares a staging buffer which can be used for
               updating device-local memory in particular.
      * @param logicalDevice
@@ -970,9 +936,44 @@ namespace Raven
             return false;
         }
 
-        stagingBufferObject.bindMemoryObject(logicalDevice, stagingMemory, 0);
+        if(!stagingBufferObject.bindMemoryObject(logicalDevice, stagingMemory, 0))
+            return false;
 
         return true;
+    }
+
+    /**
+     * @brief Creates a buffer view.
+     * @param logicalDevice
+     * @param createInfo
+     * @param bufferView
+     * @return False if the buffer cretion fails.
+     */
+    bool createBufferView(const VkDevice logicalDevice,
+                          const VkBufferViewCreateInfo createInfo,
+                          VkBufferView &bufferView)
+    {
+        VkResult result = vkCreateBufferView(logicalDevice, &createInfo, nullptr, &bufferView);
+        if(result != VK_SUCCESS)
+        {
+            std::cerr << "Failed to create a buffer view!" << std::endl;
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * @brief destroyBufferView
+     * @param logicalDevice
+     * @param bufferView
+     */
+    void destroyBufferView(const VkDevice logicalDevice, VkBufferView &bufferView) noexcept
+    {
+        if(bufferView != VK_NULL_HANDLE)
+        {
+            vkDestroyBufferView(logicalDevice, bufferView, nullptr);
+            bufferView = VK_NULL_HANDLE;
+        }
     }
 
     /**
@@ -1281,6 +1282,96 @@ namespace Raven
         std::cerr << "Failed to copy data from an image to a buffer due to no "
                      "VkBufferImageCopy values!" << std::endl;
         return false;
+    }
+
+    /**
+     * @brief Updates a buffer which uses device-local memory.
+     * @param logicalDevice
+     * @param data
+     * @param memoryProperties
+     * @param destinationBuffer
+     * @param destinationOffset
+     * @param destinationBufferCurrentAccess
+     * @param destinationBufferNewAccess
+     * @param destinationBufferGeneratingStages
+     * @param destinationBufferConsumingStages
+     * @param queue
+     * @param cmdBuffer
+     * @param signalSemaphores
+     * @return
+     */
+    bool updateDeviceLocalMemoryBuffer(VkDevice logicalDevice,
+                                       void *data,
+                                       VkDeviceSize dataSize,
+                                       VkPhysicalDeviceMemoryProperties memoryProperties,
+                                       VkBuffer destinationBuffer,
+                                       VkDeviceSize destinationOffset,
+                                       VkAccessFlags destinationBufferCurrentAccess,
+                                       VkAccessFlags destinationBufferNewAccess,
+                                       VkPipelineStageFlags destinationBufferGeneratingStages,
+                                       VkPipelineStageFlags destinationBufferConsumingStages,
+                                       VkQueue queue,
+                                       VkCommandBuffer cmdBuffer,
+                                       std::vector<VkSemaphore> signalSemaphores)
+    {
+        //Create staging buffer resources.
+        VulkanBuffer stagingBufferObject;
+        VkDeviceMemory stagingMemory;
+
+        //Create the staging buffer.
+        if(!prepareStagingBuffer(logicalDevice, memoryProperties, dataSize,
+                                 stagingBufferObject, stagingMemory))
+        {
+            return false;
+        }
+
+        //Map the host-visible memory.
+        if(!flushDataToHostLocalMemory(logicalDevice, stagingMemory, 0, dataSize, data, nullptr, true))
+            return false;
+
+        //Now that is has been mapped, begin the command buffer recording.
+        if(!CommandBufferManager::beginCommandBuffer(cmdBuffer, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT))
+            return false;
+
+        //Set buffer memory barrier so that the transfer can begin.
+        BufferTransition firstTransition = { destinationBuffer, destinationBufferCurrentAccess,
+                                             VK_ACCESS_TRANSFER_WRITE_BIT, VK_QUEUE_FAMILY_IGNORED,
+                                             VK_QUEUE_FAMILY_IGNORED};
+
+        setBufferMemoryBarriers(cmdBuffer, destinationBufferGeneratingStages, VK_PIPELINE_STAGE_TRANSFER_BIT,
+                                {firstTransition});
+
+        //After the destination buffer has been set to the correct usage, start the data transfer from the
+        //staging buffer.
+        VkBufferCopy memoryRange = {0, destinationOffset, dataSize};
+        if(!copyDataBetweenBuffers(cmdBuffer, stagingBufferObject.buffer, destinationBuffer, {memoryRange}))
+            return false;
+
+        //After the transfer is complete, change the destination buffer usage again so that it can be read from.
+        BufferTransition secondTransition = {destinationBuffer, VK_ACCESS_TRANSFER_WRITE_BIT,
+                                             destinationBufferNewAccess, VK_QUEUE_FAMILY_IGNORED,
+                                             VK_QUEUE_FAMILY_IGNORED};
+        setBufferMemoryBarriers(cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, destinationBufferConsumingStages,
+                                {secondTransition});
+
+        if(!CommandBufferManager::endCommandBuffer(cmdBuffer))
+            return false;
+
+        //Create a fence for the submit.
+        VkFence fence;
+        if(!createFence(logicalDevice, VK_FALSE, fence))
+            return false;
+
+        //Submit the task to a queue.
+        VkSubmitInfo submitInfo = VulkanStructures::submitInfo({cmdBuffer}, {}, {}, signalSemaphores);
+        if(!CommandBufferManager::submitCommandBuffers(queue, 1, submitInfo, fence))
+            return false;
+
+        //Wait for the fence to make sure the task was complete.
+        if(!waitForFences(logicalDevice, 500000000, VK_FALSE, {fence}))
+                return false;
+
+        return true;
     }
 
     /**

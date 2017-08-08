@@ -220,14 +220,8 @@ namespace Raven
                 waitingStages.push_back(info.waitingStage);
             }
 
-            VkSubmitInfo submitInfo = VulkanStructures::submitInfo();
-            submitInfo.commandBufferCount = static_cast<uint32_t>(cmdBuffers.size());
-            submitInfo.pCommandBuffers = cmdBuffers.data();
-            submitInfo.signalSemaphoreCount = static_cast<uint32_t>(signaledSemaphores.size());
-            submitInfo.pSignalSemaphores = signaledSemaphores.data();
-            submitInfo.waitSemaphoreCount = static_cast<uint32_t>(waitingSemaphores.size());
-            submitInfo.pWaitSemaphores = waitingSemaphores.data();
-            submitInfo.pWaitDstStageMask = waitingStages.data();
+            VkSubmitInfo submitInfo = VulkanStructures::submitInfo(cmdBuffers, waitingSemaphores,
+                                                                   waitingStages, signaledSemaphores);
 
             if(!submitCommandBuffers(queue, 1, submitInfo, fence))
                 return false;

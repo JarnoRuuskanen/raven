@@ -129,11 +129,21 @@ namespace VulkanStructures
         return createInfo;
     }
 
-    inline VkSubmitInfo submitInfo()
+    inline VkSubmitInfo submitInfo(std::vector<VkCommandBuffer> cmdBuffers,
+                                   std::vector<VkSemaphore> waitSemaphores,
+                                   std::vector<VkPipelineStageFlags> waitSemaphoreStages,
+                                   std::vector<VkSemaphore> signalSemaphores)
     {
         VkSubmitInfo info = {};
         info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         info.pNext = nullptr;
+        info.commandBufferCount = static_cast<uint32_t>(cmdBuffers.size());
+        info.pCommandBuffers = cmdBuffers.data();
+        info.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size());
+        info.pWaitSemaphores = waitSemaphores.data();
+        info.pWaitDstStageMask = waitSemaphoreStages.data();
+        info.signalSemaphoreCount = static_cast<uint32_t>(signalSemaphores.size());
+        info.pSignalSemaphores = signalSemaphores.data();
         return info;
     }
 
