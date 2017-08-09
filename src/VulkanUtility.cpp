@@ -1371,6 +1371,11 @@ namespace Raven
         if(!waitForFences(logicalDevice, 500000000, VK_FALSE, {fence}))
                 return false;
 
+        //Remember to clean afterwards by destroying the staging buffer and the fence.
+        destroyBuffer(logicalDevice, stagingBufferObject.buffer);
+        freeMemory(logicalDevice, stagingMemory);
+        destroyFence(logicalDevice, fence);
+
         return true;
     }
 
