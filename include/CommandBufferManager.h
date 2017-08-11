@@ -56,5 +56,12 @@ namespace Raven
                                                    std::vector<WaitSemaphoreInfo> waitSemaphoreInfos,
                                                    std::vector<VkSemaphore> signaledSemaphores,
                                                    VkFence fence);
+
+        //A function for creating both the command pool and allocating buffers from it.
+        bool createCmdPoolAndBuffers(const VkDevice &logicalDevice,
+                                     uint32_t queueFamilyIndex,
+                                     VkCommandPool &cmdPool,
+                                     uint32_t cmdBufferCount,
+                                     std::vector<VkCommandBuffer> &cmdBuffers);
     }
 }

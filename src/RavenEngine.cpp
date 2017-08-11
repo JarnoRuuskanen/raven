@@ -3,6 +3,7 @@
 #include "VulkanStructures.h"
 #include "Settings.h"
 #include "CommandBufferManager.h"
+#include "VulkanDescriptorManager.h"
 
 namespace Raven
 {
@@ -100,10 +101,6 @@ namespace Raven
         if(!selectPhysicalDevice(physicalDevices, selectedPhysicalDevice, desiredDeviceExtensions))
             return false;
 
-        VkPhysicalDeviceFeatures features;
-        VkPhysicalDeviceProperties properties;
-        getPhysicalDeviceFeaturesAndProperties(selectedPhysicalDevice, features, properties);
-
         //Create a logical device out of the selected physical device.
         //Raven will be built to support multiple queues, that will all be used simultaneously
         //with added synchronization. This is to not tax one queue unecessarily.
@@ -135,9 +132,53 @@ namespace Raven
         if(!graphicsObject.loadModel(vulkanDevice->getLogicalDevice(), objectSource, true, false, false, true, &stride))
             return false;
 
+
+        //Create a command buffer for the vertex data transfer.
+        VkCommandBuffer vertexCmdBuffer;
+        std::vector<VkCommandBuffer> vertexCmdBufferVector = {vertexCmdBuffer};
+        if(!CommandBufferManager::createCmdPoolAndBuffers(vulkanDevice->getLogicalDevice(),
+                                                          vulkanDevice->getPrimaryQueueFamilyIndex(),
+                                                          cmdPool, 1, vertexCmdBufferVector))
+        {
+                return false;
+        }
+
         //Create vertex buffer from the object data.
-        if(!createDataForShaders(graphicsObject))
+        VulkanBuffer vertexBuffer;
+        VkDeviceMemory vertexMemory;
+        if(!createDataForShaders(graphicsObject, vertexBuffer, vertexMemory, vertexCmdBufferVector[0]))
             return false;
+
+        //Next create the uniform buffer that will hold the matrix data used for camera and model viewing.
+        //The size of it will be 2x16x sizeof(float)
+        VulkanBuffer uniformBufferObject;
+        VkDeviceMemory uniformBufferMemory;
+        if(!vulkanDevice->createUniformBuffer((2 * 16 * sizeof(float)),
+                                              VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                                              uniformBufferObject, uniformBufferMemory))
+        {
+            return false;
+        }
+
+        //Create descriptor info so that the uniform buffer can be accessed inside the vertex shader.
+        VkDescriptorSetLayoutBinding descriptorSetLayoutBinding =
+        {
+            0,
+            VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+            1,
+            VK_SHADER_STAGE_VERTEX_BIT,
+            nullptr
+        };
+
+        VkDescriptorSetLayout descriptorSetLayout;
+        //Create the descriptor set layout.
+        if(!VulkanDescriptorManager::createDescriptorSetLayout(vulkanDevice->getLogicalDevice(),
+                                                               {descriptorSetLayoutBinding},
+                                                               descriptorSetLayout))
+        {
+            return false;
+        }
+
 
         //Build the command buffers.
         if(!buildCommandBuffersForDrawingGeometry())
@@ -163,7 +204,7 @@ namespace Raven
         VkSemaphore signaledSemaphore;
         createSemaphore(vulkanDevice->getLogicalDevice(), signaledSemaphore);
 
-        VkSubmitInfo submitInfo = VulkanStructures::submitInfo(commandBuffers, {},{},{signaledSemaphore});
+        VkSubmitInfo submitInfo = VulkanStructures::submitInfo(drawBuffers, {},{},{signaledSemaphore});
 
         //Submit commands to the vulkan device for execution:
         if(!vulkanDevice->executeCommands(submitInfo, submitFence))
@@ -299,51 +340,58 @@ namespace Raven
      * @brief Creates objects required by shaders to draw geometry.
      * @return False if vertex buffers could not be created.
      */
-    bool RavenEngine::createDataForShaders(GraphicsObject &graphicsObject)
+    bool RavenEngine::createDataForShaders(GraphicsObject &graphicsObject,
+                                           VulkanBuffer &vertexBufferObject,
+                                           VkDeviceMemory &vertexMemory,
+                                           VkCommandBuffer &cmdBuffer)
     {
         /** This function describes parts of the process of creating a vertex buffer.
             However, it is not yet fully implemented due to the lack of data. */
 
-        //Creating a buffer:
-        //After that create the buffer info. Buffer size should be the size of the data that it will hold.
-        VulkanBuffer vertexBuffer;
+        //Initializing the vertex buffer object:
+        //Ccreate the buffer info. Buffer size should be the size of the data that it will hold.
 
         //vertexBuffer.size should be the size of the data.
-        vertexBuffer.size = sizeof(graphicsObject.getMesh()->data[0])*graphicsObject.getMesh()->data.size();
+        vertexBufferObject.size = sizeof(graphicsObject.getMesh()->data[0])*graphicsObject.getMesh()->data.size();
         VkBufferCreateInfo bufferInfo =
-            VulkanStructures::bufferCreateInfo(vertexBuffer.size,
+            VulkanStructures::bufferCreateInfo(vertexBufferObject.size,
                                                VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
                                                VK_BUFFER_USAGE_TRANSFER_DST_BIT,
                                                VK_SHARING_MODE_EXCLUSIVE);
 
         //Create the actual buffer.
-        if(!createBuffer(vulkanDevice->getLogicalDevice(), bufferInfo, vertexBuffer.buffer))
+        if(!createBuffer(vulkanDevice->getLogicalDevice(), bufferInfo, vertexBufferObject.buffer))
             return false;
 
         //Buffers and images don't have a memory backing so we need to allocate the memory for them.
         //Get buffer memory requirements and allocate the memory.
         VkMemoryRequirements memReq;
-        vkGetBufferMemoryRequirements(vulkanDevice->getLogicalDevice(), vertexBuffer.buffer, &memReq);
+        vkGetBufferMemoryRequirements(vulkanDevice->getLogicalDevice(), vertexBufferObject.buffer, &memReq);
 
         //Get the correct physical device memory type index for the buffer:
         VkPhysicalDeviceMemoryProperties memoryProperties;
         vkGetPhysicalDeviceMemoryProperties(selectedPhysicalDevice, &memoryProperties);
 
         //Allocate the memory:
-        VkDeviceMemory vertexMemory = VK_NULL_HANDLE;
         if(!allocateMemory(vulkanDevice->getLogicalDevice(), memoryProperties,memReq,
                            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexMemory))
         {
             return false;
         }
 
-        if(!vertexBuffer.bindMemoryObject(vulkanDevice->getLogicalDevice(), vertexMemory))
+        if(!vertexBufferObject.bindMemoryObject(vulkanDevice->getLogicalDevice(), vertexMemory))
             return false;
         
         //Update the object data to the vertex buffer using a staging buffer.
         //Copy the data into the staging buffer and map it to the vertex buffer.
-
-
+        if(!updateDeviceLocalMemoryBuffer(vulkanDevice->getLogicalDevice(), &graphicsObject.getMesh()->data[0],
+                                          vertexBufferObject.size, memoryProperties, vertexBufferObject.buffer,
+                                          0, 0, VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+                                          VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, vulkanDevice->getQueueHandles()[0],
+                                          cmdBuffer, {}))
+        {
+            return false;
+        }
 
         return true;
     }
@@ -362,29 +410,8 @@ namespace Raven
          * to this function once I have implemented the framebuffers.
         */
 
-        //Create the command pool info.
-        VkCommandPoolCreateInfo poolInfo =
-                VulkanStructures::commandPoolCreateInfo(vulkanDevice->getPrimaryQueueFamilyIndex());
-        //Create a command pool.
-        if(!CommandBufferManager::createCommandPool(vulkanDevice->getLogicalDevice(), poolInfo, cmdPool))
-            return false;
-
-        VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        uint32_t bufferCount = 3;
-        VkCommandBufferAllocateInfo allocInfo =
-                VulkanStructures::commandBufferAllocateInfo(level, cmdPool, bufferCount);
-        //Allocate command buffers from the pool into a vector.
-        commandBuffers.clear();
-        commandBuffers.resize(bufferCount);
-        if(!CommandBufferManager::allocateCommandBuffer(vulkanDevice->getLogicalDevice(),
-                                                        allocInfo, commandBuffers))
-        {
-            std::cerr << "Failed to allocate command buffers!" << std::endl;
-            return false;
-        }
-
         //Record actions to each individual buffer:
-        for(int i = 0; i < commandBuffers.size(); i++)
+        /*for(int i = 0; i < commandBuffers.size(); i++)
         {
             if(!CommandBufferManager::beginCommandBuffer(commandBuffers[i],
                                                          VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT))
@@ -401,7 +428,7 @@ namespace Raven
                 return false;
             }
         }
-
+        */
         return true;
     }
 

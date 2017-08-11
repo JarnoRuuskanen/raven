@@ -76,8 +76,8 @@ namespace Raven
         createInfo.enabledExtensionCount = static_cast<uint32_t>(desiredDeviceExtensions.size());
         createInfo.ppEnabledExtensionNames = desiredDeviceExtensions.size() > 0 ?
                                                 desiredDeviceExtensions.data() : nullptr;
-        createInfo.enabledLayerCount = 0;
-        createInfo.ppEnabledLayerNames = nullptr;
+        //createInfo.enabledLayerCount = 0;
+        //createInfo.ppEnabledLayerNames = nullptr;
         //Enable all features the graphics card supports for now. This is not ideal for optimization.
         createInfo.pEnabledFeatures = &features;
         //Device queues are created when the logical device is created.
@@ -657,11 +657,8 @@ namespace Raven
             }
         };
         //Create the descriptor set layout.
-        VkDescriptorSetLayoutCreateInfo layoutInfo =
-                VulkanStructures::descriptorSetLayoutCreateInfo(static_cast<uint32_t>(bindings.size()),
-                                                                bindings);
         if(!VulkanDescriptorManager::createDescriptorSetLayout(logicalDevice,
-                                                               layoutInfo,
+                                                               bindings,
                                                                descriptorSetLayout))
         {
             return false;

@@ -159,6 +159,8 @@ namespace Raven
             inline uint32_t getPrimaryQueueFamilyIndex(){return primaryQueueFamilyIndex;}
             //Returns a reference to the logical device.
             inline VkDevice &getLogicalDevice(){return logicalDevice;}
+            //Returns queue handles.
+            inline std::vector<VkQueue> &getQueueHandles(){return deviceQueueHandles;}
         private:
             //Creates a logical device for the VulkanDevice
             bool createDevice();

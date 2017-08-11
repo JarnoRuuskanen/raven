@@ -1,4 +1,5 @@
 #include "VulkanDescriptorManager.h"
+#include "VulkanStructures.h"
 
 namespace Raven
 {
@@ -11,10 +12,14 @@ namespace Raven
          * @param descriptorSetLayout
          * @return False if descriptor set layout could not be created.
          */
-        bool createDescriptorSetLayout(const VkDevice logicalDevice,
-                                       VkDescriptorSetLayoutCreateInfo createInfo,
-                                       VkDescriptorSetLayout &descriptorSetLayout) noexcept
+        bool createDescriptorSetLayout(VkDevice logicalDevice,
+                                       std::vector<VkDescriptorSetLayoutBinding> const &bindings,
+                                       VkDescriptorSetLayout &descriptorSetLayout)
         {
+
+            VkDescriptorSetLayoutCreateInfo createInfo =
+                    VulkanStructures::descriptorSetLayoutCreateInfo(bindings);
+
             VkResult result = vkCreateDescriptorSetLayout(logicalDevice,
                                                           &createInfo,
                                                           nullptr,

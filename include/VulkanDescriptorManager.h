@@ -52,9 +52,9 @@ namespace Raven
     namespace VulkanDescriptorManager
     {
         //Creates a descriptor set layout.
-        bool createDescriptorSetLayout(const VkDevice logicalDevice,
-                                       VkDescriptorSetLayoutCreateInfo createInfo,
-                                       VkDescriptorSetLayout &descriptorSetLayout) noexcept;
+        bool createDescriptorSetLayout(VkDevice logicalDevice,
+                                       std::vector<VkDescriptorSetLayoutBinding> const &bindings,
+                                       VkDescriptorSetLayout &descriptorSetLayout);
         //Destroys a descriptor set layout.
         void destroyDescriptorSetLayout(const VkDevice logicalDevice,
                                         VkDescriptorSetLayout &layout) noexcept;

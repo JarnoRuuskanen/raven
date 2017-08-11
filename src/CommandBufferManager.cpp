@@ -228,5 +228,41 @@ namespace Raven
 
             return true;
         }
+
+        /**
+         * @brief A function for creating both the command pool and allocating buffers from it.
+         * @param logicalDevice
+         * @param queueFamilyIndex
+         * @param cmdPool
+         * @param cmdBufferCount
+         * @param cmdBuffers
+         * @return
+         */
+        bool createCmdPoolAndBuffers(const VkDevice &logicalDevice,
+                                     uint32_t queueFamilyIndex,
+                                     VkCommandPool &cmdPool,
+                                     uint32_t cmdBufferCount,
+                                     std::vector<VkCommandBuffer> &cmdBuffers)
+        {
+            //Create the command pool info.
+            VkCommandPoolCreateInfo poolInfo =
+                    VulkanStructures::commandPoolCreateInfo(queueFamilyIndex);
+            //Create a command pool.
+            if(!CommandBufferManager::createCommandPool(logicalDevice, poolInfo, cmdPool))
+                return false;
+
+            VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+            VkCommandBufferAllocateInfo allocInfo =
+                    VulkanStructures::commandBufferAllocateInfo(level, cmdPool, cmdBufferCount);
+            //Allocate command buffers from the pool into a vector.
+            cmdBuffers.clear();
+            cmdBuffers.resize(cmdBufferCount);
+            if(!allocateCommandBuffer(logicalDevice, allocInfo, cmdBuffers))
+            {
+                std::cerr << "Failed to allocate command buffers!" << std::endl;
+                return false;
+            }
+            return true;
+        }
     }
 }

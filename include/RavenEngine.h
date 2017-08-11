@@ -38,7 +38,8 @@ namespace Raven
                                VulkanWindow *window);
 
             //Creates the vertex buffers.
-            bool createDataForShaders(GraphicsObject &graphicsObject);
+            bool createDataForShaders(GraphicsObject &graphicsObject, VulkanBuffer &vertexBuffer,
+                                      VkDeviceMemory &vertexMemory, VkCommandBuffer &cmdBuffer);
 
             //Allocates the application command pools, buffers and records the actions.
             bool buildCommandBuffersForDrawingGeometry();
@@ -57,7 +58,7 @@ namespace Raven
             //A command pool and command buffers for testing. These
             //will most probably move to some place else.
             VkCommandPool cmdPool;
-            std::vector<VkCommandBuffer> commandBuffers;
+            std::vector<VkCommandBuffer> drawBuffers;
 
             //Custom objects
 
