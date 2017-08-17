@@ -61,7 +61,9 @@ namespace Raven
 
         //Creates a descriptor pool.
         bool createDescriptorPool(const VkDevice logicalDevice,
-                                  VkDescriptorPoolCreateInfo createInfo,
+                                  VkBool32 freeIndividualSets,
+                                  uint32_t maxSets,
+                                  std::vector<VkDescriptorPoolSize> const &descriptorTypes,
                                   VkDescriptorPool &pool) noexcept;
         //Destroys a descriptor pool.
         void destroyDescriptorPool(const VkDevice logicalDevice,
@@ -73,8 +75,9 @@ namespace Raven
 
         //Allocates descriptor sets from a pool.
         bool allocateDescriptorSets(const VkDevice logicalDevice,
-                                    VkDescriptorSetAllocateInfo allocInfo,
-                                    std::vector<VkDescriptorSet> descriptorSets) noexcept;
+                                    VkDescriptorPool descriptorPool,
+                                    std::vector<VkDescriptorSetLayout> const &descriptorSetLayouts,
+                                    std::vector<VkDescriptorSet> &descriptorSets) noexcept;
 
         //Updates descriptor sets.
         void updateDescriptorSets(VkDevice logicalDevice,

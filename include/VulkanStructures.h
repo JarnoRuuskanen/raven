@@ -367,7 +367,7 @@ namespace VulkanStructures
 
     inline VkDescriptorSetAllocateInfo
         descriptorSetAllocateInfo(VkDescriptorPool descriptorPool,
-                                  std::vector<VkDescriptorSetLayout> descriptorSetLayouts)
+                                  std::vector<VkDescriptorSetLayout> const &descriptorSetLayouts)
     {
         VkDescriptorSetAllocateInfo allocInfo = {};
         allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;

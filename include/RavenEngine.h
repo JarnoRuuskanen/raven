@@ -38,11 +38,20 @@ namespace Raven
                                VulkanWindow *window);
 
             //Creates the vertex buffers.
-            bool createDataForShaders(GraphicsObject &graphicsObject, VulkanBuffer &vertexBuffer,
+            bool buildVertexDataForShaders(GraphicsObject &graphicsObject, VulkanBuffer &vertexBuffer,
                                       VkDeviceMemory &vertexMemory, VkCommandBuffer &cmdBuffer);
 
             //Allocates the application command pools, buffers and records the actions.
             bool buildCommandBuffersForDrawingGeometry();
+
+            //Describes the data that is sent to the shaders.
+            bool buildDescriptors(VkDescriptorSetLayout &descriptorSetLayout,
+                                  VkDescriptorPool &descriptorPool,
+                                  VkBuffer &uniformBuffer,
+                                  std::vector<VkDescriptorSet> &descriptorSets);
+
+            //Builds the shader modules used by the program.
+            bool buildShaderModules(VkShaderModule &shaderModule);
 
             //Private objects:
 

@@ -677,20 +677,14 @@ namespace Raven
             }
         };
 
-        VkDescriptorPoolCreateInfo poolInfo =
-                VulkanStructures::descriptorPoolCreateInfo(VK_FALSE, 1, descriptorTypes);
-        if(!VulkanDescriptorManager::createDescriptorPool(logicalDevice,
-                                                          poolInfo,
+        if(!VulkanDescriptorManager::createDescriptorPool(logicalDevice, VK_FALSE, 1, descriptorTypes,
                                                           descriptorPool))
         {
             return false;
         }
 
         //Allocate the descriptor sets.
-        VkDescriptorSetAllocateInfo descriptorSetAllocateInfo =
-                VulkanStructures::descriptorSetAllocateInfo(descriptorPool, {descriptorSetLayout});
-        if(!VulkanDescriptorManager::allocateDescriptorSets(logicalDevice,
-                                                            descriptorSetAllocateInfo,
+        if(!VulkanDescriptorManager::allocateDescriptorSets(logicalDevice, descriptorPool, {descriptorSetLayout},
                                                             descriptorSets))
         {
             return false;

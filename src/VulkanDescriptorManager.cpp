@@ -50,14 +50,21 @@ namespace Raven
         /**
          * @brief Creates a descriptor pool.
          * @param logicalDevice
-         * @param createInfo
+         * @param freeIndividualSets
+         * @param maxSets
+         * @param descriptorTypes
          * @param pool
          * @return False if descriptor pool could not be created.
          */
         bool createDescriptorPool(const VkDevice logicalDevice,
-                                  VkDescriptorPoolCreateInfo createInfo,
+                                  VkBool32 freeIndividualSets,
+                                  uint32_t maxSets,
+                                  std::vector<VkDescriptorPoolSize> const &descriptorTypes,
                                   VkDescriptorPool &pool) noexcept
         {
+            VkDescriptorPoolCreateInfo createInfo =
+                    VulkanStructures::descriptorPoolCreateInfo(freeIndividualSets, maxSets, descriptorTypes);
+
             VkResult result = vkCreateDescriptorPool(logicalDevice,
                                                      &createInfo,
                                                      nullptr,
@@ -105,22 +112,34 @@ namespace Raven
         /**
          * @brief Allocates descriptor sets from a descriptor pool defined in the allocInfo.
          * @param logicalDevice
-         * @param allocInfo
+         * @param descriptorPool
+         * @param descriptorSetLayouts
          * @param descriptorSets
-         * @return
+         * @return False if either there were no descriptor set layouts or if the descriptor sets could not be
+         *         allocated.
          */
         bool allocateDescriptorSets(const VkDevice logicalDevice,
-                                    VkDescriptorSetAllocateInfo allocInfo,
-                                    std::vector<VkDescriptorSet> descriptorSets) noexcept
+                                    VkDescriptorPool descriptorPool,
+                                    std::vector<VkDescriptorSetLayout> const &descriptorSetLayouts,
+                                    std::vector<VkDescriptorSet> &descriptorSets) noexcept
         {
-            descriptorSets.resize(allocInfo.descriptorSetCount);
-            VkResult result = vkAllocateDescriptorSets(logicalDevice, &allocInfo, descriptorSets.data());
-            if(result != VK_SUCCESS)
+            if(descriptorSetLayouts.size() > 0)
             {
-                std::cerr << "Failed to allocate descriptor sets!" << std::endl;
-                return false;
+                //Create the allocation info.
+                VkDescriptorSetAllocateInfo allocInfo =
+                        VulkanStructures::descriptorSetAllocateInfo(descriptorPool, descriptorSetLayouts);
+
+                //Resize the vector to hold all the descriptorSets.
+                descriptorSets.resize(allocInfo.descriptorSetCount);
+                VkResult result = vkAllocateDescriptorSets(logicalDevice, &allocInfo, descriptorSets.data());
+                if(result != VK_SUCCESS)
+                {
+                    std::cerr << "Failed to allocate descriptor sets!" << std::endl;
+                    return false;
+                }
+                return true;
             }
-            return true;
+            return false;
         }
 
         /**

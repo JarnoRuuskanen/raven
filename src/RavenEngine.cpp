@@ -146,7 +146,7 @@ namespace Raven
         //Create vertex buffer from the object data.
         VulkanBuffer vertexBuffer;
         VkDeviceMemory vertexMemory;
-        if(!createDataForShaders(graphicsObject, vertexBuffer, vertexMemory, vertexCmdBufferVector[0]))
+        if(!buildVertexDataForShaders(graphicsObject, vertexBuffer, vertexMemory, vertexCmdBufferVector[0]))
             return false;
 
         //Next create the uniform buffer that will hold the matrix data used for camera and model viewing.
@@ -160,25 +160,14 @@ namespace Raven
             return false;
         }
 
-        //Create descriptor info so that the uniform buffer can be accessed inside the vertex shader.
-        VkDescriptorSetLayoutBinding descriptorSetLayoutBinding =
-        {
-            0,
-            VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-            1,
-            VK_SHADER_STAGE_VERTEX_BIT,
-            nullptr
-        };
-
+        //Describe the data that is sent to the graphics pipeline. Definition can be found in the function.
+        //Handles for the descriptor data.
         VkDescriptorSetLayout descriptorSetLayout;
-        //Create the descriptor set layout.
-        if(!VulkanDescriptorManager::createDescriptorSetLayout(vulkanDevice->getLogicalDevice(),
-                                                               {descriptorSetLayoutBinding},
-                                                               descriptorSetLayout))
-        {
-            return false;
-        }
+        std::vector<VkDescriptorSet> descriptorSets;
+        VkDescriptorPool descriptorPool;
 
+        if(!buildDescriptors(descriptorSetLayout, descriptorPool, uniformBufferObject.buffer, descriptorSets))
+            return false;
 
         //Build the command buffers.
         if(!buildCommandBuffersForDrawingGeometry())
@@ -340,7 +329,7 @@ namespace Raven
      * @brief Creates objects required by shaders to draw geometry.
      * @return False if vertex buffers could not be created.
      */
-    bool RavenEngine::createDataForShaders(GraphicsObject &graphicsObject,
+    bool RavenEngine::buildVertexDataForShaders(GraphicsObject &graphicsObject,
                                            VulkanBuffer &vertexBufferObject,
                                            VkDeviceMemory &vertexMemory,
                                            VkCommandBuffer &cmdBuffer)
@@ -430,6 +419,87 @@ namespace Raven
         }
         */
         return true;
+    }
+
+    /**
+     * @brief Describes the data that is sent to the shaders.
+     * @param descriptorSetLayout
+     * @param descriptorPool
+     * @param descriptorSets
+     * @return
+     */
+    bool RavenEngine::buildDescriptors(VkDescriptorSetLayout &descriptorSetLayout,
+                                       VkDescriptorPool &descriptorPool,
+                                       VkBuffer &uniformBuffer,
+                                       std::vector<VkDescriptorSet> &descriptorSets)
+    {
+        //Create descriptor info so that the uniform buffer can be accessed inside the vertex shader.
+        VkDescriptorSetLayoutBinding descriptorSetLayoutBinding =
+        {
+            0,
+            VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+            1,
+            VK_SHADER_STAGE_VERTEX_BIT,
+            nullptr
+        };
+
+        //Create the descriptor set layout.
+        if(!VulkanDescriptorManager::createDescriptorSetLayout(vulkanDevice->getLogicalDevice(),
+                                                               {descriptorSetLayoutBinding},
+                                                               descriptorSetLayout))
+        {
+            return false;
+        }
+
+        //Next create the descriptor pool
+        VkDescriptorPoolSize descriptorPoolSize =
+        {
+            VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+            1
+        };
+
+        if(!VulkanDescriptorManager::createDescriptorPool(vulkanDevice->getLogicalDevice(), VK_FALSE, 1,
+                                                          {descriptorPoolSize}, descriptorPool))
+        {
+            return false;
+        }
+
+        //Now that the pool has been created, allocate descriptor sets from it.
+        if(!VulkanDescriptorManager::allocateDescriptorSets(vulkanDevice->getLogicalDevice(), descriptorPool,
+                                                            {descriptorSetLayout}, descriptorSets))
+        {
+            return false;
+        }
+
+        BufferDescriptorInfo bufferDescriptorUpdate =
+        {
+            descriptorSets[0],
+            0,
+            0,
+            VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+            {
+                {
+                    uniformBuffer,
+                    0,
+                    VK_WHOLE_SIZE
+                }
+            }
+        };
+
+        VulkanDescriptorManager::updateDescriptorSets(vulkanDevice->getLogicalDevice(),{},
+                                                      {bufferDescriptorUpdate},{},{});
+
+        return true;
+    }
+
+    /**
+     * @brief Builds the shader modules used by the program.
+     * @param shaderModule
+     * @return False if anything went wrong.
+     */
+    bool RavenEngine::buildShaderModules(VkShaderModule &shaderModule)
+    {
+
     }
 
 }
