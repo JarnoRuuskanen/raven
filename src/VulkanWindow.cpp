@@ -184,8 +184,8 @@ namespace Raven
 
         //Select swapchain image format and colorspace.
         VkSurfaceFormatKHR desiredSurfaceFormat;
-        desiredSurfaceFormat.format = SETTINGS_IMAGE_FORMAT;
-        desiredSurfaceFormat.colorSpace = SETTINGS_IMAGE_COLOR_SPACE;
+        desiredSurfaceFormat.format = VK_FORMAT_R8G8B8A8_UNORM;
+        desiredSurfaceFormat.colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
 
         //Image format and color space values will be saved to these two variables.
         VkFormat imageFormat;

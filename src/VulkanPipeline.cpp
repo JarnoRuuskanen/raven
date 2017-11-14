@@ -5,12 +5,12 @@
 
 namespace Raven
 {
-    VulkanPipeline::VulkanPipeline()
+    VulkanPipelineManager::VulkanPipelineManager()
     {
 
     }
 
-    VulkanPipeline::~VulkanPipeline()
+    VulkanPipelineManager::~VulkanPipelineManager()
     {
 
     }
@@ -41,8 +41,8 @@ namespace Raven
      * @param graphicsPipelines
      * @return False if any of the operations fails.
      */
-    bool VulkanPipeline::
-        buildBasicGraphicsPipelines(const VkDevice logicalDevice,
+    bool VulkanPipelineManager::
+        createBasicGraphicsPipelines(const VkDevice logicalDevice,
                                     VkPipelineCreateFlags additionalOptions,
                                     const std::string  &vertexShaderFilename,
                                     const std::string &fragmentShaderFilename,
@@ -207,7 +207,7 @@ namespace Raven
      * @param stages
      * @param createInfos
      */
-    void VulkanPipeline::
+    void VulkanPipelineManager::
         describePipelineShaderStages(const std::vector<ShaderStageParameters> &stages,
                              std::vector<VkPipelineShaderStageCreateInfo> &createInfos) noexcept
     {

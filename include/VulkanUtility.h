@@ -70,9 +70,9 @@ namespace Raven
                                          VkSurfaceTransformFlagBitsKHR &surfaceTransforms);
 
     //Selects the format for swapchain images based on desired and supported formats.
-    bool selectSwapchainImageFormat(const VkPhysicalDevice &physicalDevice,
-                                    const VkSurfaceKHR &presentationSurface,
-                                    const VkSurfaceFormatKHR desiredSurfaceFormat,
+    bool selectSwapchainImageFormat(VkPhysicalDevice &physicalDevice,
+                                    VkSurfaceKHR &presentationSurface,
+                                    VkSurfaceFormatKHR desiredSurfaceFormat,
                                     VkFormat &imageFormat,
                                     VkColorSpaceKHR &imageColorSpace);
 

@@ -238,10 +238,10 @@ namespace VulkanStructures
         return createInfo;
     }
 
-    inline VkImageViewCreateInfo imageViewCreateInfo(VkImage image,
-                                                     VkFormat format,
-                                                     VkImageAspectFlags aspect,
-                                                     VkImageViewType viewType)
+    inline VkImageViewCreateInfo imageViewCreateInfo(const VkImage image,
+                                                     const VkFormat format,
+                                                     const VkImageAspectFlags aspect,
+                                                     const VkImageViewType viewType)
     {
         VkImageViewCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;

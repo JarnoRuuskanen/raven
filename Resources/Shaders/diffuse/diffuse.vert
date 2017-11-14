@@ -11,5 +11,5 @@ void main()
 {
 	gl_Position = projectionMatrix * modelViewMatrix * position;
 	vec3 normal = mat3(modelViewMatrix) * appNormal;	
-	vertexColor = max(0.0, dot(normal, vec3(0.58, 0.58, 0-58)))+0.1;
+	vertexColor = max(0.0, dot(normal, vec3(0.58, 0.58, 0.58)))+0.1;
 }

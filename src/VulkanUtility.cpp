@@ -416,6 +416,7 @@ namespace Raven
 
     /**
      * @brief Selects the format for swapchain images based on desired and supported formats.
+     *        This function was mostly copied from VulkanCookbook.
      * @param physicalDevice
      * @param presentationSurface
      * @param desiredSurfaceFormat
@@ -423,70 +424,67 @@ namespace Raven
      * @param imageColorSpace
      * @return False if something went wrong.
      */
-    bool selectSwapchainImageFormat(const VkPhysicalDevice &physicalDevice,
-                                    const VkSurfaceKHR &presentationSurface,
-                                    const VkSurfaceFormatKHR desiredSurfaceFormat,
+    bool selectSwapchainImageFormat(VkPhysicalDevice &physicalDevice,
+                                    VkSurfaceKHR &presentationSurface,
+                                    VkSurfaceFormatKHR desiredSurfaceFormat,
                                     VkFormat &imageFormat,
                                     VkColorSpaceKHR &imageColorSpace)
     {
         //First enumerate all supported formats.
-        uint32_t formatCount = 0;
-        VkResult result;
+        uint32_t formatsCount = 0;
+        VkResult result = VK_SUCCESS;
 
-        result = vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, presentationSurface,
-                                                      &formatCount, nullptr);
-        if(result != VK_SUCCESS || formatCount == 0)
+        result = vkGetPhysicalDeviceSurfaceFormatsKHR( physicalDevice, presentationSurface,
+                                                       &formatsCount, nullptr );
+        if((VK_SUCCESS != result) ||(0 == formatsCount))
         {
-            std::cerr << "Failed to get the number of supported surface formats!" << std::endl;
-            return false;
+          std::cout << "Failed to get the number of supported surface formats!" << std::endl;
+          return false;
         }
 
-        //Next get the supported surface formats.
-        std::vector<VkSurfaceFormatKHR> surfaceFormats(formatCount);
-        result = vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, presentationSurface,
-                                                      &formatCount, surfaceFormats.data());
-        if(result != VK_SUCCESS || surfaceFormats.empty())
+        std::vector<VkSurfaceFormatKHR> surfaceFormats( formatsCount );
+        result = vkGetPhysicalDeviceSurfaceFormatsKHR( physicalDevice, presentationSurface,
+                                                       &formatsCount, surfaceFormats.data() );
+        if((VK_SUCCESS != result) || (0 == formatsCount))
         {
-            std::cerr << "Failed to get supported surface formats!" << std::endl;
-            return false;
+              std::cout << "Could not enumerate supported surface formats." << std::endl;
+              return false;
         }
 
-        //Now that we have all the supported surface formats, select the correct format.
-        for(auto& surfaceFormat : surfaceFormats)
+        // Select surface format
+        if((1 == surfaceFormats.size()) && (VK_FORMAT_UNDEFINED == surfaceFormats[0].format) )
         {
-            if(desiredSurfaceFormat.format == surfaceFormat.format &&
-                    desiredSurfaceFormat.colorSpace == surfaceFormat.colorSpace)
+              imageFormat = desiredSurfaceFormat.format;
+              imageColorSpace = desiredSurfaceFormat.colorSpace;
+              return true;
+        }
+
+        for( auto & surfaceFormat : surfaceFormats)
+        {
+            if( (desiredSurfaceFormat.format == surfaceFormat.format) &&
+                (desiredSurfaceFormat.colorSpace == surfaceFormat.colorSpace) )
             {
-                imageFormat = surfaceFormat.format;
-                imageColorSpace = surfaceFormat.colorSpace;
+                imageFormat = desiredSurfaceFormat.format;
+                imageColorSpace = desiredSurfaceFormat.colorSpace;
                 return true;
             }
         }
 
-        //If there was no surface format that supports both the image format and
-        //color space that we want, choose the first color space from the supported
-        //surface format.
-        for(auto& surfaceFormat : surfaceFormats)
+        for(auto & surfaceFormat : surfaceFormats)
         {
-            if(desiredSurfaceFormat.format == surfaceFormat.format)
+            if((desiredSurfaceFormat.format == surfaceFormat.format))
             {
-                imageFormat = surfaceFormat.format;
+                imageFormat = desiredSurfaceFormat.format;
                 imageColorSpace = surfaceFormat.colorSpace;
-                std::cout << "Could not find a supported color space, "
-                             "using first supported one from the desired "
-                             "(and supported) surface format." << std::endl;
+                std::cout << "Desired combination of format and colorspace is not supported. Selecting other colorspace." << std::endl;
                 return true;
             }
         }
 
-        //If no surface was found that supports both the desired colorspace and format then
-        //we use the default supported format and colorspace.
         imageFormat = surfaceFormats[0].format;
         imageColorSpace = surfaceFormats[0].colorSpace;
-        std::cout << "Failed to find a supported surface "
-                     "format/color space. Using default values." << std::endl;
+        std::cout << "Desired format is not supported. Selecting available format - colorspace combination." << std::endl;
         return true;
-
     }
 
     /**

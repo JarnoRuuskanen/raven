@@ -27,13 +27,13 @@ namespace Raven
     };
 
     //A class for both compute and graphics pipelines in Vulkan.
-    class VulkanPipeline
+    class VulkanPipelineManager
     {
         public:
-            VulkanPipeline();
-            ~VulkanPipeline();
+            VulkanPipelineManager();
+            ~VulkanPipelineManager();
             //Creates basic vertex/fragment -stage graphics pipelines with the given information.
-            bool buildBasicGraphicsPipelines(const VkDevice logicalDevice,
+            bool createBasicGraphicsPipelines(const VkDevice logicalDevice,
                                              VkPipelineCreateFlags additionalOptions,
                                              const std::string  &vertexShaderFilename,
                                              const std::string &fragmentShaderFilename,

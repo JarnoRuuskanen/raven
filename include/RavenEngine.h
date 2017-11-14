@@ -4,6 +4,7 @@
 #include "VulkanDevice.h"
 #include "CommandBufferManager.h"
 #include "VulkanRenderer.h"
+#include "VulkanPipeline.h"
 
 //The main class for Raven. RavenEngine should only give
 //instructions to other classes, not deal with the logic itself.
@@ -50,6 +51,15 @@ namespace Raven
                                   VkBuffer &uniformBuffer,
                                   std::vector<VkDescriptorSet> &descriptorSets);
 
+            //Builds the renderpass(es).
+            bool buildRenderPass(VulkanRenderer *vulkanRenderer, VkFormat swapchainFormat,
+                                 VkFormat depthFormat, VkRenderPass &renderPass);
+
+            bool buildGraphicsPipeline(VulkanPipelineManager &basicGraphicsPipeline,
+                                       VkDescriptorSetLayout &descriptorSetLayout,
+                                       VkRenderPass &renderPass,
+                                       VkPipeline& graphicsPipeline);
+
             //Builds the shader modules used by the program.
             bool buildShaderModules(VkShaderModule &shaderModule);
 
@@ -78,7 +88,7 @@ namespace Raven
 
             //Application window/windows.
             VulkanWindow* appWindow = nullptr;
-            uint16_t windowHeight = 500, windowWidth = 500;
+            uint16_t windowHeight = 800, windowWidth = 800;
 
             //A renderer for RavenEngine.
             VulkanRenderer* vulkanRenderer = nullptr;

@@ -112,8 +112,8 @@ namespace Raven
         //After the vulkan device has been created we need to create a window
         //for the application. This window will display our rendering content.
         //A new window will also initialize a new swapchain for the window.
-        VkPresentModeKHR presentationMode = SETTINGS_DEFAULT_PRESENTATION_MODE;
-        VkImageUsageFlags desiredImageUsages = SETTINGS_IMAGE_USAGE_FLAGS;
+        VkPresentModeKHR presentationMode = VK_PRESENT_MODE_MAILBOX_KHR;
+        VkImageUsageFlags desiredImageUsages = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
         VkSwapchainKHR oldSwapchain = VK_NULL_HANDLE;
 
         //Open a new window.
@@ -121,17 +121,15 @@ namespace Raven
         if(!openNewWindow(windowWidth, windowHeight, desiredImageUsages, presentationMode, oldSwapchain, appWindow))
             return false;
 
-        //Create a renderer.
-        vulkanRenderer = new VulkanRenderer();
-
-        //Create an object which we want to render.
+        auto imageViews = appWindow->getImageViews();
+        //Create an object which we want to render. In the future objects will be included
+        //inside scenarios which can hold multiple objects but for now, just load a single object.
         std::string objectSource = "../Resources/Models/torus.obj";
         uint32_t stride;
 
-        GraphicsObject graphicsObject;
-        if(!graphicsObject.loadModel(vulkanDevice->getLogicalDevice(), objectSource, true, false, false, true, &stride))
+        GraphicsObject* graphicsObject = new GraphicsObject();
+        if(!graphicsObject->loadModel(vulkanDevice->getLogicalDevice(), objectSource, true, false, false, true, &stride))
             return false;
-
 
         //Create a command buffer for the vertex data transfer.
         VkCommandBuffer vertexCmdBuffer;
@@ -146,7 +144,7 @@ namespace Raven
         //Create vertex buffer from the object data.
         VulkanBuffer vertexBuffer;
         VkDeviceMemory vertexMemory;
-        if(!buildVertexDataForShaders(graphicsObject, vertexBuffer, vertexMemory, vertexCmdBufferVector[0]))
+        if(!buildVertexDataForShaders(*graphicsObject, vertexBuffer, vertexMemory, vertexCmdBufferVector[0]))
             return false;
 
         //Next create the uniform buffer that will hold the matrix data used for camera and model viewing.
@@ -169,10 +167,28 @@ namespace Raven
         if(!buildDescriptors(descriptorSetLayout, descriptorPool, uniformBufferObject.buffer, descriptorSets))
             return false;
 
-        //Build the command buffers.
-        if(!buildCommandBuffersForDrawingGeometry())
+        //Create a renderer.
+        vulkanRenderer = new VulkanRenderer();
+
+        //TODO: Not working yet, possibly a problem with swapchain.
+        /*
+        //Next build the render passes. Drawing commands are organized into render passes.
+        VkRenderPass renderPass;
+        if(!buildRenderPass(vulkanRenderer, VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_D16_UNORM, renderPass))
             return false;
 
+
+        //Build the graphics pipeline that processes the data described by descriptors and
+        //sends output to the renderer which renders it on the swapchain/window.
+
+        VulkanPipelineManager pipelineManager;
+        VkPipeline graphicsPipeline;
+        if(!buildGraphicsPipeline(pipelineManager, descriptorSetLayout, renderPass, graphicsPipeline))
+            return false;
+        //Build the command buffers.
+        //if(!buildCommandBuffersForDrawingGeometry())
+        //    return false;
+        */
         //Start rendering.
         vulkanRenderer->render(appWindow);
 
@@ -344,8 +360,8 @@ namespace Raven
         vertexBufferObject.size = sizeof(graphicsObject.getMesh()->data[0])*graphicsObject.getMesh()->data.size();
         VkBufferCreateInfo bufferInfo =
             VulkanStructures::bufferCreateInfo(vertexBufferObject.size,
-                                               VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
-                                               VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                                               VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+                                               VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
                                                VK_SHARING_MODE_EXCLUSIVE);
 
         //Create the actual buffer.
@@ -489,6 +505,182 @@ namespace Raven
         VulkanDescriptorManager::updateDescriptorSets(vulkanDevice->getLogicalDevice(),{},
                                                       {bufferDescriptorUpdate},{},{});
 
+        return true;
+    }
+
+    /**
+     * @brief RavenEngine::buildRenderPass
+     * @param vulkanRenderer
+     * @return
+     */
+    bool RavenEngine::buildRenderPass(VulkanRenderer *vulkanRenderer, VkFormat swapchainFormat,
+                                      VkFormat depthFormat, VkRenderPass &renderPass)
+    {
+        //Describe attachments. We will be using color and depth images
+        //so we need two attachments.
+        VkAttachmentDescription attachment1 =
+        {
+            0,                                  //Flags.
+            swapchainFormat,                    //Format.
+            VK_SAMPLE_COUNT_1_BIT,              //Samples.
+            VK_ATTACHMENT_LOAD_OP_CLEAR,        //LoadOperation.
+            VK_ATTACHMENT_STORE_OP_STORE,       //StoreOp.
+            VK_ATTACHMENT_LOAD_OP_DONT_CARE,    //StencilLoadOp.
+            VK_ATTACHMENT_STORE_OP_DONT_CARE,   //StencilStoreOp.
+            VK_IMAGE_LAYOUT_UNDEFINED,          //InitialLayout.
+            VK_IMAGE_LAYOUT_PRESENT_SRC_KHR     //FinalLayout.
+        };
+
+        VkAttachmentDescription attachment2 =
+        {
+            0,
+            depthFormat,
+            VK_SAMPLE_COUNT_1_BIT,
+            VK_ATTACHMENT_LOAD_OP_CLEAR,
+            VK_ATTACHMENT_STORE_OP_DONT_CARE,
+            VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+            VK_ATTACHMENT_STORE_OP_DONT_CARE,
+            VK_IMAGE_LAYOUT_UNDEFINED,
+            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+        };
+        std::vector<VkAttachmentDescription> attachmentDescriptions = {attachment1, attachment2};
+
+        VkAttachmentReference depthAttachment =
+        {
+          1,
+          VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+        };
+
+        //Next describe the subpass parameters.
+        std::vector<SubpassParameters> subpassParameters = {
+        {
+            VK_PIPELINE_BIND_POINT_GRAPHICS,              //VkPipelineBindPoint.
+            {},                                           //InputAttachments.
+            {                                             //ColorAttachments.
+              {
+                0,                                          //Attachment.
+                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL    //Layout.
+              }
+            },
+            {},                                           //ResolveAttachments.
+            &depthAttachment,                            //DepthStencilAttachment.
+            {}                                            //PreserveAttachments.
+          }
+        };
+
+        //Then the subpass dependencies.
+        std::vector<VkSubpassDependency> subpassDependencies =
+        {
+            {
+                VK_SUBPASS_EXTERNAL,                            //Source subpass.
+                0,                                              //Destination subpass.
+                VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,              //Source stage mask.
+                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,  //Destination stage mask.
+                VK_ACCESS_MEMORY_READ_BIT,                      //Source access mask.
+                VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,           //Destination access mask.
+                VK_DEPENDENCY_BY_REGION_BIT                     //Dependency flags.
+            },
+            {
+                0,
+                VK_SUBPASS_EXTERNAL,
+                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+                VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+                VK_ACCESS_MEMORY_READ_BIT,
+                VK_DEPENDENCY_BY_REGION_BIT
+            }
+        };
+
+        //TODO: THIS FAILS.
+        //Create the render pass.
+        if(!vulkanRenderer->createRenderPass(vulkanDevice->getLogicalDevice(),
+                                             attachmentDescriptions,
+                                             subpassParameters,
+                                             subpassDependencies,
+                                             renderPass))
+        {
+                return false;
+        }
+
+        return true;
+    }
+
+    bool RavenEngine::buildGraphicsPipeline(VulkanPipelineManager &basicGraphicsPipeline,
+                                            VkDescriptorSetLayout &descriptorSetLayout,
+                                            VkRenderPass &renderPass,
+                                            VkPipeline& graphicsPipeline)
+    {
+        VkPipelineLayout pipelineLayout;
+        if(!createPipelineLayout(vulkanDevice->getLogicalDevice(),
+                                 {descriptorSetLayout}, {}, pipelineLayout))
+        {
+            return false;
+        }
+
+        std::vector<VkVertexInputBindingDescription> vertexInputBindingDescriptions =
+        {
+            {
+                0,                              //Binding.
+                6 * sizeof(float),              //Stride.
+                VK_VERTEX_INPUT_RATE_VERTEX     //Input rate.
+            }
+        };
+
+        std::vector<VkVertexInputAttributeDescription> vertexAttributeDescriptions =
+        {
+            {
+                0,                          //Location.
+                0,                          //Binding.
+                VK_FORMAT_R32G32B32_SFLOAT, //Format.
+                0                           //Offset.
+            },
+            {
+                1,
+                0,
+                VK_FORMAT_R32G32B32_SFLOAT,
+                3 * sizeof(float)
+            }
+        };
+
+        std::vector<VkPipelineColorBlendAttachmentState> attachmentBlendStates =
+        {
+            {
+                false,                          // VkBool32                 blendEnable
+                VK_BLEND_FACTOR_ONE,            // VkBlendFactor            srcColorBlendFactor
+                VK_BLEND_FACTOR_ONE,            // VkBlendFactor            dstColorBlendFactor
+                VK_BLEND_OP_ADD,                // VkBlendOp                colorBlendOp
+                VK_BLEND_FACTOR_ONE,            // VkBlendFactor            srcAlphaBlendFactor
+                VK_BLEND_FACTOR_ONE,            // VkBlendFactor            dstAlphaBlendFactor
+                VK_BLEND_OP_ADD,                // VkBlendOp                alphaBlendOp
+                VK_COLOR_COMPONENT_R_BIT |      // VkColorComponentFlags    colorWriteMask
+                VK_COLOR_COMPONENT_G_BIT |
+                VK_COLOR_COMPONENT_B_BIT |
+                VK_COLOR_COMPONENT_A_BIT
+            }
+        };
+
+        std::array<float,4> blendConstants = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+        VkPipelineCache pipelineCache;
+        if(!createPipelineCache(vulkanDevice->getLogicalDevice(), {}, pipelineCache))
+            return false;
+
+        std::vector<VkPipeline> pipelines = {graphicsPipeline};
+        if(!basicGraphicsPipeline.createBasicGraphicsPipelines(vulkanDevice->getLogicalDevice(),
+                                                               0, "../Resources/Shaders/diffuse/diffuse-vert.spv",
+                                                               "../Resources/Shaders/diffuse/diffuse-frag.spv",
+                                                               vertexInputBindingDescriptions,
+                                                               vertexAttributeDescriptions,
+                                                               VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, VK_FALSE,
+                                                               VK_POLYGON_MODE_FILL, VK_CULL_MODE_BACK_BIT,
+                                                               VK_FRONT_FACE_COUNTER_CLOCKWISE, VK_FALSE,
+                                                               VK_LOGIC_OP_COPY, attachmentBlendStates,
+                                                               blendConstants, pipelineLayout, renderPass,
+                                                               0, VK_NULL_HANDLE, pipelineCache,
+                                                               pipelines))
+        {
+            return false;
+        }
         return true;
     }
 
