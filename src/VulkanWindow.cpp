@@ -380,7 +380,7 @@ namespace Raven
 
 			free(event);
 		}
-#endif
+#elif defined VK_USE_PLATFORM_WIN32_KHR
 		MSG msg;
 		while (GetMessage(&msg, NULL, 0, 0))
 		{
@@ -389,5 +389,7 @@ namespace Raven
 		}
 
 		return (int)msg.wParam;
+#endif
+		return 0;
 	}
 }
