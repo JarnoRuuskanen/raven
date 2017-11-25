@@ -2,7 +2,9 @@
 #include <iostream>
 #include <gtest/gtest.h>
 #include <string>
-#include <xcb/xcb.h>
+#ifdef UNIX
+	#include <xcb/xcb.h>
+#endif
 /**RAVEN PROJECT INCLUDES IN CORRECT ORDER.
    REMEMBER TO ALSO INCLUDE THE CPP-FILES
    OR THE PROJECT WON'T COMPILE!*/

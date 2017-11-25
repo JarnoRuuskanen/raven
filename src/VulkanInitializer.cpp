@@ -15,7 +15,7 @@ namespace Raven
     bool loadVulkanLibrary(LIBRARY_TYPE& vulkanLibrary)
     {
         #if defined _WIN32
-            vulkan_library = LoadLibrary("vulkan-1.dll");
+			vulkanLibrary = LoadLibrary("vulkan-1.dll");
         #elif defined __linux
             vulkanLibrary = dlopen("libvulkan.so.1", RTLD_NOW);
         #endif
@@ -36,7 +36,7 @@ namespace Raven
      * @brief Frees the dynamically loaded Vulkan library.
      * @param vulkanLibrary
      */
-    void freeVulkanLibrary(void *&vulkanLibrary)
+    void freeVulkanLibrary(LIBRARY_TYPE&vulkanLibrary)
     {
         if(vulkanLibrary == nullptr)
             return;

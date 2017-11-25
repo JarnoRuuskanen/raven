@@ -691,7 +691,7 @@ namespace Raven
      */
     bool RavenEngine::buildShaderModules(VkShaderModule &shaderModule)
     {
-
+		return true;
     }
 
 }

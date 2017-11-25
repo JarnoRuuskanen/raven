@@ -16,8 +16,10 @@ namespace Raven
      */
     VulkanWindow::~VulkanWindow()
     {
+#ifdef UNIX
         if(connectionEstablished == true)
             xcb_disconnect (windowParameters.connection);
+#endif
     }
 
     /**
@@ -33,9 +35,9 @@ namespace Raven
 
         //Define functionality for each platform.
         #ifdef VK_USE_PLATFORM_WIN32_KHR
-            createInfo.HINSTANCE = windowParameters.hInstance;
-            createInfo.HWND = windowParameters.hwnd;
-            result = vkCreateWin32SurfaceKHR(instance, &createInfo, nullptr, &windowSurface);
+            createInfo.hinstance = windowParameters.hInstance;
+            createInfo.hwnd = windowParameters.hwnd;
+            result = vkCreateWin32SurfaceKHR(instance, &createInfo, nullptr, &presentationSurface);
         #elif defined VK_USE_PLATFORM_XCB_KHR
             createInfo.connection = windowParameters.connection;
             createInfo.window = windowParameters.window;
@@ -265,6 +267,7 @@ namespace Raven
      */
     void VulkanWindow::play()
     {
+#ifdef UNIX
         xcb_generic_event_t *event;
         while((event = xcb_wait_for_event(windowParameters.connection)))
         {
@@ -291,6 +294,7 @@ namespace Raven
 
             free(event);
         }
+#endif
     }
 
 }

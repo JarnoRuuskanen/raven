@@ -1,5 +1,5 @@
 project(Raven)
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.7)
 
 set_property( GLOBAL PROPERTY USE_FOLDERS ON )
 set( CMAKE_SUPPRESS_REGENERATION true )
@@ -7,6 +7,17 @@ set( CMAKE_SUPPRESS_REGENERATION true )
 if( CMAKE_BUILD_TYPE STREQUAL "" )
         set( CMAKE_BUILD_TYPE "debug" )
 endif()
+
+if (NOT CMAKE_VERSION VERSION_LESS 3.7.0)
+	message(STATUS "Using module to find Vulkan")
+	find_package(Vulkan)
+endif()
+
+IF (NOT Vulkan_FOUND)
+	message(FATAL_ERROR "Could not find Vulkan library!")
+ELSE()
+	message(STATUS ${Vulkan_LIBRARY})
+ENDIF()
 
 #Define platform
 if( NOT DEFINED VK_USE_PLATFORM )
@@ -24,9 +35,9 @@ if(WIN32)
         set( CMAKE_CXX_FLAGS_RELWITHDEBINFO  "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /MT" )
         set( CMAKE_CXX_FLAGS_RELEASE         "${CMAKE_CXX_FLAGS_RELEASE} /MT" )
         set( CMAKE_CXX_FLAGS_DEBUG           "${CMAKE_CXX_FLAGS_DEBUG} /MTd" )
-        set( PLATFORM_LIBRARY                vulkan-1)
+        set( PLATFORM_LIBRARY                ${Vulkan_LIBRARY})
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DVK_USE_PLATFORM_WIN32_KHR")
 elseif(UNIX)
-        add_definitions( -std=c++14 )
         set( PLATFORM_LIBRARY dl xcb pthread vulkan)
 endif()
 
@@ -36,6 +47,7 @@ endif()
 
 add_definitions( -DVK_NO_PROTOTYPES )
 add_definitions( -DVK_USE_PLATFORM_${VK_USE_PLATFORM}_KHR )
+add_definitions( -std=c++14 )
 
 # Define include paths
 # STB SETUP Image library to load texture files from multiple formats.
@@ -44,6 +56,8 @@ set (STBINCLUDES "${EXTDIR}")
 get_filename_component(STBINC_PREFIX "${STBINCLUDES}" ABSOLUTE)
 if(NOT EXISTS ${STBINC_PREFIX})
     message(FATAL_ERROR "Necessary stb headers do not exist: " ${STBINC_PREFIX})
+else()
+		message("STB IMAGE LIBRARY FOUND AND LOADED!")
 endif()
 include_directories( ${STBINC_PREFIX} )
 
@@ -53,10 +67,24 @@ set(OBJINCLUDES "${EXTDIR}")
 get_filename_component(OBJINC_PREFIX "${OBJINCLUDES}" ABSOLUTE)
 if(NOT EXISTS ${OBJINC_PREFIX})
     message(FATAL_ERROR "Necessary tinyobjloader header does not exist: " ${OBJINC_PREFIX})
+else()
+		message("TINY OBJECT LOADER FOUND AND LOADED!")
 endif()
 include_directories(${OBJINC_PREFIX})
 
+# GLM Math library.
+set(EXTDIR "${CMAKE_SOURCE_DIR}/Resources/Libraries/glm")
+set(GLMINCLUDES "${EXTDIR}")
+get_filename_component(GLMINC_PREFIX "${GLMINCLUDES}" ABSOLUTE)
+if(NOT EXISTS ${GLMINC_PREFIX})
+    message(FATAL_ERROR "Necessary glm header does not exist: " ${GLMINC_PREFIX})
+else()
+		message("GLM FOUND AND LOADED!")
+endif()
+include_directories(${GLMINC_PREFIX})
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+include_directories(${Vulkan_INCLUDE_DIR})
 
 # Gather list of header and source files for compilation.
 file(GLOB_RECURSE CPP_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
@@ -66,8 +94,8 @@ file(GLOB_RECURSE HPP_FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/*.*)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
 #When you want to add the unit tests + compile them, add these two lines.
-add_subdirectory(lib/googletest)
-add_subdirectory(UnitTests)
+#add_subdirectory(lib/googletest)
+#add_subdirectory(UnitTests)
 
 add_executable(${PROJECT_NAME} ${CPP_FILES} ${HPP_FILES})
 
