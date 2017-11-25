@@ -14,13 +14,34 @@ namespace Raven
     /**
      * @brief VulkanWindow::~VulkanWindow
      */
-    VulkanWindow::~VulkanWindow()
-    {
-#ifdef UNIX
-        if(connectionEstablished == true)
-            xcb_disconnect (windowParameters.connection);
+	VulkanWindow::~VulkanWindow()
+	{
+		#ifdef UNIX
+				if (connectionEstablished == true)
+					xcb_disconnect(windowParameters.connection);
+		#endif
+	}
+
+#ifdef VK_USE_PLATFORM_WIN32_KHR
+		LRESULT CALLBACK WindowsEventHandler(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+		{
+			VulkanWindow * window = reinterpret_cast<VulkanWindow*>(
+				GetWindowLongPtrW(hWnd, GWLP_USERDATA));
+
+			switch (uMsg) {
+			case WM_CLOSE:
+				return 0;
+			case WM_SIZE:
+				// we get here if the window has changed size, we should rebuild most
+				// of our window resources before rendering to this window again.
+				// ( no need for this because our window sizing by hand is disabled )
+				break;
+			default:
+				break;
+			}
+			return DefWindowProc(hWnd, uMsg, wParam, lParam);
+		}
 #endif
-    }
 
     /**
      * @brief Creates a presentation surface for VulkanWindow.
@@ -63,10 +84,75 @@ namespace Raven
      * @param windowHeight
      * @return
      */
+	int counter = 0;
     bool VulkanWindow::createWindowFrame(uint16_t windowWidth, uint16_t windowHeight)
     {
+		#ifdef VK_USE_PLATFORM_WIN32_KHR
+		counter++;
+		WNDCLASSEX windowClass{};
+		assert(windowWidth > 0);
+		assert(windowHeight > 0);
+
+		std::string className = "Raven Engine window " + std::to_string(counter);
+		std::string windowName = "Raven";
+		windowParameters.hInstance = GetModuleHandle(nullptr);
+
+		windowClass.cbSize = sizeof(WNDCLASSEX);
+		windowClass.style = CS_HREDRAW | CS_VREDRAW;
+		windowClass.lpfnWndProc = WindowsEventHandler;
+		windowClass.cbClsExtra = 0;
+		windowClass.cbWndExtra = 0;
+		windowClass.hInstance = windowParameters.hInstance; // hInstance
+		windowClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+		windowClass.hCursor = LoadCursor(NULL, IDC_ARROW);
+		windowClass.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
+		windowClass.lpszMenuName = NULL;
+		windowClass.lpszClassName = className.c_str();
+		windowClass.hIconSm = LoadIcon(NULL, IDI_WINLOGO);
+
+		//Register the window class.
+		if (!RegisterClassEx(&windowClass))
+		{
+			assert(0 && "Failed to create a window for drawing!");
+			return false;
+		}
+
+		DWORD exStyle = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;
+		DWORD style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
+
+		RECT wr = {0,0,LONG(windowWidth), LONG(windowHeight)};
+		AdjustWindowRectEx(&wr, style, FALSE, exStyle);
+
+		windowParameters.hwnd = CreateWindowEx(
+			0,							//Optional window styles.
+			className.c_str(),			//Window class.
+			windowName.c_str(),			//Window text.
+			style,						//Window style.
+			CW_USEDEFAULT,				//Size and position
+			CW_USEDEFAULT,				//
+			wr.right - wr.left,			//
+			wr.bottom - wr.top,			//
+			NULL,						//Parent window.
+			NULL,						//Menu.
+			windowParameters.hInstance,	//Instance handle.
+			NULL);						//Additional application data.
+
+		if (!windowParameters.hwnd)
+		{
+			assert(0, "Create Window failed!");
+			return false;
+		}
+
+		SetWindowLongPtr(windowParameters.hwnd, GWLP_USERDATA, (LONG_PTR)this);
+
+		ShowWindow(windowParameters.hwnd, SW_SHOW);
+		SetForegroundWindow(windowParameters.hwnd);
+		SetFocus(windowParameters.hwnd);
+
+		return true;
+
         //Linux xcb
-        #ifdef VK_USE_PLATFORM_XCB_KHR
+        #elif VK_USE_PLATFORM_XCB_KHR
             // First open connection to the X server.
             windowParameters.connection = xcb_connect(NULL, NULL);
             if(xcb_connection_has_error(windowParameters.connection) > 0)
@@ -262,39 +348,46 @@ namespace Raven
         return true;
     }
 
-    /**
-     * @brief Displays the rendered content.
-     */
-    void VulkanWindow::play()
-    {
-#ifdef UNIX
-        xcb_generic_event_t *event;
-        while((event = xcb_wait_for_event(windowParameters.connection)))
-        {
-            switch(event->response_type & ~0x80)
-            {
-                case XCB_EXPOSE:
-                {
-                    std::cout << "Window exposed!" << std::endl;
-                    break;
-                }
+	/**
+	* @brief Displays the rendered content.
+	*/
+	int VulkanWindow::play()
+	{
+#ifdef VK_USE_PLATFORM_XCB_KHR
+		xcb_generic_event_t *event;
+		while ((event = xcb_wait_for_event(windowParameters.connection)))
+		{
+			switch (event->response_type & ~0x80)
+			{
+			case XCB_EXPOSE:
+			{
+				std::cout << "Window exposed!" << std::endl;
+				break;
+			}
 
-                case XCB_BUTTON_PRESS:
-                {
-                    std::cout << "Button pressed!" << std::endl;
-                    break;
-                }
+			case XCB_BUTTON_PRESS:
+			{
+				std::cout << "Button pressed!" << std::endl;
+				break;
+			}
 
-                default:
-                {
-                    //By default, render content.
-                    break;
-                }
-            }
+			default:
+			{
+				//By default, render content.
+				break;
+			}
+			}
 
-            free(event);
-        }
+			free(event);
+		}
 #endif
-    }
+		MSG msg;
+		while (GetMessage(&msg, NULL, 0, 0))
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
 
+		return (int)msg.wParam;
+	}
 }

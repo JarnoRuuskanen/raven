@@ -121,75 +121,7 @@ namespace Raven
         if(!openNewWindow(windowWidth, windowHeight, desiredImageUsages, presentationMode, oldSwapchain, appWindow))
             return false;
 
-        auto imageViews = appWindow->getImageViews();
-        //Create an object which we want to render. In the future objects will be included
-        //inside scenarios which can hold multiple objects but for now, just load a single object.
-        std::string objectSource = "../Resources/Models/torus.obj";
-        uint32_t stride;
-
-        GraphicsObject* graphicsObject = new GraphicsObject();
-        if(!graphicsObject->loadModel(vulkanDevice->getLogicalDevice(), objectSource, true, false, false, true, &stride))
-            return false;
-
-        //Create a command buffer for the vertex data transfer.
-        VkCommandBuffer vertexCmdBuffer;
-        std::vector<VkCommandBuffer> vertexCmdBufferVector = {vertexCmdBuffer};
-        if(!CommandBufferManager::createCmdPoolAndBuffers(vulkanDevice->getLogicalDevice(),
-                                                          vulkanDevice->getPrimaryQueueFamilyIndex(),
-                                                          cmdPool, 1, vertexCmdBufferVector))
-        {
-                return false;
-        }
-
-        //Create vertex buffer from the object data.
-        VulkanBuffer vertexBuffer;
-        VkDeviceMemory vertexMemory;
-        if(!buildVertexDataForShaders(*graphicsObject, vertexBuffer, vertexMemory, vertexCmdBufferVector[0]))
-            return false;
-
-        //Next create the uniform buffer that will hold the matrix data used for camera and model viewing.
-        //The size of it will be 2x16x sizeof(float)
-        VulkanBuffer uniformBufferObject;
-        VkDeviceMemory uniformBufferMemory;
-        if(!vulkanDevice->createUniformBuffer((2 * 16 * sizeof(float)),
-                                              VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                                              uniformBufferObject, uniformBufferMemory))
-        {
-            return false;
-        }
-
-        //Describe the data that is sent to the graphics pipeline. Definition can be found in the function.
-        //Handles for the descriptor data.
-        VkDescriptorSetLayout descriptorSetLayout;
-        std::vector<VkDescriptorSet> descriptorSets;
-        VkDescriptorPool descriptorPool;
-
-        if(!buildDescriptors(descriptorSetLayout, descriptorPool, uniformBufferObject.buffer, descriptorSets))
-            return false;
-
-        //Create a renderer.
-        vulkanRenderer = new VulkanRenderer();
-
-        //TODO: Not working yet, possibly a problem with swapchain.
-        /*
-        //Next build the render passes. Drawing commands are organized into render passes.
-        VkRenderPass renderPass;
-        if(!buildRenderPass(vulkanRenderer, VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_D16_UNORM, renderPass))
-            return false;
-
-
-        //Build the graphics pipeline that processes the data described by descriptors and
-        //sends output to the renderer which renders it on the swapchain/window.
-
-        VulkanPipelineManager pipelineManager;
-        VkPipeline graphicsPipeline;
-        if(!buildGraphicsPipeline(pipelineManager, descriptorSetLayout, renderPass, graphicsPipeline))
-            return false;
-        //Build the command buffers.
-        //if(!buildCommandBuffersForDrawingGeometry())
-        //    return false;
-        */
-        //Start rendering.
+        //Start rendering. At this point the window is empty.
         vulkanRenderer->render(appWindow);
 
         return true;

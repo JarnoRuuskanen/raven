@@ -12,8 +12,8 @@ namespace Raven
     struct WindowParameters
     {
         #ifdef VK_USE_PLATFORM_WIN32_KHR
-            HINSTANCE hInstance;
-            HWND hwnd;
+            HINSTANCE hInstance = NULL;
+            HWND hwnd = NULL;
         #elif defined VK_USE_PLATFORM_XCB_KHR
             xcb_connection_t * connection;
             xcb_window_t      window;
@@ -43,7 +43,7 @@ namespace Raven
                                        VkPresentModeKHR &presentationMode,
                                        VkSwapchainKHR &oldSwapchain);
             //Displays the rendered content.
-            void play();
+			int play();
 
             //Returns a reference to the window surface.
             inline VkSurfaceKHR& getPresentationSurface(){ return presentationSurface; }
