@@ -27,33 +27,33 @@ namespace Raven
     };
 
     //A class for both compute and graphics pipelines in Vulkan.
-    class VulkanPipelineManager
+    class VulkanPipeline
     {
         public:
-            VulkanPipelineManager();
-            ~VulkanPipelineManager();
+			VulkanPipeline();
+            ~VulkanPipeline();
             //Creates basic vertex/fragment -stage graphics pipelines with the given information.
-            bool createBasicGraphicsPipelines(const VkDevice logicalDevice,
-                                             VkPipelineCreateFlags additionalOptions,
-                                             const std::string  &vertexShaderFilename,
-                                             const std::string &fragmentShaderFilename,
-                                             const std::vector<VkVertexInputBindingDescription> &vertexInputBindings,
-                                             const std::vector<VkVertexInputAttributeDescription> &vertexAttributes,
-                                             VkPrimitiveTopology primitiveTopology,
-                                             VkBool32 primitiveRestartEnabled,
-                                             VkPolygonMode polygonMode,
-                                             VkCullModeFlags cullMode,
-                                             VkFrontFace frontFace,
-                                             VkBool32 logicOpEnable,
-                                             VkLogicOp logicOp,
-                                             const std::vector<VkPipelineColorBlendAttachmentState> &attachments,
-                                             const std::array<float,4> &blendConstants,
-                                             VkPipelineLayout layout,
-                                             VkRenderPass renderPass,
-                                             uint32_t subpass,
-                                             VkPipeline parentPipeline,
-                                             VkPipelineCache pipelineCache,
-                                             std::vector<VkPipeline> &graphicsPipelines) noexcept;
+            bool initialize(const VkDevice logicalDevice,
+                            VkPipelineCreateFlags additionalOptions,
+                            const std::string  &vertexShaderFilename,
+                            const std::string &fragmentShaderFilename,
+                            const std::vector<VkVertexInputBindingDescription> &vertexInputBindings,
+                            const std::vector<VkVertexInputAttributeDescription> &vertexAttributes,
+                            VkPrimitiveTopology primitiveTopology,
+                            VkBool32 primitiveRestartEnabled,
+                            VkPolygonMode polygonMode,
+                            VkCullModeFlags cullMode,
+                            VkFrontFace frontFace,
+                            VkBool32 logicOpEnable,
+                            VkLogicOp logicOp,
+                            const std::vector<VkPipelineColorBlendAttachmentState> &attachments,
+                            const std::array<float,4> &blendConstants,
+                            VkPipelineLayout layout,
+                            VkRenderPass renderPass,
+                            uint32_t subpass,
+                            VkPipeline parentPipeline,
+                            VkPipelineCache pipelineCache,
+                            std::vector<VkPipeline> &graphicsPipelines) noexcept;
         private:
             //Describes shader stages.
             void describePipelineShaderStages(std::vector<ShaderStageParameters> const &stages,

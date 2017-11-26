@@ -121,6 +121,10 @@ namespace Raven
         if(!openNewWindow(windowWidth, windowHeight, desiredImageUsages, presentationMode, oldSwapchain, appWindow))
             return false;
 
+		//Build a basic render pass.
+		VkRenderPass renderPass;
+		if (!vulkanRenderer->buildGeometryAndPostProcessingRenderPass(vulkanDevice->getLogicalDevice(), renderPass))
+			return false;
         //Start rendering. At this point the window is empty.
         vulkanRenderer->render(appWindow);
 
@@ -537,7 +541,7 @@ namespace Raven
         return true;
     }
 
-    bool RavenEngine::buildGraphicsPipeline(VulkanPipelineManager &basicGraphicsPipeline,
+    bool RavenEngine::buildGraphicsPipeline(VulkanPipeline &basicGraphicsPipeline,
                                             VkDescriptorSetLayout &descriptorSetLayout,
                                             VkRenderPass &renderPass,
                                             VkPipeline& graphicsPipeline)
@@ -598,18 +602,18 @@ namespace Raven
             return false;
 
         std::vector<VkPipeline> pipelines = {graphicsPipeline};
-        if(!basicGraphicsPipeline.createBasicGraphicsPipelines(vulkanDevice->getLogicalDevice(),
-                                                               0, "../Resources/Shaders/diffuse/diffuse-vert.spv",
-                                                               "../Resources/Shaders/diffuse/diffuse-frag.spv",
-                                                               vertexInputBindingDescriptions,
-                                                               vertexAttributeDescriptions,
-                                                               VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, VK_FALSE,
-                                                               VK_POLYGON_MODE_FILL, VK_CULL_MODE_BACK_BIT,
-                                                               VK_FRONT_FACE_COUNTER_CLOCKWISE, VK_FALSE,
-                                                               VK_LOGIC_OP_COPY, attachmentBlendStates,
-                                                               blendConstants, pipelineLayout, renderPass,
-                                                               0, VK_NULL_HANDLE, pipelineCache,
-                                                               pipelines))
+        if(!basicGraphicsPipeline.initialize(vulkanDevice->getLogicalDevice(),
+                                             0, "../Resources/Shaders/diffuse/diffuse-vert.spv",
+                                             "../Resources/Shaders/diffuse/diffuse-frag.spv",
+                                             vertexInputBindingDescriptions,
+                                             vertexAttributeDescriptions,
+                                             VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, VK_FALSE,
+                                             VK_POLYGON_MODE_FILL, VK_CULL_MODE_BACK_BIT,
+                                             VK_FRONT_FACE_COUNTER_CLOCKWISE, VK_FALSE,
+                                             VK_LOGIC_OP_COPY, attachmentBlendStates,
+                                             blendConstants, pipelineLayout, renderPass,
+                                             0, VK_NULL_HANDLE, pipelineCache,
+                                             pipelines))
         {
             return false;
         }

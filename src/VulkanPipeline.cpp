@@ -5,12 +5,12 @@
 
 namespace Raven
 {
-    VulkanPipelineManager::VulkanPipelineManager()
+	VulkanPipeline::VulkanPipeline()
     {
 
     }
 
-    VulkanPipelineManager::~VulkanPipelineManager()
+	VulkanPipeline::~VulkanPipeline()
     {
 
     }
@@ -41,28 +41,27 @@ namespace Raven
      * @param graphicsPipelines
      * @return False if any of the operations fails.
      */
-    bool VulkanPipelineManager::
-        createBasicGraphicsPipelines(const VkDevice logicalDevice,
-                                    VkPipelineCreateFlags additionalOptions,
-                                    const std::string  &vertexShaderFilename,
-                                    const std::string &fragmentShaderFilename,
-                                    const std::vector<VkVertexInputBindingDescription> &vertexInputBindings,
-                                    const std::vector<VkVertexInputAttributeDescription> &vertexAttributes,
-                                    VkPrimitiveTopology primitiveTopology,
-                                    VkBool32 primitiveRestartEnabled,
-                                    VkPolygonMode polygonMode,
-                                    VkCullModeFlags cullMode,
-                                    VkFrontFace frontFace,
-                                    VkBool32 logicOpEnable,
-                                    VkLogicOp logicOp,
-                                    const std::vector<VkPipelineColorBlendAttachmentState> &blendAttachments,
-                                    const std::array<float,4> &blendConstants,
-                                    VkPipelineLayout layout,
-                                    VkRenderPass renderPass,
-                                    uint32_t subpass,
-                                    VkPipeline parentPipeline,
-                                    VkPipelineCache pipelineCache,
-                                    std::vector<VkPipeline> &graphicsPipelines) noexcept
+    bool VulkanPipeline::initialize(const VkDevice logicalDevice,
+									VkPipelineCreateFlags additionalOptions,
+									const std::string  &vertexShaderFilename,
+									const std::string &fragmentShaderFilename,
+									const std::vector<VkVertexInputBindingDescription> &vertexInputBindings,
+									const std::vector<VkVertexInputAttributeDescription> &vertexAttributes,
+									VkPrimitiveTopology primitiveTopology,
+									VkBool32 primitiveRestartEnabled,
+									VkPolygonMode polygonMode,
+									VkCullModeFlags cullMode,
+									VkFrontFace frontFace,
+									VkBool32 logicOpEnable,
+									VkLogicOp logicOp,
+									const std::vector<VkPipelineColorBlendAttachmentState> &blendAttachments,
+									const std::array<float,4> &blendConstants,
+									VkPipelineLayout layout,
+									VkRenderPass renderPass,
+									uint32_t subpass,
+									VkPipeline parentPipeline,
+									VkPipelineCache pipelineCache,
+									std::vector<VkPipeline> &graphicsPipelines) noexcept
     {
         //Read the vertex shader info.
         std::vector<char> vertexShaderSourceCode =
@@ -207,9 +206,8 @@ namespace Raven
      * @param stages
      * @param createInfos
      */
-    void VulkanPipelineManager::
-        describePipelineShaderStages(const std::vector<ShaderStageParameters> &stages,
-                             std::vector<VkPipelineShaderStageCreateInfo> &createInfos) noexcept
+    void VulkanPipeline::describePipelineShaderStages(const std::vector<ShaderStageParameters> &stages,
+														   std::vector<VkPipelineShaderStageCreateInfo> &createInfos) noexcept
     {
         createInfos.clear();
         for(auto& stage : stages)

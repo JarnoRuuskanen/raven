@@ -88,9 +88,9 @@ namespace VulkanStructures
         return createInfo;
     }
 
-    inline VkCommandBufferAllocateInfo commandBufferAllocateInfo(VkCommandBufferLevel level,
-                                                                 VkCommandPool cmdPool,
-                                                                 uint32_t bufferCount)
+    inline VkCommandBufferAllocateInfo commandBufferAllocateInfo(const VkCommandBufferLevel& level,
+																 const VkCommandPool& cmdPool,
+																 const uint32_t& bufferCount)
     {
         VkCommandBufferAllocateInfo allocInfo = {};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -101,7 +101,7 @@ namespace VulkanStructures
         return allocInfo;
     }
 
-    inline VkCommandBufferBeginInfo commandBufferBeginInfo(VkCommandBufferUsageFlags usageFlags)
+    inline VkCommandBufferBeginInfo commandBufferBeginInfo(const VkCommandBufferUsageFlags& usageFlags)
     {
         VkCommandBufferBeginInfo beginInfo = {};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -379,9 +379,9 @@ namespace VulkanStructures
     }
 
     inline VkRenderPassCreateInfo
-        renderPassCreateInfo(const std::vector<VkAttachmentDescription> attachmentDescriptions,
-                             const std::vector<VkSubpassDescription> subpassDescriptions,
-                             const std::vector<VkSubpassDependency> subpassDepedencies)
+        renderPassCreateInfo(const std::vector<VkAttachmentDescription>& attachmentDescriptions,
+                             const std::vector<VkSubpassDescription>& subpassDescriptions,
+                             const std::vector<VkSubpassDependency>& subpassDepedencies)
     {
         VkRenderPassCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;

@@ -8,6 +8,7 @@ if( CMAKE_BUILD_TYPE STREQUAL "" )
         set( CMAKE_BUILD_TYPE "debug" )
 endif()
 
+#Find Vulkan
 if (NOT CMAKE_VERSION VERSION_LESS 3.7.0)
 	message(STATUS "Using module to find Vulkan")
 	find_package(Vulkan)
@@ -15,8 +16,6 @@ endif()
 
 IF (NOT Vulkan_FOUND)
 	message(FATAL_ERROR "Could not find Vulkan library!")
-ELSE()
-	message(STATUS ${Vulkan_LIBRARY})
 ENDIF()
 
 #Define platform
@@ -47,7 +46,8 @@ endif()
 
 add_definitions( -DVK_NO_PROTOTYPES )
 add_definitions( -DVK_USE_PLATFORM_${VK_USE_PLATFORM}_KHR )
-add_definitions( -std=c++14 )
+#This next line is for enabling c++17 because it's not on by default
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 
 # Define include paths
 # STB SETUP Image library to load texture files from multiple formats.
@@ -90,14 +90,11 @@ include_directories(${Vulkan_INCLUDE_DIR})
 file(GLOB_RECURSE CPP_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 file(GLOB_RECURSE HPP_FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/*.*)
 
-#This next line is for enabling c++14 because it's not on by default
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-
 #When you want to add the unit tests + compile them, add these two lines.
 #add_subdirectory(lib/googletest)
 #add_subdirectory(UnitTests)
 
 add_executable(${PROJECT_NAME} ${CPP_FILES} ${HPP_FILES})
-
+	
 target_link_libraries(${PROJECT_NAME} ${CMAKE_DL_LIBS} ${PLATFORM_LIBRARY})
 

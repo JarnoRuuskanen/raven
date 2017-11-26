@@ -55,7 +55,7 @@ namespace Raven
             bool buildRenderPass(VulkanRenderer *vulkanRenderer, VkFormat swapchainFormat,
                                  VkFormat depthFormat, VkRenderPass &renderPass);
 
-            bool buildGraphicsPipeline(VulkanPipelineManager &basicGraphicsPipeline,
+            bool buildGraphicsPipeline(VulkanPipeline &basicGraphicsPipeline,
                                        VkDescriptorSetLayout &descriptorSetLayout,
                                        VkRenderPass &renderPass,
                                        VkPipeline& graphicsPipeline);
