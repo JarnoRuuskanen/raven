@@ -1,3 +1,8 @@
+UPDATE: I have since switched back to a private repository and
+will most likely not continue pushing new stuff into this public 
+repository.
+
+
 HOW TO RUN VULKAN VALIDATION FOR THE PROGRAM
 (Information copied from VulkanCookbook)
 

@@ -47,7 +47,7 @@ endif()
 add_definitions( -DVK_NO_PROTOTYPES )
 add_definitions( -DVK_USE_PLATFORM_${VK_USE_PLATFORM}_KHR )
 #This next line is for enabling c++17 because it's not on by default
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+set (CMAKE_CXX_STANDARD 17)
 
 # Define include paths
 # STB SETUP Image library to load texture files from multiple formats.
@@ -93,6 +93,13 @@ file(GLOB_RECURSE HPP_FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/*.*)
 #When you want to add the unit tests + compile them, add these two lines.
 #add_subdirectory(lib/googletest)
 #add_subdirectory(UnitTests)
+
+#Report warning level.
+if(MSVC)
+    add_definitions(/W2)
+endif()
+
+add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
 add_executable(${PROJECT_NAME} ${CPP_FILES} ${HPP_FILES})
 	
